@@ -1,0 +1,9 @@
+{
+  "title": "Transfer",
+  "rollPositionChange": "Change fabric roll position (By roll)",
+  "rollPositionChangeSubtitle": "Manage fabric roll position by individual roll",
+  "cratePositionChange": "Change fabric roll position (By crate)",
+  "cratePositionChangeSubtitle": "Manage fabric roll position by container",
+  "productionTransfer": "Production transfer",
+  "productionTransferSubtitle": "Transfer products in production process"
+}

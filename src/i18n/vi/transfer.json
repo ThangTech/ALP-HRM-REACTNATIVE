@@ -1,0 +1,9 @@
+{
+  "title": "Điều chuyển",
+  "rollPositionChange": "Thay đổi vị trí (Theo cuộn)",
+  "rollPositionChangeSubtitle": "Quản lý vị trí cuộn vải theo từng cuộn",
+  "cratePositionChange": "Thay đổi vị trí (Theo cũi)",
+  "cratePositionChangeSubtitle": "Quản lý vị trí cuộn vải theo cũi chứa",
+  "productionTransfer": "Điều chuyển sản xuất",
+  "productionTransferSubtitle": "Điều chuyển sản phẩm trong quy trình sản xuất"
+}

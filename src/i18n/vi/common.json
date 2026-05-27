@@ -1,0 +1,21 @@
+{
+  "home": "Trang chủ",
+  "notification": "Thông báo",
+  "homeTitle": "HỆ THỐNG KHO THÔNG MINH",
+  "report": "Báo cáo",
+  "logout": "Đăng xuất",
+  "setting": "Cài đặt",
+  "inputWarehouse": "Nhập kho",
+  "outputWarehouse": "Xuất kho",
+  "transferWarehouse": "Điều chuyển kho",
+  "transfer": "Điều chuyển",
+  "stocktaking": "Kiểm kê",
+  "diagram": "Sơ đồ",
+  "lookUp": "Tra cứu thông tin",
+  "qr": "QR",
+  "scanRollCode": "Quét mã cuộn vải",
+  "news": "Tin tức",
+  "vps": "VPS",
+  "user": "Tài khoản",
+  "create": "Tạo đơn"
+}

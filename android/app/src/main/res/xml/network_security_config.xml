@@ -1,0 +1,23 @@
+<network-security-config>
+  <debug-overrides>
+    <trust-anchors>
+      <!-- Trust user added CAs while debuggable only -->
+      <certificates src="user" />
+      <certificates src="system" />
+    </trust-anchors>
+  </debug-overrides>
+
+  <base-config cleartextTrafficPermitted="true">
+    <trust-anchors>
+      <certificates src="system" />
+      <certificates src="user" />
+    </trust-anchors>
+  </base-config>
+
+  <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">api-qms.garco10.com.vn</domain>
+        <trust-anchors>
+            <certificates src="@raw/my_ca" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

@@ -1,0 +1,27 @@
+{
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": "./src",
+    "paths": {
+      "tamagui.config": ["tamagui.config.ts"],
+      "home": ["./modules/home"],
+      "home/*": ["./modules/home/*"],
+      "setting": ["./modules/setting"],
+      "setting/*": ["./modules/setting/*"],
+      "notification": ["./modules/notification"],
+      "notification/*": ["./modules/notification/*"],
+      "user": ["./modules/user"],
+      "user/*": ["./modules/user/*"],
+      "vps": ["./modules/vps"],
+      "vps/*": ["./modules/vps/*"],
+      "news": ["./modules/news"],
+      "news/*": ["./modules/news/*"],
+      "timesheet": ["./modules/timesheet"],
+      "timesheet/*": ["./modules/timesheet/*"],
+    }
+  },
+  "include": ["./src", "./index.js", "custom.d.ts"]
+}
