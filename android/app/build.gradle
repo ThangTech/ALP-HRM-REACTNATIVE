@@ -104,9 +104,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.vdx.savani"
+    namespace "com.vdx.alphrm"
     defaultConfig {
-        applicationId "com.vdx.savani"
+        applicationId "com.vdx.alphrm"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode appVersionCode
@@ -138,7 +138,7 @@ android {
             signingConfig signingConfigs.debug
             versionNameSuffix "-debug"
             applicationIdSuffix ".debug"
-            resValue "string", "app_name", "My Savani Dbg"
+            resValue "string", "app_name", "ALP HRM Dbg"
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -146,9 +146,9 @@ android {
             if ("$System.env.APP_ENV" == "development") {
               versionNameSuffix "-dev"
               applicationIdSuffix ".dev"
-              resValue "string", "app_name", "My Savani Dev"
+              resValue "string", "app_name", "ALP HRM Dev"
             } else {
-              resValue "string", "app_name", "My Savani"
+              resValue "string", "app_name", "ALP HRM"
             }
             signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
