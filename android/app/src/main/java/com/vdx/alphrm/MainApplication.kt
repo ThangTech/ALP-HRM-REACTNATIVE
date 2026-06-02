@@ -1,4 +1,4 @@
-package com.vdx.savani
+package com.vdx.alphrm
 
 import android.app.Application
 import com.facebook.react.PackageList

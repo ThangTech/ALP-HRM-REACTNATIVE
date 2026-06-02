@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Savani</string>
+    <string name="app_name">ALP HRM</string>
     <string moduleConfig="true" name="CodePushServerUrl">https://api.revopush.org</string>
     <string moduleConfig="true" name="CodePushDeploymentKey"/>
 </resources>
