@@ -55,7 +55,12 @@ const ButtonFrame = ({
           color={variant === 'secondary' ? getTokens().color.blue.val : getTokens().color.white.val}
         />
       ) : (
-        children
+        React.Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            return React.cloneElement(child, { disabled } as any);
+          }
+          return child;
+        })
       )}
     </Pressable>
   );
@@ -91,14 +96,19 @@ const TranslatedButtonText = ({
   variant,
   fontSize = 18,
   fontWeight = '500',
+  disabled,
 }: {
   children: string;
   variant?: 'primary' | 'secondary' | 'detractive';
   fontSize?: number;
   fontWeight?: '500' | '600' | '700';
+  disabled?: boolean;
 }) => {
   return (
-    <ButtonText variant={variant} style={{ fontSize: scale(fontSize), fontWeight }}>
+    <ButtonText
+      variant={variant}
+      style={[{ fontSize: scale(fontSize), fontWeight }, disabled && { color: '#A3A3A3' }]}
+    >
       {t(children)}
     </ButtonText>
   );
@@ -137,7 +147,8 @@ const styles = StyleSheet.create({
     borderColor: getTokens().color.blue.val,
   },
   disabled: {
-    opacity: 0.5,
+    backgroundColor: '#E5E5E5',
+    borderColor: 'transparent',
   },
 });
 

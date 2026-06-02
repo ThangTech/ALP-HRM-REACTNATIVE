@@ -43,12 +43,7 @@ import { FilePickerBottomSheet } from 'modules/user/components';
 import { useFilePicker } from 'modules/user/hooks/useFilePicker';
 import { goBack } from 'navigators';
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { getTokens, ScrollView, View } from 'tamagui';
 import { useTimesheetExplanationDetail } from 'timesheet/hooks';
 import { TimeSheetExplanationDetailState } from 'timesheet/state/TimeSheetExplanationDetailState';
