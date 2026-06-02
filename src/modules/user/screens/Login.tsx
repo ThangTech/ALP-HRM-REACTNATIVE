@@ -1,9 +1,10 @@
 import { IcHidePassword, IcShowPassword, IcCheckbox, IcUnCheckbox } from 'assets/svgs';
 import { Button, Form, Input, Pressable, Text } from 'components/base';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Image, View } from 'tamagui';
 import { horizontalScale, scale, verticalScale } from 'utils/scaling-utils';
 import { useMe } from 'modules/user/hooks';
+import { getCredentials, saveCredentials, clearCredentials } from 'modules/user/utils/credentials';
 import { Screen } from 'components';
 import { Images } from 'assets';
 import { StyleSheet } from 'react-native';
@@ -43,13 +44,32 @@ const Login = () => {
   const { showHiddenFeatures } = useRemoteConfig();
   const [rememberMe, setRememberMe] = useState(false);
 
+  useEffect(() => {
+    (async () => {
+      const creds = await getCredentials();
+      if (creds?.username) {
+        formRef.current?.reset({
+          username: creds.username,
+          password: creds.password,
+        });
+        setRememberMe(true);
+      }
+    })();
+  }, []);
+
   // Hàm handleSubmit nhận data từ form
-  const handleSubmit = (data: LoginFormData) => {
-    login({
+  const handleSubmit = async (data: LoginFormData) => {
+    const ok = await login({
       db: DB_NAME,
       username: data.username,
       password: data.password,
     });
+
+    if (ok && rememberMe) {
+      await saveCredentials(data.username, data.password);
+    } else if (!rememberMe) {
+      await clearCredentials();
+    }
   };
 
   const handleLoginPress = () => {

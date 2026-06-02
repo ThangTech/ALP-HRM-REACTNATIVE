@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
-    "ios": "react-native run-ios --simulator 'iPhone 15 Pro Max (17.4)'",
+    "ios": "react-native run-ios",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx,.json",
     "format": "eslint --fix --ext .ts,.tsx . && prettier --write 'src/**/*.{ts,tsx}'",
     "format:check": "prettier --check .",

@@ -89,7 +89,10 @@ const useMe = () => {
           text1: 'Đăng nhập thành công!',
         });
         navigate(RouteName.BottomBarStack);
+        return true;
       }
+
+      return false;
     } catch (error: any) {
       console.log(error, 'error');
       if (error) {
@@ -105,6 +108,8 @@ const useMe = () => {
           });
         }
       }
+
+      return false;
     }
   });
 
