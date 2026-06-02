@@ -5,7 +5,7 @@ import React, { ComponentProps, useEffect } from 'react';
 // import DrawerNavigation from './DrawerNavigator';
 import { navigationRef } from './navigationUtilities';
 import BottomTabBar from './BottomTabBar';
-import { IcHome, IcNews, IcPlus, IcVps, IcUser } from 'assets/svgs';
+import { IcHome, IcUser, IcNotificationBoard } from 'assets/svgs';
 import { Home } from 'home/screens';
 import {
   ChangePassword,
@@ -70,22 +70,10 @@ const bottomTabs: BottomTabBarType = [
     component: Home,
   },
   {
-    icon: IcNews,
-    title: 'common.news',
-    routeName: RouteName.News,
-    component: News,
-  },
-  {
-    icon: IcPlus,
-    title: 'common.create',
-    routeName: RouteName.User,
-    isPopup: true,
-  },
-  {
-    icon: IcVps,
-    title: 'common.vps',
-    routeName: RouteName.Vps,
-    component: Vps,
+    icon: IcNotificationBoard,
+    title: 'Thông báo',
+    routeName: RouteName.Notification,
+    component: Notification,
   },
   {
     icon: IcUser,
