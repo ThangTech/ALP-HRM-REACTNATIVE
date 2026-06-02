@@ -1,17 +1,17 @@
-import { IcHidePassword, IcShowPassword } from 'assets/svgs';
+import { IcHidePassword, IcShowPassword, IcCheckbox, IcUnCheckbox } from 'assets/svgs';
 import { Button, Form, Input, Pressable, Text } from 'components/base';
 import React, { useRef, useState } from 'react';
-import { getTokens, Image, View } from 'tamagui';
+import { Image, View } from 'tamagui';
 import { horizontalScale, scale, verticalScale } from 'utils/scaling-utils';
 import { useMe } from 'modules/user/hooks';
 import { Screen } from 'components';
 import { Images } from 'assets';
 import { StyleSheet } from 'react-native';
-// import { DB_NAME, HOST } from 'react-native-dotenv';
-import { useSafeArea, useRemoteConfig } from 'hooks';
+import { useRemoteConfig } from 'hooks';
 import { DB_NAME } from 'react-native-dotenv';
 import { navigate } from 'navigators';
 import { RouteName } from 'configs/navigation';
+import { useWatch } from 'react-hook-form';
 
 // Định nghĩa type cho form data
 interface LoginFormData {
@@ -19,11 +19,29 @@ interface LoginFormData {
   password: string;
 }
 
+const SubmitButton = ({ loading, onPress }: { loading: boolean; onPress: () => void }) => {
+  const username = useWatch<LoginFormData>({ name: 'username' });
+  const password = useWatch<LoginFormData>({ name: 'password' });
+  const isValid = !!(username && password && password.length >= 6);
+
+  return (
+    <Button
+      onPress={onPress}
+      loading={loading}
+      disabled={!isValid}
+      style={[styles.btn, { backgroundColor: '#EF4444' }]}
+    >
+      <Button.Text>Đăng nhập</Button.Text>
+    </Button>
+  );
+};
+
 const Login = () => {
   const [{ loading }, { login }] = useMe();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const formRef = useRef<any>(null);
   const { showHiddenFeatures } = useRemoteConfig();
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Hàm handleSubmit nhận data từ form
   const handleSubmit = (data: LoginFormData) => {
@@ -39,41 +57,27 @@ const Login = () => {
       formRef.current.submit();
     }
   };
-  const { top } = useSafeArea();
 
   const renderHeader = () => {
     return (
-      <View bg={'$blue'} jc={'center'}>
+      <View jc={'center'} alignItems={'center'} pt={verticalScale(86)}>
         <Image
-          source={Images.login_bg}
-          alignSelf="flex-end"
+          source={Images.alp_logo}
+          w={horizontalScale(124)}
+          h={verticalScale(121)}
           resizeMode="contain"
-          mt={verticalScale(150)}
-          w={horizontalScale(200)}
-          h={verticalScale(150)}
-          mb={verticalScale(5)}
         />
-        <View position="absolute" top={scale(20)} left={0} right={0} bottom={0}>
-          <Image
-            source={Images.savani_logo}
-            w={horizontalScale(140)}
-            h={verticalScale(140)}
-            bg={'white'}
-            br={scale(100)}
-            as={'center'}
-            mt={top}
-          />
-          <Text
-            textAlign="center"
-            mt={verticalScale(20)}
-            mb={verticalScale(50)}
-            color={'$white'}
-            fontSize={scale(28)}
-            fontW={'bold'}
-          >
-            SAVANI
-          </Text>
-        </View>
+        <Text
+          mt={0}
+          color={'#EF4444'}
+          fontSize={scale(32)}
+          fontWeight="600"
+          textAlign="center"
+          lineHeight={scale(45)}
+          style={{ fontFamily: 'Lexend' }}
+        >
+          An Lộc Phát
+        </Text>
       </View>
     );
   };
@@ -82,40 +86,45 @@ const Login = () => {
     return (
       <View
         f={1}
-        pt={verticalScale(30)}
-        backgroundColor={'$background'}
-        borderTopStartRadius={scale(30)}
-        borderTopEndRadius={scale(30)}
-        ph={horizontalScale(20)}
+        pt={verticalScale(50)}
+        backgroundColor={'white'}
+        ph={horizontalScale(24)}
         gap={scale(15)}
       >
-        <Text fontSize={scale(28)} pb={verticalScale(20)} fontWeight="bold" color={'$blue'}>
-          Xin chào!
+        <Text
+          fontSize={scale(32)}
+          pb={verticalScale(20)}
+          fontWeight="600"
+          color={'#EF4444'}
+          lineHeight={scale(45)}
+          style={{ fontFamily: 'Lexend' }}
+        >
+          Đăng nhập
         </Text>
         <Form<LoginFormData>
           ref={formRef}
           defaultValues={{
-            username: __DEV__ ? 'SVN0251' : '',
-            password: __DEV__ ? '123456' : '',
-            // username: 'SVN0251',
-            // password: '123456',
+            username: __DEV__ ? '' : '',
+            password: __DEV__ ? '' : '',
           }}
           onSubmit={handleSubmit}
           gap={scale(20)}
         >
           <Form.Item
             name="username"
-            label="Tên đăng nhập"
+            label="Tài khoản"
+            floatingLabel={true}
             rules={{
-              required: 'Vui lòng nhập tên đăng nhập',
+              required: 'Vui lòng nhập tài khoản',
             }}
           >
-            <Input placeholder="Nhập tên đăng nhập" />
+            <Input placeholder="Email / Mã nhân viên" activeBorderColor="#EF4444" />
           </Form.Item>
 
           <Form.Item
             name="password"
             label="Mật khẩu"
+            floatingLabel={true}
             rules={{
               required: 'Vui lòng nhập mật khẩu',
               minLength: {
@@ -125,30 +134,39 @@ const Login = () => {
             }}
           >
             <Input
-              placeholder="Nhập mật khẩu"
+              placeholder="Mật khẩu"
               isPassword={!showPassword}
+              activeBorderColor="#EF4444"
               onIconRightPress={() => setShowPassword(!showPassword)}
               iconRight={showPassword ? <IcShowPassword size={20} /> : <IcHidePassword size={20} />}
             />
           </Form.Item>
 
-          <Pressable onPress={() => navigate(RouteName.ForgotPassword)}>
-            <Text
-              fontSize={scale(14)}
-              textAlign="right"
-              fontStyle="italic"
-              textDecorationLine="underline"
-              color={'$blue'}
+          <View
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="space-between"
+            mt={scale(4)}
+            paddingLeft={scale(4)}
+          >
+            <Pressable
+              onPress={() => setRememberMe(!rememberMe)}
+              style={{ flexDirection: 'row', alignItems: 'center' }}
             >
-              Quên mật khẩu?
-            </Text>
-          </Pressable>
-          <Button style={styles.btn} onPress={handleLoginPress} loading={loading}>
-            <Button.Text>Đăng nhập</Button.Text>
-          </Button>
+              {rememberMe ? (
+                <IcCheckbox width={scale(14)} height={scale(14)} tintColor="#EF4444" />
+              ) : (
+                <IcUnCheckbox width={scale(14)} height={scale(14)} tintColor="#EF4444" />
+              )}
+              <Text ml={scale(8)} fontSize={scale(14)} color="$black">
+                Ghi nhớ đăng nhập
+              </Text>
+            </Pressable>
+          </View>
+          <SubmitButton loading={loading} onPress={handleLoginPress} />
           {showHiddenFeatures && (
             <Button style={styles.btnRegister} onPress={() => navigate(RouteName.Register)}>
-              <Text color={'$blue'}>Đăng ký</Text>
+              <Text color={'#EF4444'}>Đăng ký</Text>
             </Button>
           )}
         </Form>
@@ -167,16 +185,17 @@ const Login = () => {
 const styles = StyleSheet.create({
   btn: {
     marginTop: scale(20),
-    backgroundColor: getTokens().color.$backgroundHeader.val,
+    borderRadius: scale(16),
+    height: verticalScale(48),
+    borderWidth: 0,
   },
   btnRegister: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: getTokens().color.$blue.val,
-    color: 'red',
+    borderColor: '#EF4444',
   },
   container: {
-    backgroundColor: getTokens().color.$blue.val,
+    backgroundColor: 'white',
   },
 });
 export default Login;

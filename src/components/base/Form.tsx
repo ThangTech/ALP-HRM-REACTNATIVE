@@ -57,7 +57,7 @@ type FormLabelProps<T extends FieldValues> = {
 const FormLabel = <T extends FieldValues>({ deps, children }: FormLabelProps<T>) => {
   useWatch({ name: deps as any, disabled: !deps?.length });
 
-  return children;
+  return <>{children}</>;
 };
 
 type FormItemProps<T extends FieldValues, K extends FieldPath<T>> = Pick<
@@ -65,6 +65,7 @@ type FormItemProps<T extends FieldValues, K extends FieldPath<T>> = Pick<
   'name' | 'rules' | 'disabled' | 'defaultValue'
 > & {
   label?: string | React.ReactElement;
+  floatingLabel?: boolean;
   style?: StyleProp<ViewStyle>;
   contentStyle?: ViewStyle;
   onChange?: (v: ControllerProps<T, K>['defaultValue']) => void;
@@ -76,6 +77,7 @@ type FormItemProps<T extends FieldValues, K extends FieldPath<T>> = Pick<
 const FormItem = <T extends FieldValues, K extends FieldPath<T>>({
   name,
   label,
+  floatingLabel,
   onChange,
   style,
   contentStyle,
@@ -108,13 +110,15 @@ const FormItem = <T extends FieldValues, K extends FieldPath<T>>({
             ...props,
             ref: noRef ? undefined : ref,
             onChangeValue,
+            label: floatingLabel ? label : undefined,
+            floatingLabel,
             state: fieldState.invalid ? 'error' : undefined,
             errorMessage: fieldState.error?.message,
           });
 
   return (
     <View style={[style]}>
-      {!!label && typeof label === 'string' ? (
+      {!floatingLabel && !!label && typeof label === 'string' ? (
         <View flexDirection="row" alignItems="center" marginBottom={verticalScale(8)}>
           <Text color="$black" fontSize={16} fontWeight="500">
             {label}
@@ -122,9 +126,9 @@ const FormItem = <T extends FieldValues, K extends FieldPath<T>>({
           {rest.rules?.required && <Text color="$m_red"> *</Text>}
         </View>
       ) : (
-        !!label && <FormLabel deps={rest.rules?.deps}>{label}</FormLabel>
+        !floatingLabel && !!label && <FormLabel deps={rest.rules?.deps}>{label}</FormLabel>
       )}
-      <View style={[{ marginTop: verticalScale(8) }, contentStyle]}>
+      <View style={[{ marginTop: floatingLabel ? 0 : verticalScale(8) }, contentStyle]}>
         <Controller name={name} control={control} {...rest} render={render} />
       </View>
       {!noErrorMessage && !!errors[name] && (

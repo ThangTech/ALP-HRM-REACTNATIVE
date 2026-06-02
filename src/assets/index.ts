@@ -53,4 +53,5 @@ export const Images = {
   ky_so: require('./images/ky-so.png') as number,
   tai_lieu: require('./images/tai-lieu.png') as number,
   an_bot: require('./images/an-bot.png') as number,
+  alp_logo: require('./images/logo-ALP.png') as number,
 };

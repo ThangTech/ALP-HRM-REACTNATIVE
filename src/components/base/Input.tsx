@@ -35,6 +35,8 @@ interface InputBaseProps extends InputProps {
   borderWidth?: number;
   borderColor?: string;
   elevation?: number;
+  floatingLabel?: boolean;
+  activeBorderColor?: string;
 }
 
 const Input = React.memo(
@@ -66,12 +68,15 @@ const Input = React.memo(
         borderWidth,
         borderColor,
         elevation,
+        floatingLabel,
+        activeBorderColor = '$blue',
         ...restProps
       },
       ref,
     ) => {
       const [secureText, setSecureText] = useState(isPassword);
-      const { ...otherProps } = restProps;
+      const [isFocused, setIsFocused] = useState(false);
+      const { onFocus, onBlur, ...otherProps } = restProps;
 
       const toggleSecureText = useCallback(() => setSecureText((prev) => !prev), []);
 
@@ -128,6 +133,22 @@ const Input = React.memo(
         [onChangeValue, onChangeText],
       );
 
+      const handleFocus = useCallback(
+        (e: any) => {
+          setIsFocused(true);
+          onFocus?.(e);
+        },
+        [onFocus],
+      );
+
+      const handleBlur = useCallback(
+        (e: any) => {
+          setIsFocused(false);
+          onBlur?.(e);
+        },
+        [onBlur],
+      );
+
       // Use leftIcon if provided, otherwise fallback to Icon for backward compatibility
       const LeftIcon = leftIcon || Icon;
 
@@ -167,10 +188,11 @@ const Input = React.memo(
 
       // Determine error state
       const hasError = errorMessage || state === 'error';
+      const isFloating = isFocused || !!text;
 
       return (
         <View {...containerStyle}>
-          {showLabel && label && (
+          {showLabel && label && !floatingLabel && (
             <Text color="$black" fontSize={scale(16)} fontWeight="500" mb={verticalScale(12)}>
               {t(label as ParseKeys)}
               {isRequired && <Text color="$m_red">*</Text>}
@@ -189,8 +211,16 @@ const Input = React.memo(
               shadowRadius={4}
               shadowOpacity={0.1}
               elevationAndroid={elevation ?? 3}
-              borderWidth={hasError || borderWidth ? 1 : 0}
-              borderColor={hasError ? '$m_red' : borderColor || 'transparent'}
+              borderWidth={hasError || floatingLabel || borderWidth ? 1 : 0}
+              borderColor={
+                hasError
+                  ? '$m_red'
+                  : floatingLabel
+                    ? isFloating
+                      ? activeBorderColor
+                      : '#E5E5E5'
+                    : borderColor || 'transparent'
+              }
               // height={otherProps.multiline ? verticalScale(90) : verticalScale(45)}
               minHeight={verticalScale(45)}
             >
@@ -210,6 +240,8 @@ const Input = React.memo(
                 value={format || parse ? text : value}
                 onChangeText={format || parse ? onChange : handleTextChange}
                 onKeyPress={handleKeyPress}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
                 editable={editable && !onPress}
                 pointerEvents={onPress ? 'none' : 'auto'}
                 height={'auto'}
@@ -218,6 +250,20 @@ const Input = React.memo(
 
               {RightIcon && <View ml={horizontalScale(8)}>{RightIcon}</View>}
             </View>
+
+            {floatingLabel && label && isFloating && (
+              <View
+                position="absolute"
+                top={-scale(8)}
+                left={scale(16)}
+                bg="$white"
+                paddingHorizontal={scale(4)}
+              >
+                <Text color={hasError ? '$m_red' : activeBorderColor} fontSize={scale(12)}>
+                  {t(label as ParseKeys)}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       );
