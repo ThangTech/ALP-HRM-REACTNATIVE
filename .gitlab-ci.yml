@@ -21,7 +21,7 @@ variables:
       - .yarn-cache/
   before_script:
     - yarn config set cache-folder .yarn-cache
-    - yarn install --frozen-lockfile
+    - yarn install
 
 # ============ STAGE: TEST ============
 test-and-lint:
