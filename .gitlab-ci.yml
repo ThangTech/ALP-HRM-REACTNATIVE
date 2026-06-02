@@ -1,0 +1,87 @@
+stages:
+  - test
+  - deploy
+  - notify
+
+default:
+  tags:
+    - test-runner
+
+variables:
+  GIT_DEPTH: 20
+
+# Cài Node 18 + yarn, cache theo yarn.lock
+.node_setup: &node_setup
+  image: node:18
+  cache:
+    key:
+      files:
+        - yarn.lock
+    paths:
+      - .yarn-cache/
+  before_script:
+    - yarn config set cache-folder .yarn-cache
+    - yarn install --frozen-lockfile
+
+# ============ STAGE: TEST ============
+test-and-lint:
+  <<: *node_setup
+  stage: test
+  script:
+    - yarn lint
+    - yarn test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
+# ============ STAGE: NOTIFY (TELEGRAM) ============
+.notify_base: &notify_base
+  stage: notify
+  image: curlimages/curl:latest
+  variables:
+    GIT_STRATEGY: none
+
+notify-success:
+  <<: *notify_base
+  when: on_success
+  script:
+    - STATUS_ICON="✅"; STATUS_TEXT="SUCCESS"
+    - |
+      MESSAGE="${STATUS_ICON} *React Native CI/CD Report*
+
+      📱 *Project:* \`${CI_PROJECT_PATH}\`
+      🛠 *Pipeline:* \`#${CI_PIPELINE_ID}\`
+      🌿 *Branch:* \`${CI_COMMIT_REF_NAME}\`
+      👤 *Actor:* \`${GITLAB_USER_LOGIN}\`
+
+      📍 *Environment:* \`${TARGET_ENV:-Push/MR Mode}\`
+      📊 *Status:* ${STATUS_TEXT}
+
+      🔗 [View detail on GitLab](${CI_PIPELINE_URL})"
+      curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+        -d chat_id="${TELEGRAM_CHAT_ID}" \
+        -d parse_mode="Markdown" \
+        --data-urlencode text="${MESSAGE}"
+
+notify-failure:
+  <<: *notify_base
+  when: on_failure
+  script:
+    - STATUS_ICON="❌"; STATUS_TEXT="FAILED"
+    - |
+      MESSAGE="${STATUS_ICON} *React Native CI/CD Report*
+
+      📱 *Project:* \`${CI_PROJECT_PATH}\`
+      🛠 *Pipeline:* \`#${CI_PIPELINE_ID}\`
+      🌿 *Branch:* \`${CI_COMMIT_REF_NAME}\`
+      👤 *Actor:* \`${GITLAB_USER_LOGIN}\`
+
+      📍 *Environment:* \`${TARGET_ENV:-Push/MR Mode}\`
+      📊 *Status:* ${STATUS_TEXT}
+
+      🔗 [View detail on GitLab](${CI_PIPELINE_URL})"
+      curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+        -d chat_id="${TELEGRAM_CHAT_ID}" \
+        -d parse_mode="Markdown" \
+        --data-urlencode text="${MESSAGE}"
