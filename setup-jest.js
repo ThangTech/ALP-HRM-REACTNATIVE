@@ -75,6 +75,10 @@ jest.mock('react-native-calendars', () => ({
   },
 }));
 
+jest.mock('react-native-file-viewer', () => ({
+  open: jest.fn(),
+}));
+
 jest.mock('@react-native-firebase/remote-config', () => {
   const mockRemoteConfigInstance = {};
   return {

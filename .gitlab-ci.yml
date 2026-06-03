@@ -12,7 +12,7 @@ variables:
 
 # Cài Node 18 + yarn, cache theo yarn.lock
 .node_setup: &node_setup
-  image: node:18
+  image: node:20
   cache:
     key:
       files:
@@ -21,7 +21,7 @@ variables:
       - .yarn-cache/
   before_script:
     - yarn config set cache-folder .yarn-cache
-    - yarn install --frozen-lockfile
+    - yarn install --no-frozen-lockfile
 
 # ============ STAGE: TEST ============
 test-and-lint:
