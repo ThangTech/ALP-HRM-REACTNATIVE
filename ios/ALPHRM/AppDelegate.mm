@@ -6,8 +6,8 @@
 
 @implementation AppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
+- (BOOL)application:(UIApplication *)application
+    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [FIRApp configure];
   self.moduleName = @"ALP HRM";
   // You can add your custom initial props in the dictionary below.
@@ -15,20 +15,21 @@
   self.initialProps = @{};
   self.dependencyProvider = [RCTAppDependencyProvider new];
 
-  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+  return [super application:application
+      didFinishLaunchingWithOptions:launchOptions];
 }
 
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
+- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge {
   return [self bundleURL];
 }
 
-- (NSURL *)bundleURL
-{
+- (NSURL *)bundleURL {
 #if DEBUG
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  return
+      [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
-  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  return [[NSBundle mainBundle] URLForResource:@"main"
+                                 withExtension:@"jsbundle"];
 #endif
 }
 
