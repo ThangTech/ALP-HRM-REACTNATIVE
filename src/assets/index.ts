@@ -50,5 +50,8 @@ export const Images = {
   time_sheet_manage: require('./images/time-sheet-manage.png') as number,
   ic_phieu_luong: require('./images/phieu-luong-icon.png') as number,
   ic_gop_y: require('./images/ic-gop-y.png') as number,
+  ky_so: require('./images/ky-so.png') as number,
+  tai_lieu: require('./images/tai-lieu.png') as number,
+  an_bot: require('./images/an-bot.png') as number,
   alp_logo: require('./images/logo-ALP.png') as number,
 };

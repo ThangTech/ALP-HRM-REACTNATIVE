@@ -16,6 +16,7 @@ import { View, getTokens } from 'tamagui';
 import { scale, verticalScale } from 'utils';
 import { navigate } from './navigationUtilities';
 import { useProfile } from 'hooks/useProfile';
+import { useNotificationCountApi } from 'home/hooks/useNotificationCountApi';
 
 type TabStackItem<T extends RouteName> = Pick<TabItemProps, 'title'> & {
   icon: React.ComponentType<IconProps>;
@@ -71,6 +72,8 @@ interface TabBarProps extends RNBottomTabBarProps {
 
 function TabBar({ state, navigation, tabs, noActiveIndicatior }: TabBarProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const notificationCountApi = useNotificationCountApi();
+  const badgeCount = notificationCountApi.notificationCount?.data?.total_all || 0;
   const { bottom } = useSafeArea();
   const snapPoints = useMemo(() => ['25%'], []);
 
@@ -151,11 +154,12 @@ function TabBar({ state, navigation, tabs, noActiveIndicatior }: TabBarProps) {
         onPress={onPress}
         onLongPress={onLongPress}
         title={title}
+        badgeCount={routeName === RouteName.Notification ? badgeCount : 0}
         icon={
           <Icon
             size={isPopup ? 50 : 30}
             style={[isPopup && { marginTop: scale(-10) }, $iconView]}
-            tintColor={isActive ? getTokens().color.blue700.val : getTokens().color.grey.val}
+            tintColor={isActive ? getTokens().color.$d_red.val : getTokens().color.grey.val}
             {...iconProps}
           />
         }
@@ -217,15 +221,36 @@ interface TabItemProps extends PressableProps {
   title: TxKeyPath;
   isActive?: boolean;
   noActiveIndicatior?: boolean;
+  badgeCount?: number;
 }
 
-const TabItem = ({ icon, title, isActive, ...rest }: TabItemProps) => (
+const TabItem = ({ icon, title, isActive, badgeCount, ...rest }: TabItemProps) => (
   <Pressable style={$tabItem} {...rest}>
-    {icon}
+    <View position="relative">
+      {icon}
+      {!!badgeCount && badgeCount > 0 && (
+        <View
+          position="absolute"
+          top={scale(-5)}
+          right={scale(-10)}
+          bg={'$d_red'}
+          ph={scale(4)}
+          minWidth={scale(18)}
+          h={scale(18)}
+          br={scale(9)}
+          jc="center"
+          ai="center"
+        >
+          <Text color="$white" fontSize={scale(10)} fontW="bold">
+            {badgeCount}
+          </Text>
+        </View>
+      )}
+    </View>
     <Text
       pt={verticalScale(5)}
       tx={title}
-      c={isActive ? getTokens().color.blue700.val : getTokens().color.grey.val}
+      c={isActive ? getTokens().color.$d_red.val : getTokens().color.grey.val}
       fontSize={scale(12)}
       fontW={'400'}
     />

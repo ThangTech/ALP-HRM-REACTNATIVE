@@ -47,6 +47,8 @@ import IcUpload from './IcUpload';
 import IcDownload from './IcDownload';
 import IcExplanation from './IcExplanation';
 import IcVideo from './IcVideo';
+import IcChangeShift from './IcChangeShift';
+import IcNotificationBoard from './IcNotificationBoard';
 
 export {
   IcUsername,
@@ -96,6 +98,8 @@ export {
   IcDownload,
   IcExplanation,
   IcVideo,
+  IcChangeShift,
+  IcNotificationBoard,
 };
 
 export interface IconProps extends Pick<SvgProps, 'style' | 'width' | 'height' | 'viewBox'> {
