@@ -13,11 +13,11 @@ import TerminationButtons from './components/TerminationButtons';
 import { TerminationDetailProvider, useTerminationDetailProvider } from './provider';
 import { LeaveRegistrationViewType } from 'common/enum/leave-registration-view-type';
 import ItemHistory from 'modules/leave-registration/detail/components/ItemHistory';
-import { TicketType } from 'common/enum/ticket-type';
-import OptionDelete from 'components/OptionDelete';
-import OptionMenu from 'components/OptionMenu';
-import { goBack } from 'navigators';
-import { useDeleteTicket } from 'hooks/useDeleteTicket';
+// import { TicketType } from 'common/enum/ticket-type';
+// import OptionDelete from 'components/OptionDelete';
+// import OptionMenu from 'components/OptionMenu';
+// import { goBack } from 'navigators';
+// import { useDeleteTicket } from 'hooks/useDeleteTicket';
 import { TerminationState } from 'common/enum/termination-state';
 import UploadComponent from 'components/file-upload/UploadComponent';
 
@@ -36,7 +36,7 @@ function TerminationDetailPage(props: LeaveRegistrationDetailProps) {
 
 function ViewPage(props: LeaveRegistrationDetailProps) {
   const provider = useTerminationDetailProvider();
-  const deleteProvider = useDeleteTicket();
+  // const deleteProvider = useDeleteTicket();
   const id = props.route.params?.id;
 
   useEffect(() => {
@@ -76,21 +76,21 @@ function ViewPage(props: LeaveRegistrationDetailProps) {
     <View f={1}>
       <Header
         title={'Chi tiết đơn nghỉ'}
-        rightAction={
-          <OptionMenu>
-            {id && (
-              <OptionDelete
-                onDelete={async () => {
-                  await deleteProvider.handleDelete({
-                    ticketId: id,
-                    type: TicketType.TERMINATION,
-                  });
-                  goBack();
-                }}
-              />
-            )}
-          </OptionMenu>
-        }
+        // rightAction={
+        //   <OptionMenu>
+        //     {id && (
+        //       <OptionDelete
+        //         onDelete={async () => {
+        //           await deleteProvider.handleDelete({
+        //             ticketId: id,
+        //             type: TicketType.TERMINATION,
+        //           });
+        //           goBack();
+        //         }}
+        //       />
+        //     )}
+        //   </OptionMenu>
+        // }
       />
       <ScrollView f={1}>
         <View gap={scale(10)} p={scale(16)}>

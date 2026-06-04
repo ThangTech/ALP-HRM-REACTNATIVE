@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TerminationEditorProvider, useTerminationEditorProvider } from './provider';
 import { ScrollView, View } from 'tamagui';
-import { Button, Header, Input } from 'components';
+import { Button, Header, Input, OptionItem, Text } from 'components';
 import { scale } from 'utils';
 import DatePicker from 'modules/leave-registration/list/components/DatePicker';
 import OptionPicker from 'modules/leave-registration/list/components/OptionPicker';
 import UploadComponent from 'components/file-upload/UploadComponent';
 import { goBack } from 'navigators';
 import { useSafeArea } from 'hooks';
+import useAppContext from 'hooks/useAppContext';
+import useUser from 'modules/user/hooks/useUser';
+import CardContainer from 'modules/leave-registration/detail/components/CardContainer';
 
 function TerminationEditorPage() {
   return (
@@ -20,11 +23,39 @@ function TerminationEditorPage() {
 function ViewPage() {
   const safeArea = useSafeArea();
   const provider = useTerminationEditorProvider();
+  const { user } = useAppContext();
+  const [{ dataContract }] = useUser();
+
+  const blocks = useMemo((): OptionItem[] => {
+    return [
+      { key: 'Nhân viên', value: user?.name ?? '--' },
+      { key: 'Mã nhân viên', value: user?.employee_code ?? '--' },
+      { key: 'Hợp đồng lao động', value: dataContract?.contract_name ?? '--' },
+      { key: 'Chi nhánh', value: user?.group_name ?? '--' },
+      { key: 'Khối', value: user?.area_category_name ?? '--' },
+      { key: 'Phòng ban', value: user?.department_name ?? '--' },
+      { key: 'Chức danh', value: user?.job_name ?? '--' },
+      { key: 'Cấp trên quản lý', value: user?.parent?.[0]?.name ?? '--' },
+    ];
+  }, [user, dataContract]);
+
   return (
     <View f={1}>
       <Header title={'Chi tiết đơn nghỉ'} />
       <ScrollView f={1} automaticallyAdjustKeyboardInsets>
         <View gap={scale(16)} p={scale(16)}>
+          {blocks.map((block) => (
+            <CardContainer fd={'row'} key={block.key}>
+              <Text f={1} fontW={400}>
+                {block.key}
+              </Text>
+              <View f={2} fd={'row'} justifyContent="flex-end">
+                <Text fontW={500} style={{ flexShrink: 1 }}>
+                  {block.value}
+                </Text>
+              </View>
+            </CardContainer>
+          ))}
           <OptionPicker
             label="Loại nghỉ"
             placeholder="Chọn loại nghỉ"
