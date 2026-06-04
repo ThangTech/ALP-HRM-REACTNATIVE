@@ -2,18 +2,19 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   IcCalendar,
+  IcCheck,
+  IcClose,
   IcDocument,
   IcDropdown,
   IcImage,
   IcPdf,
+  IcPencil,
   IcTrash,
   IcUpload,
   IcVideo,
 } from 'assets/svgs';
-import IcArrowRight from 'assets/svgs/IcArrowRight';
 import { TerminationButtonType } from 'common/enum/termination-button-type';
 import { TerminationState } from 'common/enum/termination-state';
-import { TicketType } from 'common/enum/ticket-type';
 import {
   Button,
   DateTimePickerModal,
@@ -29,16 +30,10 @@ import {
 } from 'components';
 import { FormRef } from 'components/base/Form';
 import { BaseModalRef } from 'components/base/Modal';
-import OptionDelete from 'components/OptionDelete';
-import OptionMenu from 'components/OptionMenu';
 import { AppStackParamList } from 'configs/navigation';
 import dayjs from 'dayjs';
 import { useDebouncedEffect } from 'hooks/useDebouncedEffect';
-import { useDeleteTicket } from 'hooks/useDeleteTicket';
 import CancelDialog from 'modules/leave-registration/detail/components/CancelDialog';
-import CardContainer from 'modules/leave-registration/detail/components/CardContainer';
-import ItemHistory from 'modules/leave-registration/detail/components/ItemHistory';
-import ReportBlock from 'modules/leave-registration/leave-report/components/report-block';
 import { FilePickerBottomSheet } from 'modules/user/components';
 import { useFilePicker } from 'modules/user/hooks/useFilePicker';
 import { goBack } from 'navigators';
@@ -99,14 +94,12 @@ const STATUS_COLORS = {
 
 export const SectionHeading = ({
   title,
-  initialExpanded = false,
   children,
 }: {
   title: string;
   initialExpanded?: boolean;
   children?: ReactNode;
 }) => {
-  const [isExpanded, setIsExpanded] = useState(initialExpanded);
   return (
     <>
       <View
@@ -120,7 +113,6 @@ export const SectionHeading = ({
         pv={verticalScale(10)}
         borderWidth={1}
         borderColor="#E0E8F5"
-        onPress={() => setIsExpanded(!isExpanded)}
       >
         <View
           width={4}
@@ -132,13 +124,8 @@ export const SectionHeading = ({
         <Text fontSize={scale(16)} fontWeight="600" color="$blue" flex={1}>
           {title}
         </Text>
-        {!!children && (
-          <View style={{ transform: [{ rotate: isExpanded ? '-90deg' : '90deg' }] }}>
-            <IcArrowRight size={20} />
-          </View>
-        )}
       </View>
-      {isExpanded && children}
+      {children}
     </>
   );
 };
@@ -154,7 +141,6 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   const dialogRef = useRef<BaseModalRef>(null);
 
   const { pickImage, pickDocument, pickVideo } = useFilePicker();
-  const deleteProvider = useDeleteTicket();
 
   const [state, setState] = useState<TimeSheetExplanationDetailState>({
     timeSheetDetail: {
@@ -164,15 +150,27 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       autoFillExplainedDate: true,
     },
   });
+  const uploadedFiles = state.uploadedFiles || [];
   const detail = state.timeSheetDetail;
   const selectedDate = state.timeSheetDetail?.explanation_date;
   const selectedReason = state.timeSheetDetail?.explanation_reason;
   const selectedShift = state.timeSheetDetail?.explained_resource_calendar_id;
-  const uploadedFiles = state.uploadedFiles || [];
-  const timeToDestinationFrom = state.timeSheetDetail?.arrive_start_time;
-  const timeToDestinationTo = state.timeSheetDetail?.arrive_end_time;
-  const timeFromDestinationFrom = state.timeSheetDetail?.leave_start_time;
-  const timeFromDestinationTo = state.timeSheetDetail?.leave_end_time;
+  const workingFrom = state.timeSheetDetail?.working_from;
+  const workingTo = state.timeSheetDetail?.working_to;
+
+  let totalWorkingTime = '00:00';
+  if (workingFrom && workingTo) {
+    const from = dayjs(workingFrom);
+    const to = dayjs(workingTo);
+    let diffMinutes = to.diff(from, 'minute');
+    if (diffMinutes < 0) {
+      diffMinutes += 24 * 60;
+    }
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    totalWorkingTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+
   const explainedCheckIn = state.timeSheetDetail?.explained_check_in;
   const explainedCheckOut = state.timeSheetDetail?.explained_check_out;
   const overtime1From = state.timeSheetDetail?.overtime_first_start;
@@ -184,7 +182,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   const [
     {
       explanationTypeList,
-      histories,
+      // histories,
       timesheetExplanationDetail,
       calculateInformation,
       calculateInformationLoading,
@@ -194,8 +192,8 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       approveLoading,
       rejectLoading,
       uploadFilesLoading,
-      moveToDraftLoading,
-      createDateInfo,
+      // moveToDraftLoading,
+      // createDateInfo,
     },
     {
       calculateInformationTrigger,
@@ -203,7 +201,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       approvalSubmit,
       approve,
       reject,
-      moveToDraft,
+      // moveToDraft,
       uploadFiles,
       deleteFile,
     },
@@ -384,12 +382,10 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
     onConfirm: () => {},
   });
 
-  const isLocked = [
-    TerminationState.WAITING,
-    TerminationState.APPROVED,
-    TerminationState.CANCELLED,
-    TerminationState.REFUSED,
-  ].includes((detail?.state || '--') as TerminationState);
+  // Phân quyền vai trò
+  const currentState = timesheetExplanationDetail?.state || 'draft';
+  const isFormLocked = currentState !== 'draft';
+  const isLocked = isFormLocked;
 
   useDebouncedEffect(
     () => {
@@ -699,27 +695,9 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   };
 
   const renderHeader = () => {
-    const title = type === 'create' ? 'Tạo giải trình công' : 'Chi tiết giải trình công';
-    return (
-      <Header
-        title={title}
-        rightAction={
-          <OptionMenu>
-            {id && (
-              <OptionDelete
-                onDelete={async () => {
-                  await deleteProvider.handleDelete({
-                    ticketId: timesheetExplanationDetail?.id,
-                    type: TicketType.TIME_SHEET_EXPLANATION,
-                  });
-                  goBack();
-                }}
-              />
-            )}
-          </OptionMenu>
-        }
-      />
-    );
+    const title =
+      type === 'create' ? 'Tạo phiếu giải trình công' : 'Chi tiết phiếu giải trình công';
+    return <Header title={title} />;
   };
 
   const handleApprove = async () => {
@@ -751,26 +729,26 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       dialogRef.current?.close();
     }
   };
-  const handleMoveToDraft = async () => {
-    if (!timesheetExplanationDetail?.id) {
-      return;
-    }
+  // const handleMoveToDraft = async () => {
+  //   if (!timesheetExplanationDetail?.id) {
+  //     return;
+  //   }
 
-    Alert.alert(
-      'Xác nhận chuyển về nháp',
-      'Bạn có chắc chắn muốn chuyển giải trình công này về nháp?',
-      [
-        { text: 'Hủy', style: 'cancel' },
-        {
-          text: 'Chuyển về nháp',
-          style: 'destructive',
-          onPress: async () => {
-            await moveToDraft({ explanation_id: timesheetExplanationDetail.id });
-          },
-        },
-      ],
-    );
-  };
+  //   Alert.alert(
+  //     'Xác nhận chuyển về nháp',
+  //     'Bạn có chắc chắn muốn chuyển giải trình công này về nháp?',
+  //     [
+  //       { text: 'Hủy', style: 'cancel' },
+  //       {
+  //         text: 'Chuyển về nháp',
+  //         style: 'destructive',
+  //         onPress: async () => {
+  //           await moveToDraft({ explanation_id: timesheetExplanationDetail.id });
+  //         },
+  //       },
+  //     ],
+  //   );
+  // };
 
   const renderStatusBadge = () => {
     // Không hiển thị status khi đang tạo mới
@@ -780,30 +758,44 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
 
     const state = timesheetExplanationDetail?.state || 'draft';
     const statusConfig = STATUS_COLORS[state as keyof typeof STATUS_COLORS] || STATUS_COLORS.draft;
+    const size = scale(28); // Increased size
+
+    const renderIcon = () => {
+      switch (state) {
+        case 'approved':
+          return (
+            <View w={size} h={size} br={size / 2} bg={statusConfig.text} ai="center" jc="center">
+              <IcCheck tintColor="white" width={scale(14)} height={scale(14)} />
+            </View>
+          );
+        case 'waiting':
+          return (
+            <View w={size} h={size} br={size / 2} bg={statusConfig.text} ai="center" jc="center">
+              <Text color="white" fontSize={scale(16)} fontWeight="bold" mt={-2}>
+                !
+              </Text>
+            </View>
+          );
+        case 'refused':
+        case 'cancelled':
+          return (
+            <View w={size} h={size} br={size / 2} bg={statusConfig.text} ai="center" jc="center">
+              <IcClose tintColor="white" width={scale(12)} height={scale(12)} />
+            </View>
+          );
+        default:
+          return (
+            <View w={size} h={size} br={size / 2} bg={statusConfig.bg} ai="center" jc="center">
+              <IcPencil tintColor={statusConfig.text} width={scale(14)} height={scale(14)} />
+            </View>
+          );
+      }
+    };
 
     return (
-      <View
-        bg={statusConfig.bg}
-        br={scale(12)}
-        p={scale(16)}
-        mb={verticalScale(16)}
-        fd="row"
-        ai="center"
-        jc="space-between"
-      >
-        <View fd="row" ai="center" gap={scale(8)}>
-          <View
-            w={scale(8)}
-            h={scale(8)}
-            bg={statusConfig.text}
-            borderRadius={scale(4)}
-            style={styles.statusIndicator}
-          />
-          <Text fontSize={scale(14)} fontWeight="600" color={statusConfig.text}>
-            Trạng thái:
-          </Text>
-        </View>
-        <Text fontSize={scale(15)} fontWeight="700" color={statusConfig.text}>
+      <View fd="row" ai="center" jc="flex-start" gap={scale(10)} mb={verticalScale(16)}>
+        {renderIcon()}
+        <Text fontSize={scale(18)} fontWeight="700" color="$black">
           {timesheetExplanationDetail?.label_state}
         </Text>
       </View>
@@ -811,64 +803,37 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   };
 
   const renderApprovalButtons = () => {
-    if (!timesheetExplanationDetail?.buttons) {
-      return null;
-    }
+    // Chỉ hiển thị khi phiếu ở trạng thái chờ duyệt
+    if (currentState !== 'waiting') return null;
 
-    const buttons = timesheetExplanationDetail.buttons;
-    const hasApprove = buttons.includes(TerminationButtonType.APPROVE_ACCEPT);
-    const hasReject = buttons.includes(TerminationButtonType.APPROVE_REJECT);
-    const hasSubmit = buttons.includes(TerminationButtonType.APPROVE_SUBMIT);
-    const hasMoveToDraft = buttons.includes(TerminationButtonType.BTN_TO_DRAFT2);
+    // Dựa vào mảng buttons từ API — Backend quyết định ai được phép làm gì
+    const buttons = (timesheetExplanationDetail?.buttons as string[]) || [];
+    const hasApprove = buttons.includes(TerminationButtonType.APPROVE_ACCEPT as string);
+    const hasReject = buttons.includes(TerminationButtonType.APPROVE_REJECT as string);
 
-    if (!hasApprove && !hasReject && !hasSubmit && !hasMoveToDraft) {
-      return null;
-    }
+    if (!hasApprove && !hasReject) return null;
 
     return (
-      <View fd="row" gap={scale(12)} mb={verticalScale(16)}>
+      <View fd="row" gap={scale(20)}>
         {hasReject && (
-          <View f={1}>
-            <Button
-              onPress={() => dialogRef.current?.open()}
-              style={styles.rejectBtn}
-              loading={rejectLoading}
-            >
-              <Button.Text variant="primary">Từ chối</Button.Text>
-            </Button>
-          </View>
-        )}
-        {hasMoveToDraft && (
-          <View f={1}>
-            <Button
-              onPress={handleMoveToDraft}
-              style={styles.rejectBtn}
-              loading={moveToDraftLoading}
-            >
-              <Button.Text variant="primary">Chuyển về nháp</Button.Text>
-            </Button>
-          </View>
+          <Button
+            variant="detractive"
+            onPress={() => dialogRef.current?.open()}
+            style={styles.btn}
+            loading={rejectLoading}
+          >
+            <Button.Text variant="detractive">Từ chối</Button.Text>
+          </Button>
         )}
         {hasApprove && (
-          <View f={1}>
-            <Button onPress={handleApprove} style={styles.approveBtn} loading={approveLoading}>
-              <Button.Text variant="primary">Duyệt</Button.Text>
-            </Button>
-          </View>
-        )}
-        {hasSubmit && (
-          <View f={1}>
-            <Button
-              variant="primary"
-              disabled={
-                timesheetExplanationDetail?.state === 'approved' || !detail?.exp_name?.trim()
-              }
-              onPress={handleSubmitExplanation}
-              loading={approvalSubmitting}
-            >
-              <Button.Text variant="primary">Trình duyệt</Button.Text>
-            </Button>
-          </View>
+          <Button
+            variant="secondary"
+            onPress={handleApprove}
+            style={styles.btn}
+            loading={approveLoading}
+          >
+            <Button.Text variant="secondary">Duyệt</Button.Text>
+          </Button>
         )}
       </View>
     );
@@ -879,23 +844,29 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       <View style={styles.uploadContainer}>
         <View fd="row" ai="center" jc="space-between" mb={scale(12)}>
           <Text fontSize={16} fontWeight="600">
-            Bằng chứng giải trình công<Text color="#E74C3C">*</Text>
+            Bằng chứng giải trình công
           </Text>
         </View>
 
         {/* Upload Area */}
-        <TouchableOpacity style={styles.uploadArea} activeOpacity={0.7} onPress={handleUploadPress}>
-          <View ai="center" gap={scale(8)}>
-            <View style={styles.uploadIconContainer}>
-              <IcUpload size={32} />
+        {!isLocked && (
+          <TouchableOpacity
+            style={styles.uploadArea}
+            activeOpacity={0.7}
+            onPress={handleUploadPress}
+          >
+            <View ai="center" gap={scale(8)}>
+              <View style={styles.uploadIconContainer}>
+                <IcUpload size={32} />
+              </View>
+              <View ai="center">
+                <Text fontSize={14} color="#666" textAlign="center">
+                  JPEG/JPG, PNG, MP4, DOC/DOCX, PDF,... Tối đa 250MB
+                </Text>
+              </View>
             </View>
-            <View ai="center">
-              <Text fontSize={14} color="#666" textAlign="center">
-                JPEG/JPG, PNG, MP4, DOC/DOCX, PDF,... Tối đa 250MB
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
 
         {/* Uploaded Files List */}
         {uploadedFiles.length > 0 && (
@@ -919,12 +890,14 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                     )}
                   </View>
                 </View>
-                <TouchableOpacity
-                  onPress={() => handleDeleteFile(file.id)}
-                  style={styles.deleteButton}
-                >
-                  <IcTrash size={20} />
-                </TouchableOpacity>
+                {!isLocked && (
+                  <TouchableOpacity
+                    onPress={() => handleDeleteFile(file.id)}
+                    style={styles.deleteButton}
+                  >
+                    <IcTrash size={20} />
+                  </TouchableOpacity>
+                )}
               </TouchableOpacity>
             ))}
           </TouchableOpacity>
@@ -934,25 +907,31 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   };
 
   const renderBtn = () => {
+    if (type !== 'create' && currentState !== 'draft') return null;
+
+    const isCreateMode = type === 'create';
+
     return (
-      <>
-        <View fd={'row'} gap={scale(20)} mt={verticalScale(30)} mb={scale(16)}>
-          <Button variant="secondary" style={styles.btn} onPress={goBack}>
-            <Button.Text variant="secondary">Hủy</Button.Text>
-          </Button>
-          <Button
-            variant="primary"
-            disabled={isLocked || !detail?.exp_name?.trim()}
-            style={styles.btn}
-            onPress={handleSubmitPress}
-            loading={createUpdateLoading || uploadFilesLoading || approvalSubmitting}
-          >
-            <Button.Text variant="primary">
-              {type === 'create' ? 'Tạo phiếu' : 'Cập nhật'}
-            </Button.Text>
-          </Button>
-        </View>
-      </>
+      <View fd="row" gap={scale(20)}>
+        <Button
+          variant="detractive"
+          disabled={!detail?.exp_name?.trim()}
+          style={styles.btn}
+          onPress={handleSubmitPress}
+          loading={createUpdateLoading || uploadFilesLoading}
+        >
+          <Button.Text variant="detractive">{isCreateMode ? 'Lưu' : 'Cập nhật'}</Button.Text>
+        </Button>
+        <Button
+          variant="secondary"
+          disabled={!detail?.exp_name?.trim()}
+          style={styles.btn}
+          onPress={handleSubmitExplanation}
+          loading={approvalSubmitting}
+        >
+          <Button.Text variant="secondary">Trình duyệt</Button.Text>
+        </Button>
+      </View>
     );
   };
 
@@ -986,26 +965,31 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
             placeholder="Chọn loại giải trình"
             label="Loại giải trình"
             isRequired
-            onPress={() => {
-              setPickerConfig({
-                data: explanationTypeList || [],
-                selectedValue: state.timeSheetDetail?.explanation_reason,
-                title: 'Chọn lý do giải trình',
-                onSelect: (item) => {
-                  setState((prev) => ({
-                    ...prev,
-                    timeSheetDetail: {
-                      ...prev.timeSheetDetail,
-                      explanation_reason: item.key.toString(),
-                      explanation_reason_label: item.value,
-                      autoFillCoefficient: true,
-                      coefficient: '',
-                    },
-                  }));
-                },
-              });
-              optionPickerRef.current?.expand();
-            }}
+            editable={!isFormLocked}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setPickerConfig({
+                      data: explanationTypeList || [],
+                      selectedValue: state.timeSheetDetail?.explanation_reason,
+                      title: 'Chọn lý do giải trình',
+                      onSelect: (item) => {
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            explanation_reason: item.key.toString(),
+                            explanation_reason_label: item.value,
+                            autoFillCoefficient: true,
+                            coefficient: '',
+                          },
+                        }));
+                      },
+                    });
+                    optionPickerRef.current?.expand();
+                  }
+            }
             value={state.timeSheetDetail?.explanation_reason_label}
             iconRight={<IcDropdown size={20} />}
           />
@@ -1023,36 +1007,43 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
               isRequired
               multiline={true}
               label="Lý do giải trình"
+              editable={!isFormLocked}
             />
           </Form.Item>
           <Input
             placeholder="Chọn ngày giải trình"
             label="Ngày giải trình"
             isRequired
-            editable={true}
+            editable={!isFormLocked}
             value={dayjs(state.timeSheetDetail?.explanation_date).format('DD/MM/YYYY')}
-            onPress={() => {
-              setDateTimeConfig({
-                mode: 'date',
-                initialValue: dayjs(state.timeSheetDetail?.explanation_date).toDate(),
-                title: 'Chọn ngày giải trình',
-                onConfirm: (date) => {
-                  setState((prev) => ({
-                    ...prev,
-                    timeSheetDetail: {
-                      ...prev.timeSheetDetail,
-                      autoFillExplainedDate: true,
-                      autoFillCoefficient: true,
-                      coefficient: '',
-                      explanation_date: dayjs(date).format('YYYY-MM-DD'),
-                    },
-                  }));
-                },
-              });
-              dateTimePickerRef.current?.expand();
-            }}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setDateTimeConfig({
+                      mode: 'date',
+                      initialValue: dayjs(state.timeSheetDetail?.explanation_date).toDate(),
+                      title: 'Chọn ngày giải trình',
+                      onConfirm: (date) => {
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            autoFillExplainedDate: true,
+                            autoFillCoefficient: true,
+                            coefficient: '',
+                            explanation_date: dayjs(date).format('YYYY-MM-DD'),
+                          },
+                        }));
+                      },
+                    });
+                    dateTimePickerRef.current?.expand();
+                  }
+            }
             iconRight={<IcCalendar size={18} />}
           />
+          {/* hard code loại ngày, chờ ghép api chính xác */}
+          <Input label="Loại ngày" editable={false} isRequired value="Ngày thường" />
           <Input
             label="Ca làm việc thực tế"
             editable={false}
@@ -1090,368 +1081,321 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
           <Input
             label="Ca làm việc ( giải trình )"
             placeholder={'Chọn ca làm việc'}
-            onPress={() => {
-              setPickerConfig({
-                data: workShiftList,
-                selectedValue: state.timeSheetDetail?.explained_resource_calendar_id,
-                title: 'Chọn ca làm việc',
-                onSelect: (item) => {
-                  setState((prev) => ({
-                    ...prev,
-                    timeSheetDetail: {
-                      ...prev.timeSheetDetail,
-                      explained_resource_calendar_id: Number(item.key),
-                      explained_resource_calendar_name: item.value,
-                    },
-                  }));
-                },
-              });
-              optionPickerRef.current?.expand();
-            }}
+            editable={!isFormLocked}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setPickerConfig({
+                      data: workShiftList,
+                      selectedValue: state.timeSheetDetail?.explained_resource_calendar_id,
+                      title: 'Chọn ca làm việc',
+                      onSelect: (item) => {
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            explained_resource_calendar_id: Number(item.key),
+                            explained_resource_calendar_name: item.value,
+                          },
+                        }));
+                      },
+                    });
+                    optionPickerRef.current?.expand();
+                  }
+            }
             value={state.timeSheetDetail?.explained_resource_calendar_name}
             isRequired
             iconRight={<IcDropdown size={20} />}
           />
-          <SectionHeading title="Giải trình công tác di chuyển (nếu có)">
-            <Form.Item name="work_address">
-              <Input placeholder="Địa điểm công tác" label="Địa điểm công tác" />
-            </Form.Item>
-            {/* <Input
-            label="Địa điểm công tác"
-            placeholder="Chọn địa điểm công tác"
+          <Input
+            label="Làm việc từ"
+            placeholder="00:00:00"
+            editable={!isFormLocked}
+            value={formatTime(workingFrom ? new Date(workingFrom) : undefined)}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setDateTimeConfig({
+                      mode: 'time',
+                      initialValue: workingFrom ? new Date(workingFrom) : undefined,
+                      title: 'Chọn giờ làm việc từ',
+                      onConfirm: (date) => {
+                        const confirmDate = dayjs(selectedDate)
+                          .set('hour', date.getHours())
+                          .set('minute', date.getMinutes())
+                          .format('YYYY-MM-DD HH:mm:ss');
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            working_from: confirmDate,
+                          },
+                        }));
+                      },
+                    });
+                    dateTimePickerRef.current?.expand();
+                  }
+            }
+          />
+          <Input
+            label="Làm việc đến"
+            placeholder="00:00:00"
+            editable={!isFormLocked}
+            value={formatTime(workingTo ? new Date(workingTo) : undefined)}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setDateTimeConfig({
+                      mode: 'time',
+                      initialValue: workingTo ? new Date(workingTo) : undefined,
+                      title: 'Chọn giờ làm việc đến',
+                      onConfirm: (date) => {
+                        const confirmDate = dayjs(selectedDate)
+                          .set('hour', date.getHours())
+                          .set('minute', date.getMinutes())
+                          .format('YYYY-MM-DD HH:mm:ss');
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            working_to: confirmDate,
+                          },
+                        }));
+                      },
+                    });
+                    dateTimePickerRef.current?.expand();
+                  }
+            }
+          />
+          <Input
+            label="Tổng thời gian làm việc"
+            editable={false}
+            isRequired
+            value={totalWorkingTime}
+          />
 
-            onPress={() => {
-              setPickerConfig({
-                data: workLocationList,
-                selectedValue: state.timeSheetDetail?.address_explanation?.at(0)?.id,
-                title: 'Chọn địa điểm công tác',
-                onSelect: (item) => {
-                  setState((prev) => ({
-                    ...prev,
-                    timeSheetDetail: {
-                      ...prev.timeSheetDetail,
-                      address_explanation_ids: [Number(item.key)],
-                      address_explanation: [
-                        {
-                          id: Number(item.key),
-                          value: item.value,
-                        },
-                      ],
-                    },
-                  }));
-                },
-              });
-              optionPickerRef.current?.expand();
-            }}
-            value={state.timeSheetDetail?.work_address}
-          /> */}
-            <Input
-              label="Thời gian di chuyển đến"
-              placeholder="Chọn thời gian"
-              value={
-                timeToDestinationFrom && timeToDestinationTo
-                  ? formatTimeRange(new Date(timeToDestinationFrom), new Date(timeToDestinationTo))
-                  : ''
-              }
-              onPress={() => {
-                setTimeRangeConfig({
-                  initialFromValue: timeToDestinationFrom
-                    ? new Date(timeToDestinationFrom)
-                    : undefined,
-                  initialToValue: timeToDestinationTo ? new Date(timeToDestinationTo) : undefined,
-                  title: 'Chọn thời gian di chuyển đến',
-                  onConfirm: (fromDate, toDate) => {
-                    const mFromDate = dayjs(selectedDate)
-                      .set('hour', fromDate.getHours())
-                      .set('minute', fromDate.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    const mToDate = dayjs(selectedDate)
-                      .set('hour', toDate.getHours())
-                      .set('minute', toDate.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    setState((prev) => ({
-                      ...prev,
-                      timeSheetDetail: {
-                        ...prev.timeSheetDetail,
-                        arrive_start_time: mFromDate,
-                        arrive_end_time: mToDate,
+          <Input
+            label="Check-in ( giải trình )"
+            placeholder="Chọn thời gian check-in"
+            editable={!isFormLocked}
+            value={formatDateTime(explainedCheckIn)}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setDateTimeConfig({
+                      mode: 'datetime',
+                      initialValue: explainedCheckIn ? new Date(explainedCheckIn) : undefined,
+                      title: 'Chọn thời gian check-in',
+                      onConfirm: (date) => {
+                        const confirmDate = dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            explained_check_in: confirmDate,
+                          },
+                        }));
                       },
-                    }));
-                  },
-                  onDelete: () => {
-                    setState((prev) => ({
-                      ...prev,
-                      timeSheetDetail: {
-                        ...prev.timeSheetDetail,
-                        arrive_start_time: '',
-                        arrive_end_time: '',
+                    });
+                    dateTimePickerRef.current?.expand();
+                  }
+            }
+            iconRight={<IcCalendar size={18} />}
+          />
+          <Input
+            label="Check-out ( giải trình )"
+            placeholder="Chọn thời gian check-out"
+            editable={!isFormLocked}
+            value={formatDateTime(explainedCheckOut)}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setDateTimeConfig({
+                      mode: 'datetime',
+                      initialValue: explainedCheckOut ? new Date(explainedCheckOut) : undefined,
+                      title: 'Chọn thời gian check-out',
+                      onConfirm: (date) => {
+                        const confirmDate = dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            explained_check_out: confirmDate,
+                          },
+                        }));
                       },
-                    }));
-                  },
-                });
-                timeRangePickerRef.current?.expand();
-              }}
-              iconRight={<IcCalendar size={18} />}
-            />
-            <Input
-              label="Thời gian di chuyển về"
-              placeholder="Chọn thời gian"
-              value={
-                timeFromDestinationFrom && timeFromDestinationTo
-                  ? formatTimeRange(
-                      new Date(timeFromDestinationFrom),
-                      new Date(timeFromDestinationTo),
-                    )
-                  : ''
-              }
-              onPress={() => {
-                setTimeRangeConfig({
-                  initialFromValue: timeFromDestinationFrom
-                    ? new Date(timeFromDestinationFrom)
-                    : undefined,
-                  initialToValue: timeFromDestinationTo
-                    ? new Date(timeFromDestinationTo)
-                    : undefined,
-                  title: 'Chọn thời gian di chuyển về',
-                  onConfirm: (fromDate, toDate) => {
-                    const mFromDate = dayjs(selectedDate)
-                      .set('hour', fromDate.getHours())
-                      .set('minute', fromDate.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    const mToDate = dayjs(selectedDate)
-                      .set('hour', toDate.getHours())
-                      .set('minute', toDate.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    setState((prev) => ({
-                      ...prev,
-                      timeSheetDetail: {
-                        ...prev.timeSheetDetail,
-                        leave_start_time: mFromDate,
-                        leave_end_time: mToDate,
-                      },
-                    }));
-                  },
-                  onDelete: () => {
-                    setState((prev) => ({
-                      ...prev,
-                      timeSheetDetail: {
-                        ...prev.timeSheetDetail,
-                        leave_start_time: '',
-                        leave_end_time: '',
-                      },
-                    }));
-                  },
-                });
-                timeRangePickerRef.current?.expand();
-              }}
-              iconRight={<IcCalendar size={18} />}
-            />
-            <Input
-              label="Tổng thời gian di chuyển"
-              editable={false}
-              value={detail?.move_time?.toFixed(2) ?? '0'}
-            />
-          </SectionHeading>
-          <SectionHeading title="Giải trình check in/out thực tế" initialExpanded>
-            <Input
-              label="Check-in ( giải trình )"
-              placeholder="Chọn giờ check-in"
-              value={formatTime(explainedCheckIn ? new Date(explainedCheckIn) : undefined)}
-              onPress={() => {
-                setDateTimeConfig({
-                  mode: 'time',
-                  initialValue: explainedCheckIn ? new Date(explainedCheckIn) : undefined,
-                  title: 'Chọn giờ check-in',
-                  onConfirm: (date) => {
-                    const confirmDate = dayjs(selectedDate)
-                      .set('hour', date.getHours())
-                      .set('minute', date.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    setState((prev) => ({
-                      ...prev,
-                      timeSheetDetail: {
-                        ...prev.timeSheetDetail,
-                        explained_check_in: confirmDate,
-                      },
-                    }));
-                  },
-                });
-                dateTimePickerRef.current?.expand();
-              }}
-              iconRight={<IcCalendar size={18} />}
-            />
-            <Input
-              label="Check-out ( giải trình )"
-              placeholder="Chọn giờ check-out"
-              value={formatTime(explainedCheckOut ? new Date(explainedCheckOut) : undefined)}
-              onPress={() => {
-                setDateTimeConfig({
-                  mode: 'time',
-                  initialValue: explainedCheckOut ? new Date(explainedCheckOut) : undefined,
-                  title: 'Chọn giờ check-out',
-                  onConfirm: (date) => {
-                    const confirmDate = dayjs(selectedDate)
-                      .set('hour', date.getHours())
-                      .set('minute', date.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    setState((prev) => ({
-                      ...prev,
-                      timeSheetDetail: {
-                        ...prev.timeSheetDetail,
-                        explained_check_out: confirmDate,
-                      },
-                    }));
-                  },
-                });
-                dateTimePickerRef.current?.expand();
-              }}
-              iconRight={<IcCalendar size={18} />}
-            />
+                    });
+                    dateTimePickerRef.current?.expand();
+                  }
+            }
+            iconRight={<IcCalendar size={18} />}
+          />
 
-            <Input
-              label="Công giải trình"
-              editable={false}
-              value={detail?.explanation_work?.toFixed(2) || '0'}
-            />
-            <Input
-              label="Số phút đi muộn"
-              editable={false}
-              value={detail?.late_minutes?.toFixed(2) || '0'}
-            />
-            <Input
-              label="Số phút về sớm"
-              editable={false}
-              value={detail?.early_leave_minutes?.toFixed(2) || '0'}
-            />
-          </SectionHeading>
-
-          <SectionHeading title="Giải trình tăng ca">
-            <Input
-              label="Tăng ca lần 1"
-              placeholder="Chọn thời gian tăng ca"
-              value={formatTimeRange(
-                overtime1From ? new Date(overtime1From) : undefined,
-                overtime1To ? new Date(overtime1To) : undefined,
-              )}
-              iconRight={<IcCalendar size={18} />}
-              onPress={() => {
-                setTimeRangeConfig({
-                  initialFromValue: overtime1From ? new Date(overtime1From) : undefined,
-                  initialToValue: overtime1To ? new Date(overtime1To) : undefined,
-                  title: 'Chọn thời gian tăng ca lần 1',
-                  onConfirm: (fromDate, toDate) => {
-                    const mFromDate = dayjs(selectedDate)
-                      .set('hour', fromDate.getHours())
-                      .set('minute', fromDate.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    const mToDate = dayjs(selectedDate)
-                      .set('hour', toDate.getHours())
-                      .set('minute', toDate.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
+          <Input
+            label="Công giải trình"
+            editable={false}
+            value={detail?.explanation_work?.toFixed(2) || '0'}
+          />
+          <Input
+            label="Số phút đi muộn"
+            editable={false}
+            value={detail?.late_minutes?.toFixed(2) || '0'}
+          />
+          <Input
+            label="Số phút về sớm"
+            editable={false}
+            value={detail?.early_leave_minutes?.toFixed(2) || '0'}
+          />
+          <Input
+            label="Tăng ca lần 1"
+            placeholder="Chọn thời gian tăng ca"
+            editable={!isFormLocked}
+            value={formatTimeRange(
+              overtime1From ? new Date(overtime1From) : undefined,
+              overtime1To ? new Date(overtime1To) : undefined,
+            )}
+            iconRight={<IcCalendar size={18} />}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setTimeRangeConfig({
+                      initialFromValue: overtime1From ? new Date(overtime1From) : undefined,
+                      initialToValue: overtime1To ? new Date(overtime1To) : undefined,
+                      title: 'Chọn thời gian tăng ca lần 1',
+                      onConfirm: (fromDate, toDate) => {
+                        const mFromDate = dayjs(selectedDate)
+                          .set('hour', fromDate.getHours())
+                          .set('minute', fromDate.getMinutes())
+                          .format('YYYY-MM-DD HH:mm:ss');
+                        const mToDate = dayjs(selectedDate)
+                          .set('hour', toDate.getHours())
+                          .set('minute', toDate.getMinutes())
+                          .format('YYYY-MM-DD HH:mm:ss');
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            overtime_first_start: mFromDate,
+                            overtime_first_end: mToDate,
+                          },
+                        }));
+                      },
+                    });
+                    timeRangePickerRef.current?.expand();
+                  }
+            }
+          />
+          <Input
+            label="Tăng ca lần 2"
+            placeholder="Chọn thời gian tăng ca"
+            editable={!isFormLocked}
+            value={formatTimeRange(
+              overtime2From ? new Date(overtime2From) : undefined,
+              overtime2To ? new Date(overtime2To) : undefined,
+            )}
+            iconRight={<IcCalendar size={18} />}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setTimeRangeConfig({
+                      initialFromValue: overtime2From ? new Date(overtime2From) : undefined,
+                      initialToValue: overtime2To ? new Date(overtime2To) : undefined,
+                      title: 'Chọn thời gian tăng ca lần 2',
+                      onConfirm: (fromDate, toDate) => {
+                        const mFromDate = dayjs(selectedDate)
+                          .set('hour', fromDate.getHours())
+                          .set('minute', fromDate.getMinutes())
+                          .format('YYYY-MM-DD HH:mm:ss');
+                        const mToDate = dayjs(selectedDate)
+                          .set('hour', toDate.getHours())
+                          .set('minute', toDate.getMinutes())
+                          .format('YYYY-MM-DD HH:mm:ss');
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            overtime_second_start: mFromDate,
+                            overtime_second_end: mToDate,
+                          },
+                        }));
+                      },
+                    });
+                    timeRangePickerRef.current?.expand();
+                  }
+            }
+          />
+          <Input
+            label="Số giờ nghỉ giữa ca"
+            editable={!isFormLocked}
+            value={hours_of_break?.toString()}
+            onChangeText={
+              isFormLocked
+                ? undefined
+                : (text) => {
                     setState((prev) => ({
                       ...prev,
                       timeSheetDetail: {
                         ...prev.timeSheetDetail,
-                        overtime_first_start: mFromDate,
-                        overtime_first_end: mToDate,
+                        autoFillHoursOfBreak: false,
+                        hours_of_break: cleanNumberString(text),
                       },
                     }));
-                  },
-                });
-                timeRangePickerRef.current?.expand();
-              }}
-            />
-            <Input
-              label="Tăng ca lần 2"
-              placeholder="Chọn thời gian tăng ca"
-              value={formatTimeRange(
-                overtime2From ? new Date(overtime2From) : undefined,
-                overtime2To ? new Date(overtime2To) : undefined,
-              )}
-              iconRight={<IcCalendar size={18} />}
-              onPress={() => {
-                setTimeRangeConfig({
-                  initialFromValue: overtime2From ? new Date(overtime2From) : undefined,
-                  initialToValue: overtime2To ? new Date(overtime2To) : undefined,
-                  title: 'Chọn thời gian tăng ca lần 2',
-                  onConfirm: (fromDate, toDate) => {
-                    const mFromDate = dayjs(selectedDate)
-                      .set('hour', fromDate.getHours())
-                      .set('minute', fromDate.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
-                    const mToDate = dayjs(selectedDate)
-                      .set('hour', toDate.getHours())
-                      .set('minute', toDate.getMinutes())
-                      .format('YYYY-MM-DD HH:mm:ss');
+                  }
+            }
+            keyboardType="numeric"
+          />
+          <Input
+            label="Hệ số"
+            editable={!isFormLocked}
+            value={detail?.coefficient?.toString()}
+            onChangeText={
+              isFormLocked
+                ? undefined
+                : (text) => {
                     setState((prev) => ({
                       ...prev,
                       timeSheetDetail: {
                         ...prev.timeSheetDetail,
-                        overtime_second_start: mFromDate,
-                        overtime_second_end: mToDate,
+                        autoFillCoefficient: false,
+                        coefficient: cleanNumberString(text),
                       },
                     }));
-                  },
-                });
-                timeRangePickerRef.current?.expand();
-              }}
-            />
-            <Input
-              label="Số giờ nghỉ giữa ca"
-              value={hours_of_break?.toString()}
-              onChangeText={(text) => {
-                setState((prev) => ({
-                  ...prev,
-                  timeSheetDetail: {
-                    ...prev.timeSheetDetail,
-                    autoFillHoursOfBreak: false,
-                    hours_of_break: cleanNumberString(text),
-                  },
-                }));
-              }}
-              keyboardType="numeric"
-            />
-            <Input
-              label="Hệ số"
-              value={detail?.coefficient?.toString()}
-              onChangeText={(text) => {
-                setState((prev) => ({
-                  ...prev,
-                  timeSheetDetail: {
-                    ...prev.timeSheetDetail,
-                    autoFillCoefficient: false,
-                    coefficient: cleanNumberString(text),
-                  },
-                }));
-              }}
-              keyboardType="numeric"
-            />
-            <Input
-              label="Giờ tăng ca"
-              editable={false}
-              value={detail?.overtime_hours?.toFixed(2) || '0'}
-            />
-            <Input
-              label="Giờ tăng ca quy đổi"
-              editable={false}
-              value={detail?.overtime_hours_convert?.toFixed(2) || '0'}
-            />
-            {/* <Input
+                  }
+            }
+            keyboardType="numeric"
+          />
+          <Input
+            label="Giờ tăng ca"
+            editable={false}
+            value={detail?.overtime_hours?.toFixed(2) || '0'}
+          />
+          <Input
+            label="Giờ tăng ca quy đổi"
+            editable={false}
+            value={detail?.overtime_hours_convert?.toFixed(2) || '0'}
+          />
+          {/* <Input
               label="Số giờ nghỉ bù"
               editable={false}
               value={detail?.timeoff_hours?.toFixed(2) || '0'}
             /> */}
-            <Input
-              label="Số giờ phân bổ nghỉ bù"
-              editable={false}
-              value={detail?.allocated_buffer_hours?.toFixed(2) || '0'}
-            />
-            <Input
-              label="Số giờ phân bổ vào lương"
-              editable={false}
-              value={detail?.salary_hours?.toFixed(2) || '0'}
-            />
-          </SectionHeading>
+          <Input
+            label="Công ngày thường"
+            editable={false}
+            value={detail?.allocated_buffer_hours?.toFixed(2) || '0'}
+          />
+          <Input
+            label="Số phút tăng ca tối thiểu"
+            editable={false}
+            value={detail?.salary_hours?.toFixed(2) || '0'}
+          />
           {detail?.id && (
             <Input label="Lý do huỷ" editable={false} value={detail?.reject_reason || '--'} />
           )}
@@ -1465,10 +1409,21 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       <ScrollView f={1} showsVerticalScrollIndicator={false}>
         <View pb={scale(32)} p={horizontalScale(16)}>
           {renderStatusBadge()}
-          {renderApprovalButtons()}
+          {!!id && (
+            <Text
+              fontSize={scale(20)}
+              fontWeight="bold"
+              textAlign="center"
+              color="black"
+              mt={verticalScale(16)}
+              mb={verticalScale(24)}
+            >
+              THÔNG TIN GIẢI TRÌNH
+            </Text>
+          )}
           {renderFields()}
           {renderUploadSection()}
-          {createDateInfo?.data?.id && (
+          {/* {createDateInfo?.data?.id && (
             <View mt={scale(12)}>
               <ReportBlock
                 lines={[
@@ -1480,8 +1435,8 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                 ]}
               />
             </View>
-          )}
-          {!!histories?.data?.approval_steps?.length && (
+          )} */}
+          {/* {!!histories?.data?.approval_steps?.length && (
             <View mt={scale(16)}>
               <CardContainer>
                 <View gap={scale(16)}>
@@ -1497,16 +1452,48 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                 </View>
               </CardContainer>
             </View>
-          )}
-          {renderBtn()}
+          )} */}
         </View>
       </ScrollView>
     );
   };
+
+  const renderFooter = () => {
+    // Check if there are any buttons to show
+    const showBtn = type === 'create' || currentState === 'draft';
+    const buttonsAPI = (timesheetExplanationDetail?.buttons as string[]) || [];
+    const showApproval =
+      currentState === 'waiting' &&
+      (buttonsAPI.includes(TerminationButtonType.APPROVE_ACCEPT as string) ||
+        buttonsAPI.includes(TerminationButtonType.APPROVE_REJECT as string));
+
+    if (!showBtn && !showApproval) return null;
+
+    return (
+      <View
+        p={horizontalScale(16)}
+        pt={scale(16)}
+        pb={scale(24)}
+        bg="white"
+        borderTopWidth={1}
+        borderTopColor="#F1F3F5"
+        shadowColor="#000"
+        shadowOffset={{ width: 0, height: -2 }}
+        shadowOpacity={0.05}
+        shadowRadius={4}
+        style={{ elevation: 5 }}
+      >
+        {renderApprovalButtons()}
+        {renderBtn()}
+      </View>
+    );
+  };
+
   return (
     <Screen scrollEnabled={false}>
       {renderHeader()}
       {renderBody()}
+      {renderFooter()}
       {calculateInformationLoading && (
         <View top={scale(112)} right={scale(0)} padding={scale(2)} position="absolute" bg={'white'}>
           <ActivityIndicator size={12} />

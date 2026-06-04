@@ -87,17 +87,41 @@ const DateTimePickerModal: React.FC<DateTimePickerModalProps> = ({
           </Text>
 
           {/* Date Picker */}
-          <View ai="center" jc="center">
-            <DatePicker
-              date={selectedDate}
-              onDateChange={setSelectedDate}
-              mode={mode}
-              minimumDate={minimumDate}
-              maximumDate={maximumDate}
-              locale="vi"
-              theme="light"
-            />
-          </View>
+          {mode === 'datetime' ? (
+            <View ai="center" jc="center" gap={verticalScale(8)}>
+              <DatePicker
+                date={selectedDate}
+                onDateChange={setSelectedDate}
+                mode="date"
+                minimumDate={minimumDate}
+                maximumDate={maximumDate}
+                locale="vi"
+                theme="light"
+              />
+              <View height={1} bg="#E0E8F5" w="100%" />
+              <DatePicker
+                date={selectedDate}
+                onDateChange={setSelectedDate}
+                mode="time"
+                minimumDate={minimumDate}
+                maximumDate={maximumDate}
+                locale="vi"
+                theme="light"
+              />
+            </View>
+          ) : (
+            <View ai="center" jc="center">
+              <DatePicker
+                date={selectedDate}
+                onDateChange={setSelectedDate}
+                mode={mode}
+                minimumDate={minimumDate}
+                maximumDate={maximumDate}
+                locale="vi"
+                theme="light"
+              />
+            </View>
+          )}
 
           {/* Action Buttons */}
           <View fd="row" gap={scale(12)} mt={verticalScale(8)}>

@@ -27,7 +27,7 @@ const ModalButton = (props: ModalButtonType) => {
           style={styles.modalButton}
           {...props.confirmProps}
         >
-          <Text color={'$blue'} fontW={500} textAlign="center">
+          <Text color={'#8D2929'} fontW={500} textAlign="center">
             Xác nhận
           </Text>
         </TouchableOpacity>

@@ -90,6 +90,8 @@ interface TimesheetExplanationDetail {
   explained_resource_calendar_name: string;
   work_time_from: number;
   work_time_to: number;
+  working_from?: string;
+  working_to?: string;
   arrive_start_time: string;
   arrive_end_time: string;
   leave_start_time: string;
