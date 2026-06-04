@@ -122,7 +122,7 @@ interface TimesheetExplanationDetail {
   salary_hours: number;
   buttons: ['approval_accept', 'approval_reject', 'cancel', 'approval_submit', 'draft'];
   x_approval_btn: number;
-  exp_name?: string;
+  exp_name?: string | false;
   reject_reason?: string;
   files: fileType[];
   targetState?: TerminationState;
@@ -130,6 +130,12 @@ interface TimesheetExplanationDetail {
   autoFillExplainedDate?: boolean;
   autoFillCoefficient?: boolean;
   autoFillHoursOfBreak?: boolean;
+  is_missing_check?: boolean;
+  late_or_early?: boolean;
+  address_explanation_ids?: any[];
+  move_time_in_salary?: number;
+  work_time_from?: number;
+  work_time_to?: number;
 }
 
 interface fileType {
@@ -204,6 +210,8 @@ interface CalculateInformation {
   timeoff_hours: number;
   allocated_buffer_hours?: number;
   salary_hours?: number;
+  address_explanation_ids?: any[];
+  move_time_in_salary?: number;
   state?: string;
   state_label: string;
 }

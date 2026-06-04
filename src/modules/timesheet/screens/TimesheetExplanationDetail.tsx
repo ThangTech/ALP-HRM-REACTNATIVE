@@ -129,6 +129,12 @@ export const SectionHeading = ({
     </>
   );
 };
+const getFloatTime = (dateStr?: string) => {
+  if (!dateStr) return undefined;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return undefined;
+  return Number((d.getHours() + d.getMinutes() / 60).toFixed(2));
+};
 
 const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) => {
   const { id, type, date: targetDate } = route.params || { id: 0, type: 'create' };
@@ -253,10 +259,42 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
         timesheetExplanationDetail.autoFillCoefficient = false;
         timesheetExplanationDetail.autoFillHoursOfBreak = false;
         timesheetExplanationDetail.autoFillExplainedDate = false;
+
+        // Convert work_time_from and work_time_to (float) to working_from and working_to (DateTime string)
+        if (timesheetExplanationDetail.explanation_date) {
+          const baseDate = timesheetExplanationDetail.explanation_date;
+          if (
+            timesheetExplanationDetail.work_time_from !== undefined &&
+            !timesheetExplanationDetail.working_from
+          ) {
+            const h = Math.floor(timesheetExplanationDetail.work_time_from);
+            const m = Math.round((timesheetExplanationDetail.work_time_from - h) * 60);
+            timesheetExplanationDetail.working_from = dayjs(baseDate)
+              .set('hour', h)
+              .set('minute', m)
+              .format('YYYY-MM-DD HH:mm:ss');
+          }
+          if (
+            timesheetExplanationDetail.work_time_to !== undefined &&
+            !timesheetExplanationDetail.working_to
+          ) {
+            const h = Math.floor(timesheetExplanationDetail.work_time_to);
+            const m = Math.round((timesheetExplanationDetail.work_time_to - h) * 60);
+            timesheetExplanationDetail.working_to = dayjs(baseDate)
+              .set('hour', h)
+              .set('minute', m)
+              .format('YYYY-MM-DD HH:mm:ss');
+          }
+        }
       }
 
       setState((prev) => ({ ...prev, timeSheetDetail: timesheetExplanationDetail }));
-      formRef.current?.setValue('exp_name', (timesheetExplanationDetail?.exp_name ?? '') as never);
+
+      const expNameVal =
+        timesheetExplanationDetail?.exp_name === false
+          ? ''
+          : (timesheetExplanationDetail?.exp_name ?? '');
+      formRef.current?.setValue('exp_name', expNameVal as never);
       formRef.current?.setValue(
         'work_address',
         (timesheetExplanationDetail?.work_address ?? '') as never,
@@ -422,6 +460,8 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       calculateInformationTrigger({
         explanation_reason: detail?.explanation_reason ?? '',
         explanation_date: detail?.explanation_date,
+        work_time_from: getFloatTime(detail?.working_from),
+        work_time_to: getFloatTime(detail?.working_to),
         hours_of_break: detail?.hours_of_break?.toString().length
           ? +cleanNumberString(detail?.hours_of_break?.toString() || '0')
           : undefined,
@@ -474,7 +514,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   const handleSubmit = (data: Partial<TimesheetExplanationDetail>) => {
     // Validation các trường bắt buộc
 
-    if (!data.exp_name?.trim()) {
+    if (!(typeof data.exp_name === 'string' && data.exp_name.trim())) {
       showToast('error', 'Vui lòng nhập lý do giải trình');
       return;
     }
@@ -509,12 +549,14 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
           const res = await createUpdate({
             id: id,
             explanation_reason: mTimesheetExplanationDetail?.explanation_reason,
-            explanation_date: timesheetExplanationDetail?.explanation_date
-              ? dayjs(timesheetExplanationDetail?.explanation_date).format('YYYY-MM-DD')
+            explanation_date: mTimesheetExplanationDetail?.explanation_date
+              ? dayjs(mTimesheetExplanationDetail?.explanation_date).format('YYYY-MM-DD')
               : dayjs(selectedDate).format('YYYY-MM-DD'),
             exp_name: data.exp_name || '',
             explained_resource_calendar_id:
               mTimesheetExplanationDetail?.explained_resource_calendar_id,
+            work_time_from: getFloatTime(mTimesheetExplanationDetail?.working_from),
+            work_time_to: getFloatTime(mTimesheetExplanationDetail?.working_to),
             arrive_start_time: formatDateTimeForOdoo2(
               mTimesheetExplanationDetail?.arrive_start_time,
             ),
@@ -915,7 +957,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       <View fd="row" gap={scale(20)}>
         <Button
           variant="detractive"
-          disabled={!detail?.exp_name?.trim()}
+          disabled={!(typeof detail?.exp_name === 'string' && detail.exp_name.trim())}
           style={styles.btn}
           onPress={handleSubmitPress}
           loading={createUpdateLoading || uploadFilesLoading}
@@ -924,7 +966,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
         </Button>
         <Button
           variant="secondary"
-          disabled={!detail?.exp_name?.trim()}
+          disabled={!(typeof detail?.exp_name === 'string' && detail.exp_name.trim())}
           style={styles.btn}
           onPress={handleSubmitExplanation}
           loading={approvalSubmitting}
@@ -1042,8 +1084,13 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
             }
             iconRight={<IcCalendar size={18} />}
           />
-          {/* hard code loại ngày, chờ ghép api chính xác */}
-          <Input label="Loại ngày" editable={false} isRequired value="Ngày thường" />
+          {/* Đã map từ API */}
+          <Input
+            label="Loại ngày"
+            editable={false}
+            isRequired
+            value={detail?.day_type_label || state.timeSheetDetail?.day_type_label || 'Ngày thường'}
+          />
           <Input
             label="Ca làm việc thực tế"
             editable={false}
