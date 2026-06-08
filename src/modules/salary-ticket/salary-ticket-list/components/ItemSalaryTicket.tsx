@@ -14,9 +14,10 @@ interface ItemSalaryTicketType {
 }
 
 const ItemSalaryTicket = (props: ItemSalaryTicketType) => {
-  const ticketMonth = dayjs()
-    .set('month', +props.item.month - 1)
-    .set('year', props.item.year);
+  const dateFrom = dayjs(props.item.date_from);
+  const dateTo = dayjs(props.item.date_to);
+  const month = dateFrom.isValid() ? dateFrom.month() + 1 : props.item.month;
+  const year = dateFrom.isValid() ? dateFrom.year() : props.item.year;
   return (
     <Pressable onPress={() => navigate(RouteName.SalaryTicketDetail, { id: props.item.id })}>
       <View
@@ -36,11 +37,10 @@ const ItemSalaryTicket = (props: ItemSalaryTicketType) => {
         />
         <View gap={scale(2)}>
           <Text fontSize={scale(14)}>
-            {props.item.employee_name}_Tháng {props.item.month}/{props.item.year}
+            {props.item.employee_name}_Tháng {month}/{year}
           </Text>
           <Text fontSize={scale(12)} color={'$d_light'}>
-            {dayjs(ticketMonth).startOf('month').format('DD/MM/YYYY')} -
-            {dayjs(ticketMonth).endOf('month').format('DD/MM/YYYY')}
+            {dateFrom.format('DD/MM/YYYY')} - {dateTo.format('DD/MM/YYYY')}
           </Text>
         </View>
       </View>

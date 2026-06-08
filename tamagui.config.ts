@@ -135,6 +135,7 @@ export const tokens = createTokens({
     pendingText: '#DEA500',
     detractiveBg: '#FEECEB',
     detractive: '#F04438',
+    red500: '#F04438',
     orange: '#EF8536',
     divider: '#E7E7E8',
     reportBorderColor: '#EBEBEB',

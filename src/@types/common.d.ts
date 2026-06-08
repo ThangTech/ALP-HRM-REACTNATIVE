@@ -13,6 +13,7 @@ interface AppContext {
     isConnected: boolean;
     device: BluetoothDevice;
   };
+  current_company_id?: number;
   setTheme: (v: AppContext['theme']) => Promise<void>;
   setLang: (v: AppContext['lang'], restart?: boolean) => Promise<void>;
   setUser: (v: AppContext['user']) => Promise<void>;
@@ -20,6 +21,7 @@ interface AppContext {
   setPermission: (v: AppContext['permission']) => Promise<void>;
   setFactory: (v: AppContext['factory']) => Promise<void>;
   setFcmToken: (v: AppContext['fcmToken']) => Promise<void>;
+  setCurrentCompanyId: (v: AppContext['current_company_id']) => Promise<void>;
 }
 type TxKeyPath = import('i18next').ParseKeys | (string & Record<never, never>);
 

@@ -11,7 +11,7 @@ export const useSalaryTicketsApi = (state: SalaryTicketListState) => {
     BaseResponse<BaseResponsePagination<SalaryTicket>>
   > => {
     return api.POST<BaseResponse<BaseResponsePagination<SalaryTicket>>>({
-      path: '/api/models/salary-payslip-report-line/execute/get_list_payslip',
+      path: '/api/models/hr-payslip/execute/get_list_payslip',
       data: {
         kwargs: {
           limit: state.limit,

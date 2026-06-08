@@ -8,28 +8,30 @@ import { useSalaryTicketDetailProvider } from '../provider';
 
 const WorkTicket = () => {
   const provider = useSalaryTicketDetailProvider();
+  const ticket = provider.salaryTicket;
   return (
     <View br={scale(16)} bc={'$reportBorderColor'} bw={1} ph={scale(16)} mt={scale(12)}>
       <RowTicket
-        title={index2Roman(1) + '. ' + 'Ngày công và tăng ca'}
+        title={index2Roman(1) + '. ' + 'Lương chức danh, công việc'}
         titleColor="$titleTicket"
         titleWeight="500"
-        value={formatCurrency(provider.salaryTicket?.actual_negotiable_income || '0')}
+        valueWeight="700"
+        value={formatCurrency(ticket?.social_insurance_amount || '0')}
       />
       <Divider />
-      <LineItem label="Tổng công" value={provider.salaryTicket?.total_work || '0'} />
+      <LineItem label="Tổng lương" value={formatCurrency(ticket?.total_salary || '0')} />
       <Divider />
-      <LineItem label="Công chuẩn" value={provider.salaryTicket?.standard_work || '0'} />
+      <LineItem label="Công quy đổi" value={ticket?.work_conversion ?? '0'} />
       <Divider />
-      <LineItem
-        label="Tổng số giờ tăng ca thử việc"
-        value={provider.salaryTicket?.trial_overtime_hours || '0'}
-      />
+      <LineItem label="Lương ngày công" value={formatCurrency(ticket?.lcd || '0')} />
       <Divider />
-      <LineItem
-        label="Tổng số giờ tăng ca chính thức"
-        value={provider.salaryTicket?.official_overtime_hours || '0'}
-      />
+      <LineItem label="Lương KPI" value={formatCurrency(ticket?.kpi || '0')} />
+      <Divider />
+      <LineItem label="Lương phụ cấp" value={formatCurrency(ticket?.TPC || '0')} />
+      <Divider />
+      <LineItem label="Chuyên cần" value={formatCurrency(ticket?.diligence_kpi || '0')} />
+      <Divider />
+      <LineItem label="Truy lĩnh" value={formatCurrency(ticket?.truylinh || '0')} />
     </View>
   );
 };

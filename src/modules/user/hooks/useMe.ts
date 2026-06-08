@@ -7,10 +7,21 @@ import useSWRMutation from 'swr/mutation';
 import messaging from '@react-native-firebase/messaging';
 
 const useMe = () => {
-  const { setUser } = useAppContext();
+  const { setUser, setCurrentCompanyId } = useAppContext();
 
   const onLogout = async () => {
-    await messaging().deleteToken();
+    try {
+      await messaging().deleteToken();
+    } catch (e) {
+      // FCM có thể chưa init / chưa cấp quyền → bỏ qua để không chặn flow logout
+      console.log('deleteToken error', e);
+    }
+    try {
+      await api.setToken('');
+    } catch (e) {
+      console.log('clear token error', e);
+    }
+    await setCurrentCompanyId?.(undefined);
     await setUser({
       name: '',
       employee_id: 0,
@@ -84,6 +95,23 @@ const useMe = () => {
 
       if (profile.data) {
         await setUser?.(profile.data);
+
+        // Lấy default_company từ API allowed companies để set làm công ty hiện tại
+        try {
+          const companiesRes: any = await api.POST({
+            path: '/api/models/res-users/execute/app_get_allowed_companies',
+            data: {},
+          });
+          const defaultId =
+            companiesRes?.data?.default_company?.id ??
+            companiesRes?.data?.allowed_companies?.[0]?.id;
+          if (defaultId != null) {
+            await setCurrentCompanyId?.(defaultId);
+          }
+        } catch (e) {
+          console.log('get_allowed_companies error', e);
+        }
+
         Toast.show({
           type: 'success',
           text1: 'Đăng nhập thành công!',

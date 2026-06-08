@@ -82,6 +82,7 @@ const storageKeys = {
           }),
         })
         .optional(),
+      current_company_id: z.number().optional(),
     }),
     deviceId: z.string().catch(''),
     firstLaunchAt: z.number().optional(),
