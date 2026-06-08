@@ -1,12 +1,16 @@
 import * as React from 'react';
-import Svg, { G, Ellipse, Defs } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { IconProps } from '.';
-const SVGComponent = ({ size = 35 }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 35 34" fill="none">
-    <G filter="url(#filter0_d_5506_15715)">
-      <Ellipse cx={17.5} cy={13} rx={13.5} ry={12.5} fill="#0066CC" />
-    </G>
-    <Defs />
+
+const IcCheck = ({ size = 24, width, height, tintColor = 'black', style }: IconProps) => (
+  <Svg width={width || size} height={height || size} viewBox="0 0 24 24" fill="none" style={style}>
+    <Path
+      d="M20 6L9 17L4 12"
+      stroke={tintColor}
+      strokeWidth={3}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </Svg>
 );
-export default SVGComponent;
+export default IcCheck;

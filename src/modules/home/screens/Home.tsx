@@ -23,6 +23,7 @@ const Home = () => {
   const terminationOptionRef = useRef<BottomSheetModal>(null);
   const personalReportOptionRef = useRef<BottomSheetModal>(null);
   const overTimesOptionRef = useRef<BottomSheetModal>(null);
+  const timesheetExplanationOptionRef = useRef<BottomSheetModal>(null);
   const [isShowMore, setShowMore] = useState(false);
   const homeApi = useHomeApi();
   const { user, fcmToken, setFcmToken } = useAppContext();
@@ -211,9 +212,11 @@ const Home = () => {
         label: 'Giải trình công',
         icon: Images.giai_trinh_cong,
         onPress: () => {
-          navigate(RouteName.TimesheetExplanation, {
-            isAdmin: userApprovalInfor?.approve_hr_attendance_explanation,
-          });
+          if (userApprovalInfor?.approve_hr_attendance_explanation) {
+            timesheetExplanationOptionRef.current?.present();
+          } else {
+            navigate(RouteName.TimesheetExplanation, { viewType: LeaveRegistrationViewType.ME });
+          }
         },
       },
       {
@@ -404,6 +407,15 @@ const Home = () => {
       navigate(RouteName.Overtimes, { viewType: LeaveRegistrationViewType.APPROVE });
     }
   }
+
+  function onTimesheetExplanationOptionSelected(item: OptionItem): void {
+    if (item.key === 1) {
+      navigate(RouteName.TimesheetExplanation, { viewType: LeaveRegistrationViewType.ME });
+    }
+    if (item.key === 2) {
+      navigate(RouteName.TimesheetExplanation, { viewType: LeaveRegistrationViewType.APPROVE });
+    }
+  }
   return (
     <View style={styles.container}>
       {renderHeader()}
@@ -443,6 +455,14 @@ const Home = () => {
           // { value: 'Nghỉ phép / Nghỉ bù', key: 3 },
         ]}
         onSelect={onOptionOverTimesSelected}
+      />
+      <OptionPickerModal2
+        bottomSheetRef={timesheetExplanationOptionRef}
+        data={[
+          { value: 'Danh sách của tôi', key: 1 },
+          { value: 'Danh sách phê duyệt', key: 2 },
+        ]}
+        onSelect={onTimesheetExplanationOptionSelected}
       />
     </View>
   );
