@@ -91,7 +91,7 @@ function ViewPage(props: LeaveRegistrationsProps) {
         title="Đăng kí nghỉ"
         rightAction={
           <Pressable onPress={() => navigate(RouteName.LeaveRegistrationEditor)}>
-            <IcPlus tintColor="white" size={scale(25)} />
+            <IcPlus tintColor="white" size={scale(15)} />
           </Pressable>
         }
       />

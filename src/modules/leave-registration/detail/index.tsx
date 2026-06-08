@@ -68,17 +68,19 @@ function ViewPage(props: LeaveRegistrationDetailProps) {
       <Header
         title="Chi tiết đơn xin nghỉ"
         rightAction={
-          <OptionMenu>
-            <OptionDelete
-              onDelete={async () => {
-                await deleteProvider.handleDelete({
-                  ticketId: detail?.id,
-                  type: TicketType.LEAVE_REGISTRATION,
-                });
-                goBack();
-              }}
-            />
-          </OptionMenu>
+          detail?.state !== LeaveRegistrationStatus.APPROVED ? (
+            <OptionMenu>
+              <OptionDelete
+                onDelete={async () => {
+                  await deleteProvider.handleDelete({
+                    ticketId: detail?.id,
+                    type: TicketType.LEAVE_REGISTRATION,
+                  });
+                  goBack();
+                }}
+              />
+            </OptionMenu>
+          ) : undefined
         }
       />
       <ScrollView showsVerticalScrollIndicator={false} p={scale(16)}>
@@ -198,7 +200,7 @@ function ViewPage(props: LeaveRegistrationDetailProps) {
         </View>
       </ScrollView>
       {!!buttons?.length && (
-        <ActionButtons buttons={buttons} triggerUpdate={provider.triggerUpdate} />
+        <ActionButtons buttons={buttons} triggerUpdate={provider.triggerUpdate} isViewApprove={isViewApprove} />
       )}
     </View>
   );
