@@ -22,7 +22,6 @@ const TerminationButtons = (props: TerminationButtonsType) => {
   const isViewMe = props.viewType === LeaveRegistrationViewType.ME;
   const dialogRef = useRef<BaseModalRef>(null);
   const dialogConfirmRef = useRef<BaseModalRef>(null);
-  const dialogMoveToDraftRef = useRef<BaseModalRef>(null);
   const dialogConfirmApproveRef = useRef<BaseModalRef>(null);
   const dialogConfirmSubmitRef = useRef<BaseModalRef>(null);
 
@@ -83,18 +82,6 @@ const TerminationButtons = (props: TerminationButtonsType) => {
             </Button>
           </View>
         )}
-        {hasButton(TerminationButtonType.BTN_TO_DRAFT) && (
-          <View f={1}>
-            <Button
-              variant="detractive"
-              onPress={() => dialogMoveToDraftRef.current?.open()}
-              disabled={!!provider.state.actionHandling}
-              loading={provider.state.actionHandling === TerminationButtonType.BTN_TO_DRAFT}
-            >
-              <Button.Text variant="detractive">Chuyển về nháp</Button.Text>
-            </Button>
-          </View>
-        )}
         {hasButton(TerminationButtonType.APPROVE_SUBMIT) && (
           <View f={1}>
             <Button
@@ -126,13 +113,6 @@ const TerminationButtons = (props: TerminationButtonsType) => {
         message="Bạn có chắc muốn hủy đơn này?"
         onCancel={() => dialogConfirmRef.current?.close()}
         onConfirm={() => provider.handleButton({ button: TerminationButtonType.BTN_CANCEL })}
-      />
-      <ConfirmDialog
-        ref={dialogMoveToDraftRef}
-        title="Thông báo đưa về nháp"
-        message="Bạn có chắc muốn đưa về nháp đơn này?"
-        onCancel={() => dialogMoveToDraftRef.current?.close()}
-        onConfirm={() => provider.handleButton({ button: TerminationButtonType.BTN_TO_DRAFT })}
       />
       <ConfirmDialog
         ref={dialogConfirmApproveRef}
