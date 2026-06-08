@@ -335,6 +335,27 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       if (!prev.timeSheetDetail?.autoFillHoursOfBreak) {
         delete clone.hours_of_break;
       }
+
+      let parsedWorkingFrom = prev.timeSheetDetail?.working_from;
+      let parsedWorkingTo = prev.timeSheetDetail?.working_to;
+
+      if (clone.work_time_from !== undefined && clone.work_time_from !== false as any) {
+        const h = Math.floor(clone.work_time_from);
+        const m = Math.round((clone.work_time_from - h) * 60);
+        parsedWorkingFrom = dayjs(prev.timeSheetDetail?.explanation_date)
+          .set('hour', h)
+          .set('minute', m)
+          .format('YYYY-MM-DD HH:mm:ss');
+      }
+      if (clone.work_time_to !== undefined && clone.work_time_to !== false as any) {
+        const h = Math.floor(clone.work_time_to);
+        const m = Math.round((clone.work_time_to - h) * 60);
+        parsedWorkingTo = dayjs(prev.timeSheetDetail?.explanation_date)
+          .set('hour', h)
+          .set('minute', m)
+          .format('YYYY-MM-DD HH:mm:ss');
+      }
+
       return {
         ...prev,
         timeSheetDetail: {
@@ -342,6 +363,8 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
           ...{
             ...clone,
           },
+          working_from: parsedWorkingFrom,
+          working_to: parsedWorkingTo,
           autoFillExplainedDate: false,
         },
       };
@@ -460,8 +483,6 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       calculateInformationTrigger({
         explanation_reason: detail?.explanation_reason ?? '',
         explanation_date: detail?.explanation_date,
-        work_time_from: getFloatTime(detail?.working_from),
-        work_time_to: getFloatTime(detail?.working_to),
         hours_of_break: detail?.hours_of_break?.toString().length
           ? +cleanNumberString(detail?.hours_of_break?.toString() || '0')
           : undefined,
@@ -1158,64 +1179,14 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
           <Input
             label="Làm việc từ"
             placeholder="00:00:00"
-            editable={!isFormLocked}
+            editable={false}
             value={formatTime(workingFrom ? new Date(workingFrom) : undefined)}
-            onPress={
-              isFormLocked
-                ? undefined
-                : () => {
-                    setDateTimeConfig({
-                      mode: 'time',
-                      initialValue: workingFrom ? new Date(workingFrom) : undefined,
-                      title: 'Chọn giờ làm việc từ',
-                      onConfirm: (date) => {
-                        const confirmDate = dayjs(selectedDate)
-                          .set('hour', date.getHours())
-                          .set('minute', date.getMinutes())
-                          .format('YYYY-MM-DD HH:mm:ss');
-                        setState((prev) => ({
-                          ...prev,
-                          timeSheetDetail: {
-                            ...prev.timeSheetDetail,
-                            working_from: confirmDate,
-                          },
-                        }));
-                      },
-                    });
-                    dateTimePickerRef.current?.expand();
-                  }
-            }
           />
           <Input
             label="Làm việc đến"
             placeholder="00:00:00"
-            editable={!isFormLocked}
+            editable={false}
             value={formatTime(workingTo ? new Date(workingTo) : undefined)}
-            onPress={
-              isFormLocked
-                ? undefined
-                : () => {
-                    setDateTimeConfig({
-                      mode: 'time',
-                      initialValue: workingTo ? new Date(workingTo) : undefined,
-                      title: 'Chọn giờ làm việc đến',
-                      onConfirm: (date) => {
-                        const confirmDate = dayjs(selectedDate)
-                          .set('hour', date.getHours())
-                          .set('minute', date.getMinutes())
-                          .format('YYYY-MM-DD HH:mm:ss');
-                        setState((prev) => ({
-                          ...prev,
-                          timeSheetDetail: {
-                            ...prev.timeSheetDetail,
-                            working_to: confirmDate,
-                          },
-                        }));
-                      },
-                    });
-                    dateTimePickerRef.current?.expand();
-                  }
-            }
           />
           <Input
             label="Tổng thời gian làm việc"
