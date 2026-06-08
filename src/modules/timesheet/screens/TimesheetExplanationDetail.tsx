@@ -339,7 +339,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       let parsedWorkingFrom = prev.timeSheetDetail?.working_from;
       let parsedWorkingTo = prev.timeSheetDetail?.working_to;
 
-      if (clone.work_time_from !== undefined && clone.work_time_from !== false as any) {
+      if (clone.work_time_from !== undefined && clone.work_time_from !== (false as any)) {
         const h = Math.floor(clone.work_time_from);
         const m = Math.round((clone.work_time_from - h) * 60);
         parsedWorkingFrom = dayjs(prev.timeSheetDetail?.explanation_date)
@@ -347,7 +347,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
           .set('minute', m)
           .format('YYYY-MM-DD HH:mm:ss');
       }
-      if (clone.work_time_to !== undefined && clone.work_time_to !== false as any) {
+      if (clone.work_time_to !== undefined && clone.work_time_to !== (false as any)) {
         const h = Math.floor(clone.work_time_to);
         const m = Math.round((clone.work_time_to - h) * 60);
         parsedWorkingTo = dayjs(prev.timeSheetDetail?.explanation_date)
