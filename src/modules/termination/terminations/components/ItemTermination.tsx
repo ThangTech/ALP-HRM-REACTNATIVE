@@ -34,7 +34,7 @@ const ItemTermination = (props: ItemTerminationType) => {
       >
         <View fd={'row'} gap={scale(8)} f={1} ai={'center'}>
           <IcTermination />
-          <View>
+          <View f={1}>
             <Text fontSize={scale(14)} fontWeight={600}>
               {props.item.departure_reason_name}
             </Text>
