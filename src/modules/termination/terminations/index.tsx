@@ -59,7 +59,7 @@ function ViewPage(props: TerminationsPageProps) {
         title={'Quản lý nghỉ việc'}
         rightAction={
           <Pressable onPress={() => navigate(RouteName.TerminationEditor)}>
-            <IcPlus tintColor="white" size={scale(25)} />
+            <IcPlus tintColor="white" size={scale(15)} />
           </Pressable>
         }
       />

@@ -21,6 +21,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { MAP_STATUS, WAITING_ME } from 'configs/contansts';
 import NextStepText from 'components/NextStepText';
 import OptionPicker from 'modules/leave-registration/list/components/OptionPicker';
+import { LeaveRegistrationViewType } from 'common/enum/leave-registration-view-type';
 
 type TimesheetExplanationProps = NativeStackScreenProps<AppStackParamList, 'TimesheetExplanation'>;
 
@@ -59,9 +60,8 @@ const STATUS_COLORS = {
 };
 
 const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
-  const { isAdmin } = route.params || { isAdmin: false };
-
-  const [activeTab, setActiveTab] = useState<'my' | 'approval'>('my');
+  const { viewType } = route.params || {};
+  const activeTab = viewType === LeaveRegistrationViewType.APPROVE ? 'approval' : 'my';
   const [fromDate, setFromDate] = useState(dayjs().startOf('month').toDate());
   const [toDate, setToDate] = useState(dayjs().endOf('month').toDate());
   const [selectedStatus, setSelectedStatus] = useState<OptionItem>(
@@ -96,12 +96,6 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
     { timesheetExplanationList, isRefreshing, isLoadingMore, isReachingEnd, employeeOptions },
     { refresh, loadMore },
   ] = useTimesheetExplanation(params);
-
-  // Reset data when switch tab to prevent duplicate keys
-  useEffect(() => {
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
 
   // Refs
   const dateTimePickerRef = useRef<BottomSheet>(null);
@@ -138,59 +132,10 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
           <Pressable
             onPress={() => navigate(RouteName.TimesheetExplanationDetail, { type: 'create' })}
           >
-            <IcPlus tintColor="white" size={scale(25)} />
+            <IcPlus tintColor="white" size={scale(15)} />
           </Pressable>
         }
       />
-    );
-  };
-
-  const renderTabBar = () => {
-    if (!isAdmin) {
-      return null;
-    }
-
-    return (
-      <View
-        fd="row"
-        bg="$white"
-        borderBottomWidth={1}
-        borderBottomColor="$border"
-        mb={verticalScale(16)}
-      >
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={[styles.tab]}
-          onPress={() => setActiveTab('my')}
-        >
-          <Text
-            fontSize={scale(15)}
-            fontWeight="600"
-            color={activeTab === 'my' ? '$blue' : '$grey'}
-          >
-            Của tôi
-          </Text>
-          {activeTab === 'my' && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={[styles.tab]}
-          onPress={() => {
-            setActiveTab('approval');
-            setSelectedStatus(STATUS_OPTIONS[1]!);
-          }}
-        >
-          <Text
-            fontSize={scale(15)}
-            fontWeight="600"
-            color={activeTab === 'approval' ? '$blue' : '$grey'}
-          >
-            Cần duyệt
-          </Text>
-          {activeTab === 'approval' && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-      </View>
     );
   };
 
@@ -369,9 +314,8 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
   return (
     <View f={1} bg="$bg">
       {renderHeader()}
-      {renderTabBar()}
 
-      <View f={1} ph={horizontalScale(16)} pt={isAdmin ? 0 : verticalScale(16)}>
+      <View f={1} ph={horizontalScale(16)} pt={verticalScale(16)}>
         {/* Date Filters */}
         <View fd="row" gap={horizontalScale(12)}>
           {renderDatePicker('Từ ngày', fromDate, setFromDate)}
@@ -435,23 +379,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: verticalScale(18),
-    position: 'relative',
-  },
-  activeTabIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: getTokens().color.$blue.val,
-    borderTopLeftRadius: 3,
-    borderTopRightRadius: 3,
   },
   actionBtn: {
     paddingVertical: verticalScale(8),

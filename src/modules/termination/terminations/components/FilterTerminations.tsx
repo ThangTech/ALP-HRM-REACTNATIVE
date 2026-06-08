@@ -40,7 +40,7 @@ const FilterTerminations = (props: FilterTerminationsType) => {
         <View fd={'row'} gap={scale(16)}>
           <View f={1}>
             <OptionPicker
-              label="Nhóm/Chi nhánh"
+              label="Khối"
               onChange={(value) =>
                 provider.setState((prev) => ({ ...prev, group: value, offset: 0 }))
               }

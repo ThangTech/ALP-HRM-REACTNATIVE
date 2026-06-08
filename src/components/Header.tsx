@@ -26,7 +26,7 @@ const Header = ({ title, onPressLeft, rightAction }: HeaderProps) => {
   const renderLeft = () => {
     return (
       <Pressable style={styles.flex} onPress={onPressLeft || (() => goBack())}>
-        <IcBack size={scale(30)} />
+        <IcBack size={scale(15)} />
       </Pressable>
     );
   };
@@ -48,7 +48,7 @@ const Header = ({ title, onPressLeft, rightAction }: HeaderProps) => {
   };
 
   return (
-    <View bg={'$blue'}>
+    <View bg={'$d_red'}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <View gap={scale(20)} ph={horizontalScale(20)} pt={verticalScale(20)}>
         {renderHeaderDetail()}

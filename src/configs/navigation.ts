@@ -65,6 +65,7 @@ type ParamList = Record<RouteName | string, any> & {
   };
   TimesheetExplanation: {
     isAdmin?: boolean;
+    viewType?: LeaveRegistrationViewType;
   };
   TimesheetExplanationDetail: {
     type: 'create' | 'edit';

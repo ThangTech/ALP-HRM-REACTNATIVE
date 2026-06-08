@@ -75,7 +75,11 @@ const OptionPickerModal: React.FC<OptionPickerModalProps> = ({
       >
         <View fd="row" ai="center" jc="space-between" f={1}>
           <View f={1} mr={scale(12)}>
-            <Text fontSize={15} fontWeight={isSelected ? '600' : '400'} color="$black">
+            <Text
+              fontSize={15}
+              fontWeight={isSelected ? '600' : '400'}
+              color={isSelected ? 'red' : '$black'}
+            >
               {item.value}
             </Text>
             {item.subtitle && (
