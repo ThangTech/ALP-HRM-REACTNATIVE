@@ -16,27 +16,18 @@ interface Contract {
   contract_type_name: string;
   date_start: string;
   time_contract: string;
-  date_end: string;
+  date_end: string | false;
   wage: number;
-  performance_salary: number;
   shift_meal_allowance: number;
   fuel_allowance: number;
   phone_allowance: number;
   travel_allowance: number;
-  performance_bonus: number;
-  negotiable_income: number;
-  computer_allowance: number;
+  social_insurance_amount: number;
+  day_rate: number;
+  fixed_rate_salary: number;
   tools_allowance: number;
-  concurrent_allowance: number;
-  nigth_shift_allowance: number;
-  accommodation_allowance: number;
-  cashier_allowance: number;
-  road_allowance: number;
-  special_allowance: number;
-  overtime_allowance: number;
-  other_one_allowance: number;
-  other_two_allowance: number;
-  other_three_allowance: number;
+  total_allowance: number;
+  negotiable_income: number;
   total_salary: number;
 }
 
