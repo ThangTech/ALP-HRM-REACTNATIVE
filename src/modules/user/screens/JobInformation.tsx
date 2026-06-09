@@ -22,7 +22,7 @@ const JobInformation = () => {
   const renderHeaderInfo = () => {
     return (
       <View
-        bg={'$blue'}
+        bg={'$red500'}
         pb={verticalScale(20)}
         borderBottomLeftRadius={scale(20)}
         borderBottomRightRadius={scale(20)}
@@ -81,7 +81,7 @@ const JobInformation = () => {
         <Text fontW={'600'} fontSize={scale(22)} ta={'center'}>
           Sơ đồ tổ chức
         </Text>
-        <View borderWidth={3} borderColor={'$blue'} br={scale(10)} mh={horizontalScale(12)} />
+        <View borderWidth={3} borderColor={'$red500'} br={scale(10)} mh={horizontalScale(12)} />
         <OrganizationTree apiData={dataEmployeeTree || []} />
       </View>
     );

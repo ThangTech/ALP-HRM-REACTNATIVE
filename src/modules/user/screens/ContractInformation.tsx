@@ -1,5 +1,6 @@
 import { Header } from 'components';
 import dayjs from 'dayjs';
+import useAppContext from 'hooks/useAppContext';
 import React from 'react';
 import { ScrollView, View } from 'tamagui';
 import { ExpandableInfoCard } from 'user/components';
@@ -8,6 +9,7 @@ import { formatToVND, horizontalScale, verticalScale } from 'utils';
 
 const ContractInformation = () => {
   const [{ dataContract }] = useUser();
+  const { user } = useAppContext();
 
   const renderHeader = () => {
     return <Header title={'Hợp đồng'} />;
@@ -30,40 +32,36 @@ const ContractInformation = () => {
             label: 'Ngày hết hạn hợp đồng',
             value: dataContract?.date_end ? dayjs(dataContract?.date_end).format('DD/MM/YYYY') : '',
           },
+          { label: 'Phòng ban', value: user?.department_name || '' },
+          { label: 'Chức danh', value: user?.job_name || '' },
         ]}
       />
     );
   };
 
   const renderIncome = () => {
+    const calculatedTotalAllowance =
+      (dataContract?.shift_meal_allowance || 0) +
+      (dataContract?.fuel_allowance || 0) +
+      (dataContract?.phone_allowance || 0) +
+      (dataContract?.travel_allowance || 0) +
+      (dataContract?.tools_allowance || 0);
+
     return (
       <ExpandableInfoCard
         containerStyle={{ marginTop: verticalScale(20), marginBottom: verticalScale(50) }}
         title="Thông tin thu nhập"
         fields={[
           { label: 'Lương cơ bản', value: formatToVND(dataContract?.wage) },
-          { label: 'Lương hiệu suất', value: formatToVND(dataContract?.performance_salary) },
           { label: 'Hỗ trợ ăn ca', value: formatToVND(dataContract?.shift_meal_allowance) },
           { label: 'Hỗ trợ xăng xe', value: formatToVND(dataContract?.fuel_allowance) },
           { label: 'Hỗ trợ điện thoại', value: formatToVND(dataContract?.phone_allowance) },
           { label: 'Hỗ trợ đi lại', value: formatToVND(dataContract?.travel_allowance) },
-          {
-            label: 'Thưởng hiệu quả công việc',
-            value: formatToVND(dataContract?.performance_bonus),
-          },
-          { label: 'Thu nhập thỏa thuận', value: formatToVND(dataContract?.negotiable_income) },
-          { label: 'Phụ cấp máy tính', value: formatToVND(dataContract?.computer_allowance) },
-          { label: 'Phụ cấp CCDC khác', value: formatToVND(dataContract?.tools_allowance) },
-          { label: 'Phụ cấp kiêm nhiệm', value: formatToVND(dataContract?.concurrent_allowance) },
-          { label: 'Phụ cấp đặc thù', value: formatToVND(dataContract?.special_allowance) },
-          { label: 'Phụ cấp thu ngân', value: formatToVND(dataContract?.cashier_allowance) },
-          { label: 'Phụ cấp tăng ca', value: formatToVND(dataContract?.overtime_allowance) },
-          { label: 'Phụ cấp lưu trú', value: formatToVND(dataContract?.accommodation_allowance) },
-          { label: 'Phụ cấp cung đường', value: formatToVND(dataContract?.road_allowance) },
-          { label: 'Phụ cấp ca đêm', value: formatToVND(dataContract?.nigth_shift_allowance) },
-          { label: 'Phụ cấp khác 1', value: formatToVND(dataContract?.other_one_allowance) },
-          { label: 'Phụ cấp khác 2', value: formatToVND(dataContract?.other_two_allowance) },
-          { label: 'Phụ cấp khác 3', value: formatToVND(dataContract?.other_three_allowance) },
+          { label: 'Khoán ngày', value: formatToVND(dataContract?.day_rate) },
+          { label: 'Lương tỉ lệ khoán', value: formatToVND(dataContract?.fixed_rate_salary) },
+          { label: 'Phụ cấp khác', value: formatToVND(dataContract?.tools_allowance) },
+          { label: 'Tổng phụ cấp', value: formatToVND(calculatedTotalAllowance) },
+          { label: 'Thu nhập thoả thuận', value: formatToVND(dataContract?.negotiable_income) },
           {
             label: 'Tổng thu nhập',
             value: formatToVND(dataContract?.total_salary),
