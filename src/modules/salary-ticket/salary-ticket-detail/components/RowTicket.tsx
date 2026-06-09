@@ -8,6 +8,7 @@ interface RowTicketType {
   value: string | number;
   titleWeight?: '400' | '500';
   titleColor?: string;
+  valueWeight?: '400' | '500' | '600' | '700';
   pv?: number;
 }
 
@@ -18,7 +19,7 @@ const RowTicket = (props: RowTicketType) => {
         {props.title}
       </Text>
       <View f={1} ai={'flex-end'}>
-        <Text fontSize={scale(14)} fontW={500}>
+        <Text fontSize={scale(14)} fontW={props.valueWeight ?? 500}>
           {props.value}
         </Text>
       </View>

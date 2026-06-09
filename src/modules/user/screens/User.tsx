@@ -10,11 +10,13 @@ import { useSafeArea, useRemoteConfig } from 'hooks';
 import api from 'hooks/api';
 import useAppContext from 'hooks/useAppContext';
 import { navigate, resetRoot } from 'navigators';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, StatusBar, StyleSheet } from 'react-native';
 import { HOST } from 'react-native-dotenv';
 import { Image, ScrollView, View, getTokens } from 'tamagui';
 import ItemRow from 'user/components/ItemRow';
+import { SwitchCompanyBottomSheet } from 'user/components';
+import { useAllowedCompaniesApi } from 'user/hooks/useAllowedCompaniesApi';
 import { useEmployeeAvatarApi } from 'user/hooks/useEmployeeAvatarApi';
 import { useFilePicker } from 'user/hooks/useFilePicker';
 import { FilePickerResult } from 'user/types/document';
@@ -23,19 +25,50 @@ import messaging from '@react-native-firebase/messaging';
 
 const User = () => {
   const sheetRef = useRef<BottomSheet>(null);
+  const switchCompanySheetRef = useRef<BottomSheet>(null);
   const deleteAccountDialogRef = useRef<BaseModalRef>(null);
   const { top } = useSafeArea();
-  const { user, setUser } = useAppContext();
+  const { user, setUser, current_company_id, setCurrentCompanyId } = useAppContext();
   const [avatarUrl, _setAvatarUrl] = useState<string>(`${HOST}${user?.image_url}?t=${Date.now()}`);
   const [pwd, setPwd] = useState('');
   const [loading, setLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const snapPoints = useMemo(() => ['30%'], []);
   const filePicker = useFilePicker();
   const employeeAvatarApi = useEmployeeAvatarApi();
   const { showHiddenFeatures } = useRemoteConfig();
+  const { defaultCompany, allowedCompanies, loading: loadingCompanies } = useAllowedCompaniesApi();
 
   const openSheet = () => sheetRef.current?.expand();
   const closeSheet = () => sheetRef.current?.close();
+
+  // Lần đầu chưa từng chọn công ty → auto chọn default_company từ API
+  // (hoặc fallback về công ty đầu tiên trong danh sách).
+  useEffect(() => {
+    if (current_company_id != null) {
+      return;
+    }
+    const fallbackId = defaultCompany?.id ?? allowedCompanies[0]?.id;
+    if (fallbackId != null) {
+      setCurrentCompanyId(fallbackId);
+    }
+  }, [current_company_id, defaultCompany, allowedCompanies, setCurrentCompanyId]);
+
+  const currentCompanyName = useMemo(
+    () => allowedCompanies.find((c) => c.id === current_company_id)?.name,
+    [allowedCompanies, current_company_id],
+  );
+
+  const openSwitchCompany = () => switchCompanySheetRef.current?.expand();
+
+  const handleSelectCompany = async (companyId: number) => {
+    if (companyId === current_company_id) {
+      return;
+    }
+    await setCurrentCompanyId(companyId);
+    // TODO: khi có API đổi công ty server-side → gọi tại đây + reload useMe + có thể resetRoot về Home.
+    showToast('success', 'Đã chuyển công ty');
+  };
 
   const onChooseFromLibrary = async () => {
     const result = await filePicker.pickImage();
@@ -76,58 +109,78 @@ const User = () => {
   };
 
   const onLogout = async () => {
-    await messaging().deleteToken();
-    await setUser({
-      name: '',
-      employee_id: 0,
-      employee_code: '',
-      old_employee_code: '',
-      job_id: 0,
-      job_name: '',
-      group_id: 0,
-      group_name: '',
-      department_id: 0,
-      department_name: '',
-      area_category_id: 0,
-      area_category_name: '',
-      work_location_text: '',
-      mobile_phone: '',
-      work_email: '',
-      onboard_time: '',
-      offical_contract_date: '',
-      parent: [],
-      child: [],
-      birthday: '',
-      identification_id: '',
-      area_provide: '',
-      date_provide: '',
-      private_email: '',
-      place_of_birth: '',
-      address_now: '',
-      bank_account_name: '',
-      account_holder: '',
-      bank_id: 0,
-      bank_name: '',
-      emergency_contact: '',
-      emergency_relation: '',
-      marital: '',
-      marital_label: '',
-      count_children: 0,
-      children_ids: [],
-      certificate_employee: '',
-      study_school: '',
-      study_field: '',
-      image_url: '',
-      emergency_phone: '',
-      access_staff_transfer: false,
-    });
-    resetRoot({ index: 0, routes: [{ name: RouteName.Login }] });
+    if (logoutLoading) {
+      return;
+    }
+    setLogoutLoading(true);
+    try {
+      await messaging().deleteToken();
+    } catch (e) {
+      // Bỏ qua lỗi FCM (chưa init / chưa cấp quyền) để không chặn flow logout
+      console.log('deleteToken error', e);
+    }
+    try {
+      await api.setToken('');
+    } catch (e) {
+      console.log('clear token error', e);
+    }
+    try {
+      await setCurrentCompanyId(undefined);
+      await setUser({
+        name: '',
+        employee_id: 0,
+        employee_code: '',
+        old_employee_code: '',
+        job_id: 0,
+        job_name: '',
+        group_id: 0,
+        group_name: '',
+        department_id: 0,
+        department_name: '',
+        area_category_id: 0,
+        area_category_name: '',
+        work_location_text: '',
+        mobile_phone: '',
+        work_email: '',
+        onboard_time: '',
+        offical_contract_date: '',
+        parent: [],
+        child: [],
+        birthday: '',
+        identification_id: '',
+        area_provide: '',
+        date_provide: '',
+        private_email: '',
+        place_of_birth: '',
+        address_now: '',
+        bank_account_name: '',
+        account_holder: '',
+        bank_id: 0,
+        bank_name: '',
+        emergency_contact: '',
+        emergency_relation: '',
+        marital: '',
+        marital_label: '',
+        count_children: 0,
+        children_ids: [],
+        certificate_employee: '',
+        study_school: '',
+        study_field: '',
+        image_url: '',
+        emergency_phone: '',
+        access_staff_transfer: false,
+      });
+      resetRoot({ index: 0, routes: [{ name: RouteName.Login }] });
+    } catch (e) {
+      console.log('logout error', e);
+      setLogoutLoading(false);
+    }
   };
 
   const renderHeader = () => {
     return (
-      <View bg={'$blue'} pb={verticalScale(20)}>
-        <StatusBar backgroundColor={getTokens().color.blue.val} />
+      <View bg={'$red500'} pb={verticalScale(20)}>
+        <StatusBar backgroundColor={getTokens().color.red500.val} />
         <View ph={horizontalScale(16)} pt={verticalScale(20) + top}>
           <View fd="row" gap={scale(12)}>
             <View position="relative">
@@ -188,6 +241,18 @@ const User = () => {
             <IcRightArrow size={scale(12)} />
           </Pressable>
 
+          <Pressable style={styles.itemRow} onPress={openSwitchCompany}>
+            <View f={1}>
+              <Text fontWeight="700">Chuyển công ty</Text>
+              {!!currentCompanyName && (
+                <Text color={'$grey'} fontSize={scale(12)} mt={scale(2)}>
+                  {currentCompanyName}
+                </Text>
+              )}
+            </View>
+            <IcRightArrow size={scale(12)} />
+          </Pressable>
+
           {showHiddenFeatures && (
             <Pressable
               style={styles.itemRow}
@@ -210,7 +275,12 @@ const User = () => {
           )}
         </View>
 
-        <Button style={styles.logoutBtn} onPress={onLogout}>
+        <Button
+          style={styles.logoutBtn}
+          onPress={onLogout}
+          loading={logoutLoading}
+          disabled={logoutLoading}
+        >
           <Button.Text>Đăng xuất</Button.Text>
         </Button>
       </ScrollView>
@@ -265,12 +335,19 @@ const User = () => {
             <Text>Chụp ảnh</Text>
           </Pressable>
           <Pressable style={styles.sheetCancel} onPress={closeSheet}>
-            <Text color={'$blue'} fontWeight="700">
+            <Text color={'$red500'} fontWeight="700">
               Hủy
             </Text>
           </Pressable>
         </BottomSheetView>
       </BottomSheet>
+      <SwitchCompanyBottomSheet
+        bottomSheetRef={switchCompanySheetRef}
+        companies={allowedCompanies}
+        currentCompanyId={current_company_id}
+        loading={loadingCompanies}
+        onSelect={handleSelectCompany}
+      />
       <Modal ref={deleteAccountDialogRef} title="Mật khẩu hiện tại">
         <View gap={scale(16)} pv={scale(16)}>
           <Input onChangeText={setPwd} isPassword placeholder={'Nhập mật khẩu'} />
@@ -280,7 +357,7 @@ const User = () => {
               onPress={() => deleteAccountDialogRef.current?.close()}
               disabled={loading}
             >
-              <Text color={'red'} fontSize={scale(18)}>
+              <Text color={'$red500'} fontSize={scale(18)}>
                 Huỷ
               </Text>
             </Button>

@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   primary: {
-    backgroundColor: getTokens().color.blue.val,
+    backgroundColor: getTokens().color.red500.val,
   },
   secondary: {
     backgroundColor: 'transparent',

@@ -1,12 +1,12 @@
 import React from 'react';
-import { SalaryTicket } from 'common/model/salary-ticket';
+import { SalaryPayslipDetail } from 'common/model/salary-ticket';
 import { ReactElement, createContext, useContext } from 'react';
 import { useSalaryTicketDetailApi } from './hooks/useSalaryTicketDetailApi';
 
 const SalaryTicketDetailContext = createContext<SalaryTicketDetailType>(null!);
 
 interface SalaryTicketDetailType {
-  salaryTicket?: SalaryTicket;
+  salaryTicket?: SalaryPayslipDetail;
   isLoading: boolean;
 }
 

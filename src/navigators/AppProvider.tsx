@@ -86,6 +86,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
         },
       },
       permission: [],
+      current_company_id: undefined,
     },
   });
 
@@ -169,6 +170,15 @@ const AppProvider = ({ children }: AppProviderProps) => {
     await saveAppContext({ ...state, fcmToken: token });
   };
 
+  const setCurrentCompanyId = async (
+    current_company_id: AppContext['current_company_id'],
+  ) => {
+    if (!state) {
+      return;
+    }
+    await saveAppContext({ ...state, current_company_id });
+  };
+
   const ctx: AppContext | undefined = {
     theme: state?.theme || 'default',
     fcmToken: state?.fcmToken,
@@ -184,6 +194,8 @@ const AppProvider = ({ children }: AppProviderProps) => {
     permission: state?.permission,
     setPermission,
     setFcmToken,
+    current_company_id: state?.current_company_id,
+    setCurrentCompanyId,
   };
 
   useAppContext(ctx);
