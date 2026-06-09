@@ -43,10 +43,10 @@ const LeaveOverview = (props: LeaveOverviewType) => {
     { label: 'Nghỉ bù OT', code: HolidayCode.COMPENSATORY_LEAVE },
   ];
 
-  // const secondBlock = [
-  //   { label: 'Nghỉ không lương', code: HolidayCode.UNPAID_LEAVE },
-  //   { label: 'Nghỉ khác', code: HolidayCode.OTHER },
-  // ];
+  const secondBlock = [
+    { label: 'Nghỉ không lương', code: HolidayCode.UNPAID_LEAVE },
+    { label: 'Nghỉ khác', code: HolidayCode.OTHER },
+  ];
 
   return (
     <View gap={scale(8)} mb={scale(16)}>
@@ -71,7 +71,7 @@ const LeaveOverview = (props: LeaveOverviewType) => {
           </View>
         ))}
       </View>
-      {/* <View fd={'row'} gap={scale(8)}>
+      <View fd={'row'} gap={scale(8)}>
         {secondBlock.map((item) => (
           <View f={1} key={item.code}>
             <CardContainer>
@@ -91,7 +91,7 @@ const LeaveOverview = (props: LeaveOverviewType) => {
             </CardContainer>
           </View>
         ))}
-      </View> */}
+      </View>
     </View>
   );
 };

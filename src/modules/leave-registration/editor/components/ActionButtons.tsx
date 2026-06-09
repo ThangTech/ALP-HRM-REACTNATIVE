@@ -13,6 +13,7 @@ import CancelDialog from 'modules/leave-registration/detail/components/CancelDia
 interface ActionButtonType {
   buttons?: LeaveButtonType[];
   triggerUpdate: (data: Partial<LeaveRegistration>) => Promise<void>;
+  isViewApprove?: boolean;
 }
 
 const ActionButtons = (props: ActionButtonType) => {
@@ -23,7 +24,7 @@ const ActionButtons = (props: ActionButtonType) => {
   const dialogConfirmApproveRef = useRef<BaseModalRef>(null);
   const dialogConfirmSubmitRef = useRef<BaseModalRef>(null);
 
-  const { buttons, triggerUpdate } = props;
+  const { buttons, triggerUpdate, isViewApprove } = props;
 
   const _handleAction = async (data: Partial<LeaveRegistration>) => {
     try {
@@ -64,7 +65,9 @@ const ActionButtons = (props: ActionButtonType) => {
               style={globalStyle.fullWidth}
               onPress={() => dialogMoveToDraftRef.current?.open()}
             >
-              <Button.Text variant="detractive">Đưa về nháp</Button.Text>
+              <Button.Text variant="detractive">
+                {isViewApprove ? 'Huỷ duyệt' : 'Huỷ đơn'}
+              </Button.Text>
             </Button>
           )}
           {buttons.includes(LeaveButtonType.APPROVAL_REJECT) && (
@@ -105,8 +108,10 @@ const ActionButtons = (props: ActionButtonType) => {
       />
       <ConfirmDialog
         ref={dialogMoveToDraftRef}
-        title="Thông báo đưa về nháp"
-        message="Bạn có chắc muốn đưa về nháp đơn này?"
+        title={isViewApprove ? 'Thông báo huỷ duyệt' : 'Thông báo huỷ đơn'}
+        message={
+          isViewApprove ? 'Bạn có chắc muốn huỷ duyệt đơn này?' : 'Bạn có chắc muốn huỷ đơn này?'
+        }
         onCancel={() => dialogMoveToDraftRef.current?.close()}
         onConfirm={() => _handleAction({ action: LeaveButtonType.APPROVAL_SET_TO_DRAFT })}
       />

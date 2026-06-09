@@ -257,7 +257,7 @@ function ViewPage() {
           )}
 
           <View gap={scale(16)}>
-            <Controller
+            {/* <Controller
               name="durationDisplay"
               control={provider.form.control}
               render={() => (
@@ -268,7 +268,7 @@ function ViewPage() {
                   editable={false}
                 />
               )}
-            />
+            /> */}
             {isShowLeaveHours && (
               <Controller
                 name="leaveHours"

@@ -60,6 +60,10 @@ export const useLeaveRegistrationsApi = (state: LeaveRegistrationState) => {
                   ? app.user?.employee_id
                   : undefined,
             },
+            context: {
+              company_id: app.current_company_id,
+              allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+            },
           },
         });
         return res.data;
