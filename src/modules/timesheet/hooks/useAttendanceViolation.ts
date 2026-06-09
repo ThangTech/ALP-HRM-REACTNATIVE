@@ -3,6 +3,7 @@ import { OptionItem } from 'components';
 import api from 'hooks/api';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
+import useAppContext from 'hooks/useAppContext';
 
 export type ViolationTabType = 'department' | 'group' | 'job' | 'employee' | 'manager';
 
@@ -81,6 +82,7 @@ export const useAttendanceViolationPermission = () => {
 };
 
 const useAttendanceViolation = () => {
+  const app = useAppContext();
   const [month, setMonth] = useState(TODAY.getMonth() + 1);
   const [year, setYear] = useState(TODAY.getFullYear());
   const [activeTab, setActiveTab] = useState<ViolationTabType>('manager');
@@ -98,7 +100,12 @@ const useAttendanceViolation = () => {
     async () => {
       const res = await api.POST<{ data: { id: number; name: string }[] }>({
         path: '/api/models/hr-department/execute/get_infor_employee_department',
-        data: {},
+        data: {
+          context: {
+            company_id: app.current_company_id,
+            allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+          },
+        },
       });
       return res.data?.map((d) => ({ key: d.id.toString(), value: d.name })) || [];
     },
@@ -109,7 +116,12 @@ const useAttendanceViolation = () => {
     async () => {
       const res = await api.POST<{ data: { id: number; name: string }[] }>({
         path: '/api/models/sv-employee-group/execute/get_infor_employee_group',
-        data: {},
+        data: {
+          context: {
+            company_id: app.current_company_id,
+            allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+          },
+        },
       });
       return res.data?.map((g) => ({ key: g.id.toString(), value: g.name })) || [];
     },
@@ -120,7 +132,12 @@ const useAttendanceViolation = () => {
     async () => {
       const res = await api.POST<{ data: { id: number; name: string }[] }>({
         path: '/api/models/hr-job/execute/get_infor_job',
-        data: {},
+        data: {
+          context: {
+            company_id: app.current_company_id,
+            allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+          },
+        },
       });
       return res.data?.map((g) => ({ key: g.id.toString(), value: g.name })) || [];
     },

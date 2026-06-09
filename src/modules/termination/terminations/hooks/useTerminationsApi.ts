@@ -3,6 +3,7 @@ import { Termination } from 'common/model/termination';
 import { OptionItem } from 'components';
 import api from 'hooks/api';
 import useSWR from 'swr';
+import useAppContext from 'hooks/useAppContext';
 import { TerminationsState } from '../TerminationsState';
 import dayjs from 'dayjs';
 import { LeaveRegistrationViewType } from 'common/enum/leave-registration-view-type';
@@ -10,10 +11,16 @@ import { WAITING_ME } from 'configs/contansts';
 import { TerminationState } from 'common/enum/termination-state';
 
 export const useTerminationsApi = (state: TerminationsState) => {
+  const app = useAppContext();
   const departmentFetcher = async (): Promise<OptionItem[]> => {
     const res = await api.POST({
       path: '/api/models/hr-department/execute/get_infor_employee_department',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     if (res?.data) {
       const temp = res.data.map((item: any) => ({
@@ -28,7 +35,12 @@ export const useTerminationsApi = (state: TerminationsState) => {
   const groupFetcher = async (): Promise<OptionItem[]> => {
     const res = await api.POST({
       path: '/api/models/sv-division/execute/get_infor_employee_division',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     if (res?.data) {
       const temp = res.data.map((item: any) => ({
@@ -62,6 +74,10 @@ export const useTerminationsApi = (state: TerminationsState) => {
             : undefined,
           employee_id: state.employee?.key ? +state.employee.key : undefined,
           approve_resignation_letter: state.viewType === LeaveRegistrationViewType.APPROVE,
+        },
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
         },
       },
     });

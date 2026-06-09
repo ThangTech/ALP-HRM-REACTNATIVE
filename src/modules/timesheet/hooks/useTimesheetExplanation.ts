@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { OptionItem } from 'components';
 import { BaseResponse } from 'common/model/base-response';
 import useSWR from 'swr';
+import useAppContext from 'hooks/useAppContext';
 import { WAITING_ME } from 'configs/contansts';
 
 interface UseTimesheetExplanationParams {
@@ -16,6 +17,7 @@ interface UseTimesheetExplanationParams {
 }
 
 const useTimesheetExplanation = (params: UseTimesheetExplanationParams = {}) => {
+  const app = useAppContext();
   const {
     dateFrom,
     dateTo,
@@ -51,6 +53,10 @@ const useTimesheetExplanation = (params: UseTimesheetExplanationParams = {}) => 
         path: '/api/models/hr-attendance-explanation/execute/get_attendance_explanation',
         data: {
           kwargs: filters,
+          context: {
+            company_id: app.current_company_id,
+            allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+          },
         },
       });
       if (res?.data.records) {

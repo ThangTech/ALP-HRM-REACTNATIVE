@@ -5,6 +5,7 @@ import { UploadedFile, useUploadFile } from 'modules/suggestion/hooks/useUploadF
 import { useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import useSWR from 'swr';
+import useAppContext from 'hooks/useAppContext';
 
 interface CommentEditorFormData {
   departmentId: string;
@@ -14,6 +15,7 @@ interface CommentEditorFormData {
 }
 
 export const useCommentEditor = () => {
+  const app = useAppContext();
   const uploadFile = useUploadFile();
   const form = useForm<CommentEditorFormData>();
   const optionPickerRef = useRef<BottomSheet>(null);
@@ -26,7 +28,12 @@ export const useCommentEditor = () => {
     async (): Promise<Array<OptionItem>> => {
       const res = await api.POST({
         path: '/models/hr-department/execute/get_infor_employee_department',
-        data: {},
+        data: {
+          context: {
+            company_id: app.current_company_id,
+            allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+          },
+        },
       });
 
       if (res?.data) {
@@ -52,7 +59,12 @@ export const useCommentEditor = () => {
     async (): Promise<Array<OptionItem>> => {
       const res = await api.POST({
         path: '/models/sv-employee-group/execute/get_infor_employee_group',
-        data: {},
+        data: {
+          context: {
+            company_id: app.current_company_id,
+            allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+          },
+        },
       });
       if (res?.data) {
         const temp = res.data.map(

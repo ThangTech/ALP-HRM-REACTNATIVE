@@ -51,11 +51,7 @@ function ViewPage() {
                   value={provider.salaryTicket?.employee_code || ''}
                   pv={5}
                 />
-                <RowTicket
-                  title="Chức vụ"
-                  value={provider.salaryTicket?.job_name || ''}
-                  pv={5}
-                />
+                <RowTicket title="Chức vụ" value={provider.salaryTicket?.job_name || ''} pv={5} />
                 <WorkTicket />
                 <OtherTicket />
               </CardContainer>
