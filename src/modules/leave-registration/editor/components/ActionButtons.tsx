@@ -109,7 +109,9 @@ const ActionButtons = (props: ActionButtonType) => {
       <ConfirmDialog
         ref={dialogMoveToDraftRef}
         title={isViewApprove ? 'Thông báo huỷ duyệt' : 'Thông báo huỷ đơn'}
-        message={isViewApprove ? 'Bạn có chắc muốn huỷ duyệt đơn này?' : 'Bạn có chắc muốn huỷ đơn này?'}
+        message={
+          isViewApprove ? 'Bạn có chắc muốn huỷ duyệt đơn này?' : 'Bạn có chắc muốn huỷ đơn này?'
+        }
         onCancel={() => dialogMoveToDraftRef.current?.close()}
         onConfirm={() => _handleAction({ action: LeaveButtonType.APPROVAL_SET_TO_DRAFT })}
       />

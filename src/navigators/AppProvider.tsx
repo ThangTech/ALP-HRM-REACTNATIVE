@@ -170,9 +170,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
     await saveAppContext({ ...state, fcmToken: token });
   };
 
-  const setCurrentCompanyId = async (
-    current_company_id: AppContext['current_company_id'],
-  ) => {
+  const setCurrentCompanyId = async (current_company_id: AppContext['current_company_id']) => {
     if (!state) {
       return;
     }

@@ -200,7 +200,11 @@ function ViewPage(props: LeaveRegistrationDetailProps) {
         </View>
       </ScrollView>
       {!!buttons?.length && (
-        <ActionButtons buttons={buttons} triggerUpdate={provider.triggerUpdate} isViewApprove={isViewApprove} />
+        <ActionButtons
+          buttons={buttons}
+          triggerUpdate={provider.triggerUpdate}
+          isViewApprove={isViewApprove}
+        />
       )}
     </View>
   );
