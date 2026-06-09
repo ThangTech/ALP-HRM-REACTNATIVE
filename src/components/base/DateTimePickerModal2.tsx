@@ -78,7 +78,6 @@ const DateTimePickerModal2: React.FC<DateTimePickerModalProps> = ({
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.bottomSheetBackground}
       handleIndicatorStyle={styles.handleIndicator}
-      onDismiss={bottomSheetRef.current?.dismiss}
     >
       <BottomSheetView>
         <View p={verticalScale(20)} gap={verticalScale(16)}>

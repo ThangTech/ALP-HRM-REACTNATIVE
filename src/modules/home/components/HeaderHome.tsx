@@ -10,7 +10,7 @@ import { useNotificationCountApi } from 'home/hooks/useNotificationCountApi';
 import { useSafeArea } from 'hooks';
 import useAppContext from 'hooks/useAppContext';
 import { navigate } from 'navigators';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { HOST } from 'react-native-dotenv';
 import { Image, View } from 'tamagui';
@@ -25,6 +25,8 @@ const HeaderHome = () => {
   const { top } = useSafeArea();
   const { user } = useAppContext();
   const [{ timeKeeping }] = useTimeSheet({});
+
+  const avatarUri = useMemo(() => `${HOST}${user?.image_url}?t=${Date.now()}`, [user?.image_url]);
   const notificationCountApi = useNotificationCountApi();
 
   useFocusEffect(
@@ -56,7 +58,7 @@ const HeaderHome = () => {
         <View fd={'row'} ai={'center'} gap={scale(12)}>
           <Image
             source={{
-              uri: `${HOST}${user?.image_url}?t=${Date.now()}`,
+              uri: avatarUri,
             }}
             w={scale(42)}
             h={scale(42)}
