@@ -3,11 +3,13 @@ import api from 'hooks/api';
 import useAppContext from 'hooks/useAppContext';
 import { navigate, resetRoot } from 'navigators';
 import Toast from 'react-native-toast-message';
+import { useSWRConfig } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import messaging from '@react-native-firebase/messaging';
 
 const useMe = () => {
   const { setUser, setCurrentCompanyId } = useAppContext();
+  const { mutate } = useSWRConfig();
 
   const onLogout = async () => {
     try {
@@ -66,6 +68,10 @@ const useMe = () => {
       emergency_phone: '',
       access_staff_transfer: false,
     });
+    
+    // Xoá toàn bộ SWR cache để tránh leak dữ liệu khi đổi tài khoản
+    mutate(() => true, undefined, { revalidate: false });
+
     resetRoot({ index: 0, routes: [{ name: RouteName.Login }] });
   };
 
