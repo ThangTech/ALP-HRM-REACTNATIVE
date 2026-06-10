@@ -11,6 +11,7 @@ import api from 'hooks/api';
 import useDebounce from 'hooks/useDebounce';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
+import useAppContext from 'hooks/useAppContext';
 import { getRemoteFileType, timeToHours } from 'utils';
 import { OverTimeEditorState } from '../OverTimeEditorState';
 import { OverTimeEditorForm } from '../provider';
@@ -20,6 +21,7 @@ export const useOverTimeEditorApi = (
   formValues: OverTimeEditorForm,
   files: UploadedFile[],
 ) => {
+  const app = useAppContext();
   const dependencyWizard = [
     'wizard-get_hr_leave_overtime_details',
     formValues.requestDate,
@@ -207,7 +209,12 @@ export const useOverTimeEditorApi = (
   const { data: workShiftList } = useSWR(['workShiftList'], async (): Promise<OptionItem[]> => {
     const res = await api.POST({
       path: '/api/models/resource-calendar/execute/get_infor_calendar',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     if (res?.data) {
       const temp = res.data.map((item: any) => ({

@@ -3,6 +3,7 @@ import { BaseResponse } from 'common/model/base-response';
 import { CreationModel } from 'common/model/creation-model';
 import { showToast } from 'components';
 import api from 'hooks/api';
+import useAppContext from 'hooks/useAppContext';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
 
@@ -12,6 +13,7 @@ type Props = {
 
 const useTimesheetExplanationDetail = (props: Props) => {
   const { id } = props;
+  const app = useAppContext();
 
   const { data: explanationTypeList } = useSWR<ExplanationReasonType[]>(
     ['explanationTypeList'],
@@ -91,7 +93,12 @@ const useTimesheetExplanationDetail = (props: Props) => {
   const { data: workShiftList } = useSWR(['workShiftList', id], async () => {
     const res = await api.POST({
       path: '/api/models/resource-calendar/execute/get_infor_calendar',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     if (res?.data) {
       const temp = res.data.map((item: any) => ({

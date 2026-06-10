@@ -3,12 +3,14 @@ import { PersonalReportEditorState } from '../PersonalReportEditorState';
 import { PersonalReport } from 'common/model/personal-report';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
+import useAppContext from 'hooks/useAppContext';
 import { TerminationButtonType } from 'common/enum/termination-button-type';
 import { OptionItem } from 'components';
 import { BaseResponse } from 'common/model/base-response';
 import { ApprovalProgress } from 'common/model/approval_progress';
 
 export const usePersonalReportEditorApi = (state: PersonalReportEditorState) => {
+  const app = useAppContext();
   const fetchDetail = async (): Promise<PersonalReport | undefined> => {
     if (!state?.id) {
       return;
@@ -53,7 +55,12 @@ export const usePersonalReportEditorApi = (state: PersonalReportEditorState) => 
     }
     const res = await api.POST({
       path: '/api/models/sv-employee-group/execute/get_infor_employee_group',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     if (res?.data) {
       const temp = res.data.map((item: any) => ({
@@ -83,7 +90,12 @@ export const usePersonalReportEditorApi = (state: PersonalReportEditorState) => 
   const jobFetcher = async (): Promise<OptionItem[]> => {
     const res = await api.POST({
       path: '/api/models/hr-job/execute/get_infor_job',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     if (res?.data) {
       const temp = res.data.map((item: any) => ({
@@ -114,7 +126,12 @@ export const usePersonalReportEditorApi = (state: PersonalReportEditorState) => 
   const departmentFetcher = async (): Promise<OptionItem[]> => {
     const res = await api.POST({
       path: '/api/models/hr-department/execute/get_infor_employee_department',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     if (res?.data) {
       const temp = res.data.map((item: any) => ({
