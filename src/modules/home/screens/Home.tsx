@@ -16,7 +16,7 @@ import { scale, verticalScale } from 'utils';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance, Notification } from '@notifee/react-native';
 import { DEFAULT_CHANNEL_ID } from 'configs/contansts';
-import { IcExplanation, IcChangeShift } from 'assets/svgs';
+import { IcExplanation } from 'assets/svgs';
 
 const Home = () => {
   const sheetLeaveRef = React.useRef<BottomSheetModal>(null);
@@ -26,6 +26,7 @@ const Home = () => {
   const timesheetExplanationOptionRef = useRef<BottomSheetModal>(null);
   const [isShowMore, setShowMore] = useState(false);
   const homeApi = useHomeApi();
+  const { recentActivities } = homeApi;
   const { user, fcmToken, setFcmToken } = useAppContext();
 
   const [{ userApprovalInfor }] = useUser();
@@ -81,6 +82,9 @@ const Home = () => {
 
   const renderRecentActivities = () => {
     if (isShowMore) return null;
+    const records = recentActivities?.data?.records || [];
+
+    if (records.length === 0) return null;
 
     return (
       <View>
@@ -90,88 +94,38 @@ const Home = () => {
             Hoạt động gần đây
           </Text>
 
-          {/* Item 1 */}
-          <View
-            fd={'row'}
-            p={scale(12)}
-            bg={'$white'}
-            br={scale(16)}
-            borderWidth={1}
-            borderColor={'#e0e0e0'}
-            mb={scale(12)}
-          >
-            <View mr={scale(12)} mt={scale(2)}>
-              <IcExplanation size={scale(32)} />
-            </View>
-            <View f={1}>
-              <View fd={'row'} jc={'space-between'} ai={'flex-start'} mb={scale(4)}>
-                <Text fontSize={scale(15)} fontW={'600'} color={'$black'} f={1}>
-                  {'<Đơn nghỉ phép>'}
-                </Text>
-                <View bg={'#e6f4ea'} ph={scale(8)} pv={scale(4)} br={scale(6)}>
-                  <Text fontSize={scale(12)} fontW={'600'} color={'#137333'}>
-                    Đã phê duyệt
+          {records.map((item, index) => (
+            <View
+              key={index}
+              fd={'row'}
+              p={scale(12)}
+              bg={'$white'}
+              br={scale(16)}
+              borderWidth={1}
+              borderColor={'#e0e0e0'}
+              mb={index === records.length - 1 ? 0 : scale(12)}
+            >
+              <View mr={scale(12)} mt={scale(2)}>
+                <IcExplanation size={scale(32)} />
+              </View>
+              <View f={1}>
+                <View fd={'row'} jc={'space-between'} ai={'flex-start'} mb={scale(4)}>
+                  <Text fontSize={scale(15)} fontW={'600'} color={'$black'} f={1}>
+                    {item.activity_type_name}
                   </Text>
                 </View>
-              </View>
-              <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
-                Người yêu cầu: {'<Tên người yêu cầu>'}
-              </Text>
-              <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
-                Ngày yêu cầu: {'<dd/mm/yyyy>'}
-              </Text>
-              <View fd={'row'} ai={'center'} fw={'wrap'} gap={scale(6)}>
-                <Text fontSize={scale(13)} color={'$grey'}>
-                  Ca 1 - 02/02/2025
+                <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
+                  {item.res_name}
                 </Text>
-                <IcChangeShift size={scale(14)} tintColor={'#E53935'} />
-                <Text fontSize={scale(13)} color={'$grey'}>
-                  Ca 2 - 03/02/2025
+                <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
+                  Ngày đến hạn: {item.date_deadline}
+                </Text>
+                <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
+                  Loại: {item.model_display_name}
                 </Text>
               </View>
             </View>
-          </View>
-
-          {/* Item 2 */}
-          <View
-            fd={'row'}
-            p={scale(12)}
-            bg={'$white'}
-            br={scale(16)}
-            borderWidth={1}
-            borderColor={'#e0e0e0'}
-          >
-            <View mr={scale(12)} mt={scale(2)}>
-              <IcExplanation size={scale(32)} />
-            </View>
-            <View f={1}>
-              <View fd={'row'} jc={'space-between'} ai={'flex-start'} mb={scale(4)}>
-                <Text fontSize={scale(15)} fontW={'600'} color={'$black'} f={1}>
-                  {'<Giải trình công>'}
-                </Text>
-                <View bg={'#fce8e6'} ph={scale(8)} pv={scale(4)} br={scale(6)}>
-                  <Text fontSize={scale(12)} fontW={'600'} color={'#c5221f'}>
-                    Bị từ chối
-                  </Text>
-                </View>
-              </View>
-              <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
-                Người yêu cầu: {'<Tên người yêu cầu>'}
-              </Text>
-              <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
-                Ngày yêu cầu: {'<dd/mm/yyyy>'}
-              </Text>
-              <View fd={'row'} ai={'center'} fw={'wrap'} gap={scale(6)}>
-                <Text fontSize={scale(13)} color={'$grey'}>
-                  Ca 1 - 02/02/2025
-                </Text>
-                <IcChangeShift size={scale(14)} tintColor={'#E53935'} />
-                <Text fontSize={scale(13)} color={'$grey'}>
-                  Ca 2 - 03/02/2025
-                </Text>
-              </View>
-            </View>
-          </View>
+          ))}
         </View>
       </View>
     );
