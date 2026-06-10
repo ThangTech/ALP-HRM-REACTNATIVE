@@ -24,6 +24,7 @@ const Home = () => {
   const personalReportOptionRef = useRef<BottomSheetModal>(null);
   const overTimesOptionRef = useRef<BottomSheetModal>(null);
   const timesheetExplanationOptionRef = useRef<BottomSheetModal>(null);
+  const profileOptionRef = useRef<BottomSheetModal>(null);
   const [isShowMore, setShowMore] = useState(false);
   const homeApi = useHomeApi();
   const { recentActivities } = homeApi;
@@ -150,7 +151,7 @@ const Home = () => {
         label: 'Hồ sơ',
         icon: Images.ho_so,
         onPress: () => {
-          navigate(RouteName.Profile);
+          profileOptionRef.current?.present();
         },
       },
       {
@@ -328,6 +329,14 @@ const Home = () => {
     );
   };
 
+  function onProfileOptionSelected(item: OptionItem): void {
+    if (item.key === 1) {
+      navigate(RouteName.Profile);
+    } else if (item.key === 2) {
+      navigate(RouteName.EmployeeList);
+    }
+  }
+
   function onOptionSelected(item: OptionItem): void {
     if (item.key === 1) {
       navigate(RouteName.LeaveRegistrations, { viewType: LeaveRegistrationViewType.ME });
@@ -374,6 +383,14 @@ const Home = () => {
     <View style={styles.container}>
       {renderHeader()}
       {renderBody()}
+      <OptionPickerModal2
+        bottomSheetRef={profileOptionRef}
+        data={[
+          { value: 'Thông tin của tôi', key: 1 },
+          { value: 'Danh sách nhân viên', key: 2 },
+        ]}
+        onSelect={onProfileOptionSelected}
+      />
       <OptionPickerModal2
         bottomSheetRef={sheetLeaveRef}
         data={[

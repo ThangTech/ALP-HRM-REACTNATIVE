@@ -54,6 +54,7 @@ export enum RouteName {
   SuggestionList = 'SuggestionList',
   AttendanceViolation = 'AttendanceViolation',
   AttendanceViolationDetail = 'AttendanceViolationDetail',
+  EmployeeList = 'EmployeeList',
 }
 
 type ParamList = Record<RouteName | string, any> & {
@@ -62,6 +63,29 @@ type ParamList = Record<RouteName | string, any> & {
     title: string;
     image: string;
     content?: string;
+  };
+  [RouteName.Profile]: {
+    employeeId?: number;
+    employeeName?: string;
+  };
+  [RouteName.EmployeeList]: undefined;
+  [RouteName.PersonalInformation]: {
+    employeeId?: number;
+  };
+  [RouteName.JobInformation]: {
+    employeeId?: number;
+  };
+  [RouteName.ContractInformation]: {
+    employeeId?: number;
+  };
+  [RouteName.PersonalProfile]: {
+    employeeId?: number;
+  };
+  [RouteName.CompanyProfile]: {
+    employeeId?: number;
+  };
+  [RouteName.EmployeeInformation]: {
+    employeeId?: number;
   };
   TimesheetExplanation: {
     isAdmin?: boolean;

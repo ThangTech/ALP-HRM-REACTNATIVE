@@ -8,3 +8,4 @@ export { default as EmployeeInformation } from './EmployeeInformation';
 export { default as PersonalProfile } from './PersonalProfile';
 export { default as CompanyProfile } from './CompanyProfile';
 export { default as ChangePassword } from './ChangePassword';
+export { default as EmployeeList } from './EmployeeList';

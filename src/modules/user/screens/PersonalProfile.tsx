@@ -14,15 +14,20 @@ import DocumentList from '../components/DocumentList';
 import { documentCategoriesTemplate } from '../data/documentTemplate';
 import { useFilePicker } from '../hooks/useFilePicker';
 import { DocumentCategory } from '../types/document';
+import { useRoute } from '@react-navigation/native';
 
 const PersonalProfile = () => {
+  const route = useRoute<any>();
+  const employeeId: number | undefined = route?.params?.employeeId;
+  const isReadonly = !!employeeId;
+
   const { user } = useAppContext();
   const [documents, setDocuments] = useState<DocumentCategory[]>(documentCategoriesTemplate);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { pickImage, pickDocument } = useFilePicker();
-  const personalProfileApi = usePersonalProfileApi();
+  const personalProfileApi = usePersonalProfileApi(employeeId);
 
   const handleUploadPress = (categoryId: string) => {
     setSelectedCategoryId(categoryId);
@@ -181,7 +186,12 @@ const PersonalProfile = () => {
       <ScrollView f={1} paddingHorizontal={horizontalScale(16)}>
         <View gap={scale(16)} pv={scale(16)}>
           {documents.map((doc) => (
-            <DocumentList key={doc.id} document={doc} onUploadPress={handleUploadPress} />
+            <DocumentList
+              key={doc.id}
+              document={doc}
+              onUploadPress={isReadonly ? undefined : handleUploadPress}
+              isReadonly={isReadonly}
+            />
           ))}
         </View>
       </ScrollView>
@@ -189,6 +199,7 @@ const PersonalProfile = () => {
   };
 
   const renderFooter = () => {
+    if (isReadonly) return null;
     return (
       <View fd={'row'} p={verticalScale(20)} gap={10} bg={'$white'}>
         <Button style={styles.btn} variant="secondary" onPress={handleCancel} disabled={loading}>
