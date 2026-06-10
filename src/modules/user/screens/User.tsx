@@ -206,6 +206,9 @@ const User = () => {
               <Text color={'$white'} fontSize={scale(14)}>
                 Mã nhân viên: {user?.employee_code}
               </Text>
+              <Text color={'$white'} fontSize={scale(14)}>
+                Công ty: {currentCompanyName}
+              </Text>
             </View>
           </View>
         </View>
