@@ -1,20 +1,19 @@
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import {
   BottomTabBarProps as RNBottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
 import { TabRouterOptions } from '@react-navigation/native';
-import React, { useCallback, useMemo, useRef } from 'react';
-import { StyleProp, TouchableOpacity, ViewStyle } from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
 
 import { IconProps } from 'assets/svgs';
-import { Pressable, Text, SmartBackdrop } from 'components/base';
+import { Pressable, Text } from 'components/base';
 import { PressableProps } from 'components/base/Pressable';
 import { AppStackParamList, RouteName } from 'configs/navigation';
 import { useSafeArea } from 'hooks';
 import { View, getTokens } from 'tamagui';
 import { scale, verticalScale } from 'utils';
-import { navigate } from './navigationUtilities';
 import { useProfile } from 'hooks/useProfile';
 import { useNotificationCountApi } from 'home/hooks/useNotificationCountApi';
 
@@ -75,43 +74,46 @@ function TabBar({ state, navigation, tabs, noActiveIndicatior }: TabBarProps) {
   const notificationCountApi = useNotificationCountApi();
   const badgeCount = notificationCountApi.notificationCount?.data?.total_all || 0;
   const { bottom } = useSafeArea();
-  const snapPoints = useMemo(() => ['25%'], []);
+  // const snapPoints = useMemo(() => ['25%'], []);
 
   const handleSheetOpen = useCallback(() => {
     bottomSheetRef.current?.snapToIndex(0);
   }, []);
 
-  const handleSheetClose = useCallback(() => {
-    bottomSheetRef.current?.close();
-  }, []);
+  // const handleSheetClose = useCallback(() => {
+  //   bottomSheetRef.current?.close();
+  // }, []);
 
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <SmartBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.5}
-        pressBehavior="close"
-      />
-    ),
-    [],
-  );
+  // const renderBackdrop = useCallback(
+  //   (props: any) => (
+  //     <SmartBackdrop
+  //       {...props}
+  //       disappearsOnIndex={-1}
+  //       appearsOnIndex={0}
+  //       opacity={0.5}
+  //       pressBehavior="close"
+  //     />
+  //   ),
+  //   [],
+  // );
 
-  const handleOptionPress = useCallback(
-    (action: 'leave' | 'overtime') => {
-      handleSheetClose();
-      if (action === 'leave') {
-        navigate(RouteName.LeaveRegistrationEditor, { date: new Date().toString() });
-      } else if (action === 'overtime') {
-        navigate(RouteName.OvertimeEditor);
-      }
-    },
-    [handleSheetClose],
-  );
+  // const handleOptionPress = useCallback(
+  //   (action: 'leave' | 'overtime') => {
+  //     handleSheetClose();
+  //     if (action === 'leave') {
+  //       navigate(RouteName.LeaveRegistrationEditor, { date: new Date().toString() });
+  //     } else if (action === 'overtime') {
+  //       navigate(RouteName.OvertimeEditor);
+  //     }
+  //   },
+  //   [handleSheetClose],
+  // );
 
   const renderTab = (tab: TabBarProps['tabs'][number], index: number) => {
     const { routeName, icon: Icon, title, iconProps, initParams, isPopup } = tabs[index]!;
+
+    if (isPopup) return null;
+
     const route = state.routes.find((r) => r.name === routeName);
     const isActive = state.routes[state.index]?.name === routeName;
 
@@ -178,7 +180,7 @@ function TabBar({ state, navigation, tabs, noActiveIndicatior }: TabBarProps) {
         </View>
       </View>
 
-      <BottomSheet
+      {/* <BottomSheet
         ref={bottomSheetRef}
         index={-1}
         snapPoints={snapPoints}
@@ -211,7 +213,7 @@ function TabBar({ state, navigation, tabs, noActiveIndicatior }: TabBarProps) {
             </Text>
           </TouchableOpacity>
         </BottomSheetView>
-      </BottomSheet>
+      </BottomSheet> */}
     </>
   );
 }
@@ -268,18 +270,18 @@ const $iconView: ViewStyle = {
   // marginTop: moderateScale(7),
 };
 
-const $bottomSheetContent: ViewStyle = {
-  paddingHorizontal: scale(20),
-  paddingTop: verticalScale(10),
-  paddingBottom: verticalScale(20),
-};
+// const $bottomSheetContent: ViewStyle = {
+//   paddingHorizontal: scale(20),
+//   paddingTop: verticalScale(10),
+//   paddingBottom: verticalScale(20),
+// };
 
-const $optionItem: ViewStyle = {
-  paddingVertical: verticalScale(15),
-  paddingHorizontal: scale(15),
-  borderRadius: 8,
-  backgroundColor: '#f5f5f5',
-  marginBottom: verticalScale(10),
-};
+// const $optionItem: ViewStyle = {
+//   paddingVertical: verticalScale(15),
+//   paddingHorizontal: scale(15),
+//   borderRadius: 8,
+//   backgroundColor: '#f5f5f5',
+//   marginBottom: verticalScale(10),
+// };
 
 export default BottomTabBar;
