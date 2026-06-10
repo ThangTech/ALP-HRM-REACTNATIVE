@@ -24,6 +24,7 @@ const Home = () => {
   const personalReportOptionRef = useRef<BottomSheetModal>(null);
   const overTimesOptionRef = useRef<BottomSheetModal>(null);
   const timesheetExplanationOptionRef = useRef<BottomSheetModal>(null);
+  const profileOptionRef = useRef<BottomSheetModal>(null);
   const [isShowMore, setShowMore] = useState(false);
   const homeApi = useHomeApi();
   const { recentActivities } = homeApi;
@@ -81,62 +82,76 @@ const Home = () => {
   }, [fcmToken, setFcmToken, homeApi, user?.employee_id]);
 
   const renderRecentActivities = () => {
-    if (isShowMore) return null;
     const records = recentActivities?.data?.records || [];
 
-    if (records.length === 0) return null;
+    if (records.length === 0) {
+      return (
+        <View f={1} jc={'center'} ai={'center'}>
+          <Text fontSize={scale(14)} color={'$grey'} ta={'center'}>
+            Chưa có dữ liệu
+          </Text>
+        </View>
+      );
+    }
 
     return (
       <View>
-        <View h={scale(8)} bg={'#f0f2f5'} w={'100%'} />
-        <View p={scale(15)}>
-          <Text fontSize={scale(18)} fontW={'bold'} color={'$black'} mb={scale(15)}>
-            Hoạt động gần đây
-          </Text>
-
-          {records.map((item, index) => (
-            <View
-              key={index}
-              fd={'row'}
-              p={scale(12)}
-              bg={'$white'}
-              br={scale(16)}
-              borderWidth={1}
-              borderColor={'#e0e0e0'}
-              mb={index === records.length - 1 ? 0 : scale(12)}
-            >
-              <View mr={scale(12)} mt={scale(2)}>
-                <IcExplanation size={scale(32)} />
-              </View>
-              <View f={1}>
-                <View fd={'row'} jc={'space-between'} ai={'flex-start'} mb={scale(4)}>
-                  <Text fontSize={scale(15)} fontW={'600'} color={'$black'} f={1}>
-                    {item.activity_type_name}
-                  </Text>
-                </View>
-                <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
-                  {item.res_name}
-                </Text>
-                <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
-                  Ngày đến hạn: {item.date_deadline}
-                </Text>
-                <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
-                  Loại: {item.model_display_name}
-                </Text>
-              </View>
+        {records.map((item, index) => (
+          <View
+            key={index}
+            fd={'row'}
+            p={scale(12)}
+            bg={'$white'}
+            br={scale(16)}
+            borderWidth={1}
+            borderColor={'#e0e0e0'}
+            mb={index === records.length - 1 ? 0 : scale(12)}
+          >
+            <View mr={scale(12)} mt={scale(2)}>
+              <IcExplanation size={scale(32)} />
             </View>
-          ))}
-        </View>
+            <View f={1}>
+              <View fd={'row'} jc={'space-between'} ai={'flex-start'} mb={scale(4)}>
+                <Text fontSize={scale(15)} fontW={'600'} color={'$black'} f={1}>
+                  {item.activity_type_name}
+                </Text>
+              </View>
+              <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
+                {item.res_name}
+              </Text>
+              <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
+                Ngày đến hạn: {item.date_deadline}
+              </Text>
+              <Text fontSize={scale(13)} color={'$grey'} mb={scale(2)}>
+                Loại: {item.model_display_name}
+              </Text>
+            </View>
+          </View>
+        ))}
       </View>
     );
   };
 
   const renderBody = () => {
     return (
-      <ScrollView showsVerticalScrollIndicator={false} f={1}>
-        <View jc={'center'} bg={'$white'} pt={verticalScale(10)}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        f={1}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        <View f={1} jc={'flex-start'} bg={'$white'} pt={verticalScale(10)}>
           {renderMenu()}
-          {renderRecentActivities()}
+          {!isShowMore && (
+            <View f={1}>
+              <View h={scale(8)} bg={'#f0f2f5'} w={'100%'} />
+              <View p={scale(15)} f={1}>
+                <Text fontSize={scale(18)} fontW={'bold'} color={'$black'} mb={scale(15)}>
+                  Hoạt động gần đây
+                </Text>
+                {renderRecentActivities()}
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     );
@@ -150,7 +165,7 @@ const Home = () => {
         label: 'Hồ sơ',
         icon: Images.ho_so,
         onPress: () => {
-          navigate(RouteName.Profile);
+          profileOptionRef.current?.present();
         },
       },
       {
@@ -328,6 +343,14 @@ const Home = () => {
     );
   };
 
+  function onProfileOptionSelected(item: OptionItem): void {
+    if (item.key === 1) {
+      navigate(RouteName.Profile);
+    } else if (item.key === 2) {
+      navigate(RouteName.EmployeeList);
+    }
+  }
+
   function onOptionSelected(item: OptionItem): void {
     if (item.key === 1) {
       navigate(RouteName.LeaveRegistrations, { viewType: LeaveRegistrationViewType.ME });
@@ -374,6 +397,14 @@ const Home = () => {
     <View style={styles.container}>
       {renderHeader()}
       {renderBody()}
+      <OptionPickerModal2
+        bottomSheetRef={profileOptionRef}
+        data={[
+          { value: 'Thông tin của tôi', key: 1 },
+          { value: 'Danh sách nhân viên', key: 2 },
+        ]}
+        onSelect={onProfileOptionSelected}
+      />
       <OptionPickerModal2
         bottomSheetRef={sheetLeaveRef}
         data={[

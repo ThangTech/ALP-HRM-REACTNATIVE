@@ -13,7 +13,9 @@ export interface HandleFileActionParams {
   action: 'upload' | 'delete';
 }
 
-export const usePersonalProfileApi = () => {
+export const usePersonalProfileApi = (employeeId?: number) => {
+  const employeeKwargs = employeeId ? { kwargs: { employee_id: employeeId } } : {};
+
   async function handleApiDeleteFile(params: Partial<HandleFileActionParams>) {
     try {
       await api.POST({
@@ -76,7 +78,7 @@ export const usePersonalProfileApi = () => {
     try {
       const response = await api.POST({
         path: '/api/models/hr-employee/execute/get_employee_profile_attachments',
-        data: {},
+        data: employeeKwargs,
       });
       const data = response.data as UserAttachment;
       return data;
@@ -85,9 +87,15 @@ export const usePersonalProfileApi = () => {
     }
   };
 
-  const fetchDocumentsSwr = useSWR('get_employee_profile_attachments', fetchDocuments);
+  const fetchDocumentsSwr = useSWR(
+    ['get_employee_profile_attachments', employeeId],
+    fetchDocuments,
+  );
 
-  const handleFileActionSwr = useSWRMutation('get_employee_profile_attachments', handleFileAction);
+  const handleFileActionSwr = useSWRMutation(
+    ['get_employee_profile_attachments', employeeId],
+    handleFileAction,
+  );
 
   return {
     handleFileActionSwr,

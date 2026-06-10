@@ -12,6 +12,7 @@ import {
   CompanyProfile,
   ContractInformation,
   EmployeeInformation,
+  EmployeeList,
   JobInformation,
   Login,
   PersonalInformation,
@@ -127,6 +128,7 @@ const AppStack = () => {
       <Stack.Screen name={RouteName.Timesheet} component={Timesheet} />
       <Stack.Screen name={RouteName.TimesheetFilter} component={TimesheetFilterPage} />
       <Stack.Screen name={RouteName.Profile} component={ProfileMenu} />
+      <Stack.Screen name={RouteName.EmployeeList} component={EmployeeList} />
       <Stack.Screen name={RouteName.JobInformation} component={JobInformation} />
       <Stack.Screen name={RouteName.PersonalInformation} component={PersonalInformation} />
       <Stack.Screen name={RouteName.ContractInformation} component={ContractInformation} />

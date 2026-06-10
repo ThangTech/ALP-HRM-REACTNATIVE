@@ -9,7 +9,7 @@ import { DocumentCategory } from '../types/document';
 
 interface DocumentListProps {
   document: DocumentCategory;
-  onUploadPress: (categoryId: string) => void;
+  onUploadPress?: (categoryId: string) => void;
   isReadonly?: boolean;
 }
 
@@ -35,7 +35,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ document, isReadonly, onUpl
             </Text>
           </View>
 
-          {!isReadonly && (
+          {!isReadonly && onUploadPress && (
             <View fd="row" ai="center" gap={12}>
               <TouchableOpacity
                 style={styles.actionButton}
@@ -55,7 +55,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ document, isReadonly, onUpl
             <FileViewerItem
               key={it.id}
               file={it}
-              disabledDelete={isReadonly || !it.id.startsWith('temp')}
+              disabledDelete={isReadonly}
               handleDeleteFile={handleDeleteFile}
             />
           ))}

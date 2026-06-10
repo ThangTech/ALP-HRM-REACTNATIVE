@@ -1,7 +1,8 @@
 import { Header, Text } from 'components';
 import dayjs from 'dayjs';
 import useAppContext from 'hooks/useAppContext';
-import React from 'react';
+import api from 'hooks/api';
+import React, { useEffect, useState } from 'react';
 import { HOST } from 'react-native-dotenv';
 import { Image, ScrollView, View } from 'tamagui';
 import ItemRow from 'user/components/ItemRow';
@@ -10,10 +11,28 @@ import { useUser } from 'user/hooks';
 import { verticalScale } from 'utils';
 import { scale } from 'utils';
 import { horizontalScale } from 'utils';
+import { useRoute } from '@react-navigation/native';
 
 const JobInformation = () => {
-  const { user } = useAppContext();
-  const [{ dataEmployeeTree }] = useUser();
+  const route = useRoute<any>();
+  const employeeId: number | undefined = route?.params?.employeeId;
+  const { user: contextUser } = useAppContext();
+  const [employeeData, setEmployeeData] = useState<any>(null);
+  const user = employeeId ? employeeData : contextUser;
+  const [{ dataEmployeeTree }] = useUser(employeeId);
+
+  useEffect(() => {
+    if (!employeeId) return;
+    api
+      .POST({
+        path: '/api/models/hr-employee/execute/get_employee_infor',
+        data: { kwargs: { employee_id: employeeId } },
+      })
+      .then((res) => {
+        if (res?.data) setEmployeeData(res.data);
+      })
+      .catch(console.error);
+  }, [employeeId]);
 
   const renderHeader = () => {
     return <Header title={'Thông tin công việc'} />;

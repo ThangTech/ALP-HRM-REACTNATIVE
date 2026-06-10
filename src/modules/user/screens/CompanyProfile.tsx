@@ -8,10 +8,13 @@ import { scale } from 'utils';
 import DocumentList from '../components/DocumentList';
 import { documentCategoriesTemplate2 } from '../data/documentTemplate2';
 import { DocumentCategory } from '../types/document';
+import { useRoute } from '@react-navigation/native';
 
 const CompanyProfile = () => {
+  const route = useRoute<any>();
+  const employeeId: number | undefined = route?.params?.employeeId;
   const [documents, setDocuments] = useState<DocumentCategory[]>(documentCategoriesTemplate2);
-  const companyProfileApi = useCompanyProfileApi();
+  const companyProfileApi = useCompanyProfileApi(employeeId);
   const data = companyProfileApi.fetchDocumentSwr.data;
   const handleUploadPress = (_: string) => {};
 

@@ -1,15 +1,34 @@
 import { Header } from 'components';
 import dayjs from 'dayjs';
 import useAppContext from 'hooks/useAppContext';
-import React from 'react';
+import api from 'hooks/api';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'tamagui';
 import { ExpandableInfoCard } from 'user/components';
 import { useUser } from 'user/hooks';
 import { formatToVND, horizontalScale, verticalScale } from 'utils';
+import { useRoute } from '@react-navigation/native';
 
 const ContractInformation = () => {
-  const [{ dataContract }] = useUser();
-  const { user } = useAppContext();
+  const route = useRoute<any>();
+  const employeeId: number | undefined = route?.params?.employeeId;
+  const [{ dataContract }] = useUser(employeeId);
+  const { user: contextUser } = useAppContext();
+  const [employeeData, setEmployeeData] = useState<any>(null);
+  const user = employeeId ? employeeData : contextUser;
+
+  useEffect(() => {
+    if (!employeeId) return;
+    api
+      .POST({
+        path: '/api/models/hr-employee/execute/get_employee_infor',
+        data: { kwargs: { employee_id: employeeId } },
+      })
+      .then((res) => {
+        if (res?.data) setEmployeeData(res.data);
+      })
+      .catch(console.error);
+  }, [employeeId]);
 
   const renderHeader = () => {
     return <Header title={'Hợp đồng'} />;

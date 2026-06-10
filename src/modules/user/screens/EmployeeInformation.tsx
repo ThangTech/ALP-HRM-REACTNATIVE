@@ -5,16 +5,20 @@ import React from 'react';
 import { View } from 'tamagui';
 import { MenuView } from 'user/components';
 import { horizontalScale, scale, verticalScale } from 'utils';
+import { useRoute } from '@react-navigation/native';
 
 const EmployeeInformation = () => {
+  const route = useRoute<any>();
+  const employeeId: number | undefined = route?.params?.employeeId;
+
   const dataMenu = [
     {
       title: 'Hồ sơ cá nhân',
-      onPress: () => navigate(RouteName.PersonalProfile),
+      onPress: () => navigate(RouteName.PersonalProfile, { employeeId }),
     },
     {
       title: 'Hồ sơ công ty',
-      onPress: () => navigate(RouteName.CompanyProfile),
+      onPress: () => navigate(RouteName.CompanyProfile, { employeeId }),
     },
   ];
   const renderHeader = () => {
