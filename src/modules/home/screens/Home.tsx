@@ -8,6 +8,7 @@ import { RouteName } from 'configs/navigation';
 import { HeaderHome } from 'home/components';
 import { useHomeApi } from 'home/hooks/useHomeApi';
 import useAppContext from 'hooks/useAppContext';
+import api from 'hooks/api';
 import { navigate } from 'navigators';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Image, PermissionsAndroid, StyleSheet } from 'react-native';
@@ -75,6 +76,9 @@ const Home = () => {
   useEffect(() => {
     async function getFcmToken() {
       const token = await messaging().getToken();
+      // nếu user đã logout trong lúc getToken() đang await,
+      // api.getToken() sẽ rỗng → bỏ qua, tránh gọi API với token rỗng → 401.
+      if (!api.getToken()) return;
       if (token && token !== fcmToken) {
         await setFcmToken(token);
         await homeApi.saveFcmToken({ token, employeeId: user?.employee_id });
