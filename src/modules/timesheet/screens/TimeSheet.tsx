@@ -8,8 +8,6 @@ import { useAttendanceViolationPermission } from 'timesheet/hooks/useAttendanceV
 import dayjs from 'dayjs';
 import { navigate } from 'navigators';
 import { AppStackParamList, RouteName } from 'configs/navigation';
-import ReportBlock from 'modules/leave-registration/leave-report/components/report-block';
-import { globalStyle } from 'common/styles/base';
 import { TimeSheetViewType } from 'common/enum/time-sheet-view-type';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import CardContainer from 'components/CardContainer';
@@ -183,9 +181,7 @@ const Timesheet = (props: TimeSheetProps) => {
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const { hasPermission } = useAttendanceViolationPermission();
   const [selectedEmployee, setSelectedEmployee] = useState<OptionItem | undefined>(undefined);
-  const [
-    { attendanceList, attendanceSummary, isLoadingAttendanceList, isLoadingAttendanceSummary },
-  ] = useTimeSheet({
+  const [{ attendanceList, isLoadingAttendanceList }] = useTimeSheet({
     date,
     viewType,
     employeeId: selectedEmployee?.key ? Number(selectedEmployee.key) : undefined,
@@ -446,70 +442,6 @@ const Timesheet = (props: TimeSheetProps) => {
               markedDates={markedDates}
             />
           </CardContainer>
-          <View
-            gap={scale(16)}
-            ph={scale(16)}
-            pv={scale(20)}
-            bg={'$white'}
-            br={scale(16)}
-            style={globalStyle.itemShadow}
-            bc={'$reportBorderColor'}
-            bw={1}
-          >
-            {isLoadingAttendanceSummary ? (
-              <ActivityIndicator />
-            ) : (
-              <>
-                <ReportBlock
-                  label="Thống kê ngày công"
-                  lines={[
-                    {
-                      label: 'Công chuẩn',
-                      value: (attendanceSummary?.standard_work ?? 0).toFixed(2),
-                    },
-                    {
-                      label: 'Tổng công hưởng lương',
-                      value: (attendanceSummary?.total_work ?? 0).toFixed(2),
-                    },
-                  ]}
-                />
-                <ReportBlock
-                  label="Vi phạm chấm công"
-                  lines={[
-                    {
-                      label: 'Quên chấm công',
-                      value: (attendanceSummary?.count_missing_check ?? 0).toFixed(2),
-                    },
-                    {
-                      label: 'Đi muộn',
-                      value: (attendanceSummary?.count_late ?? 0).toFixed(2),
-                    },
-                    {
-                      label: 'Về sớm',
-                      value: (attendanceSummary?.count_early ?? 0).toFixed(2),
-                    },
-                  ]}
-                />
-                <ReportBlock
-                  label="Tăng ca"
-                  lines={[
-                    {
-                      label: 'Số giờ tăng ca (thực tế)',
-                      value: (attendanceSummary?.recog_overtime_hours ?? 0).toFixed(2),
-                    },
-                    {
-                      label: 'Quy đổi nghỉ bù',
-                      value: (attendanceSummary?.overtime_leave_hours ?? 0).toFixed(2),
-                    },
-                    {
-                      label: 'Thanh toán lương',
-                      value: (attendanceSummary?.salary_hours ?? 0).toFixed(2),
-                    },
-                  ]}
-                />
-              </>
-            )}
-          </View>
           {renderTimesheetDetails}
         </View>
       </ScrollView>

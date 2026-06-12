@@ -44,7 +44,12 @@ export const usePersonalReportEditorApi = (state: PersonalReportEditorState) => 
   const fetchEmployee = async (): Promise<OptionItem[]> => {
     const response = await api.POST<BaseResponse<{ id: number; display_name: string }[]>>({
       path: '/api/models/hr-employee/execute/get_list_employee_infor',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     return response.data?.map((it) => ({ key: it.id, value: it.display_name })) || [];
   };
@@ -198,7 +203,10 @@ export const usePersonalReportEditorApi = (state: PersonalReportEditorState) => 
     ['get_staff_transfer_approval_progress', state.id],
     _fetchHistory,
   );
-  const employeeOptionsSwr = useSWR(['get_list_employee_infor'], fetchEmployee);
+  const employeeOptionsSwr = useSWR(
+    ['get_list_employee_infor', app.current_company_id],
+    fetchEmployee,
+  );
   const areaSwr = useSWR(['get_infor_area_category'], areaFetcher);
   const jobTitleSwr = useSWR(['get_infor_job_title'], jobTitleFetcher);
   const departmentSwr = useSWR(['get_infor_employee_department'], departmentFetcher);

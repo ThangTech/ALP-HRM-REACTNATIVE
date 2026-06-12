@@ -111,7 +111,12 @@ const useTimesheetExplanation = (params: UseTimesheetExplanationParams = {}) => 
   const _fetchEmployee = async (): Promise<OptionItem[]> => {
     const response = await api.POST<BaseResponse<{ id: number; display_name: string }[]>>({
       path: '/api/models/hr-employee/execute/get_list_employee_infor',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
 
     const options = [{ key: 'all', value: 'Tất cả' }];
@@ -121,7 +126,10 @@ const useTimesheetExplanation = (params: UseTimesheetExplanationParams = {}) => 
     );
     return options;
   };
-  const { data: employeeOptions } = useSWR(['get_list_employee_infor'], _fetchEmployee);
+  const { data: employeeOptions } = useSWR(
+    ['get_list_employee_infor', app.current_company_id],
+    _fetchEmployee,
+  );
 
   return [
     {

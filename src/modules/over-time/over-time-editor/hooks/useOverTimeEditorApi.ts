@@ -38,7 +38,12 @@ export const useOverTimeEditorApi = (
   const fetchEmployee = async (): Promise<OptionItem[]> => {
     const response = await api.POST<BaseResponse<{ id: number; display_name: string }[]>>({
       path: '/api/models/hr-employee/execute/get_list_employee_infor',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     return response.data?.map((it) => ({ key: it.id, value: it.display_name })) || [];
   };
@@ -247,7 +252,10 @@ export const useOverTimeEditorApi = (
   };
   const { data: histories } = useSWR(['get_hr_leave_approval_progress', state.id], _fetchHistory);
 
-  const { data: employeeOptions } = useSWR(['get_list_employee_infor'], fetchEmployee);
+  const { data: employeeOptions } = useSWR(
+    ['get_list_employee_infor', app.current_company_id],
+    fetchEmployee,
+  );
   const { data: holidayOptions } = useSWR(['get_types_ot'], _fetchTypesOT);
   const { data: overTimeDetail } = useSWR(
     state.id ? ['get_over_time_detail', state.id] : null,
