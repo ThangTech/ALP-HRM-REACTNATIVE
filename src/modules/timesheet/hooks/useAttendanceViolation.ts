@@ -144,11 +144,17 @@ const useAttendanceViolation = () => {
   );
 
   const { data: employeeOptions } = useSWR<OptionItem[]>(
-    activeTab === 'employee' ? ['get_employee_list_violation'] : null,
+    activeTab === 'employee' ? ['get_employee_list_violation', app.current_company_id] : null,
     async () => {
       const res = await api.POST<BaseResponse<{ id: number; display_name: string }[]>>({
         path: '/api/models/hr-employee/execute/get_list_employee_infor',
-        data: { kwargs: { is_working: true } },
+        data: {
+          kwargs: { is_working: true },
+          context: {
+            company_id: app.current_company_id,
+            allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+          },
+        },
       });
       return res.data?.map((e) => ({ key: e.id.toString(), value: e.display_name })) || [];
     },

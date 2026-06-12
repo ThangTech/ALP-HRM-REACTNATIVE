@@ -68,7 +68,7 @@ const useMe = () => {
       emergency_phone: '',
       access_staff_transfer: false,
     });
-    
+
     // Xoá toàn bộ SWR cache để tránh leak dữ liệu khi đổi tài khoản
     mutate(() => true, undefined, { revalidate: false });
 

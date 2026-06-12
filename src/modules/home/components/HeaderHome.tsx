@@ -109,7 +109,7 @@ const HeaderHome = () => {
             style={styles.btn}
             onPress={() => navigate(RouteName.TimesheetExplanationDetail, { type: 'create' })}
           >
-            <Button.Text fontSize={scale(12)} fontWeight={'600'}>
+            <Button.Text fontSize={12} fontWeight={'600'}>
               Giải trình
             </Button.Text>
           </Button>

@@ -1,6 +1,7 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Images } from 'assets';
 import { LeaveRegistrationViewType } from 'common/enum/leave-registration-view-type';
+import { TimeSheetViewType } from 'common/enum/time-sheet-view-type';
 import { OptionItem, Pressable, Text } from 'components';
 import OptionPickerModal2 from 'components/base/OptionPickerModal2';
 import { RouteName } from 'configs/navigation';
@@ -25,6 +26,7 @@ const Home = () => {
   const overTimesOptionRef = useRef<BottomSheetModal>(null);
   const timesheetExplanationOptionRef = useRef<BottomSheetModal>(null);
   const profileOptionRef = useRef<BottomSheetModal>(null);
+  const timesheetOptionRef = useRef<BottomSheetModal>(null);
   const [isShowMore, setShowMore] = useState(false);
   const homeApi = useHomeApi();
   const { recentActivities } = homeApi;
@@ -173,7 +175,11 @@ const Home = () => {
         label: 'Bảng công',
         icon: Images.bang_cong,
         onPress: () => {
-          navigate(RouteName.Timesheet);
+          if (userApprovalInfor?.approve_hr_attendance_explanation) {
+            timesheetOptionRef.current?.present();
+          } else {
+            navigate(RouteName.Timesheet);
+          }
         },
       },
       {
@@ -393,6 +399,14 @@ const Home = () => {
       navigate(RouteName.TimesheetExplanation, { viewType: LeaveRegistrationViewType.APPROVE });
     }
   }
+
+  function onTimesheetOptionSelected(item: OptionItem): void {
+    if (item.key === 1) {
+      navigate(RouteName.Timesheet);
+    } else if (item.key === 2) {
+      navigate(RouteName.Timesheet, { viewType: TimeSheetViewType.MANAGE_TIME_SHEET });
+    }
+  }
   return (
     <View style={styles.container}>
       {renderHeader()}
@@ -448,6 +462,14 @@ const Home = () => {
           { value: 'Danh sách phê duyệt', key: 2 },
         ]}
         onSelect={onTimesheetExplanationOptionSelected}
+      />
+      <OptionPickerModal2
+        bottomSheetRef={timesheetOptionRef}
+        data={[
+          { value: 'Bảng công của tôi', key: 1 },
+          { value: 'Bảng công nhân viên', key: 2 },
+        ]}
+        onSelect={onTimesheetOptionSelected}
       />
     </View>
   );

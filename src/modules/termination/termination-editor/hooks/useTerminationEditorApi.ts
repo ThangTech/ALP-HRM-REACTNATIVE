@@ -7,12 +7,19 @@ import { getRemoteFileType } from 'utils';
 import { TerminationEditorState } from '../TerminationEditorState';
 import useSWR from 'swr';
 import { OptionItem } from 'components';
+import useAppContext from 'hooks/useAppContext';
 
 export const useTerminationEditorApi = () => {
+  const app = useAppContext();
   const employeeFetcher = async (): Promise<OptionItem[]> => {
     const response = await api.POST<BaseResponse<{ id: number; display_name: string }[]>>({
       path: '/api/models/hr-employee/execute/get_list_employee_infor',
-      data: {},
+      data: {
+        context: {
+          company_id: app.current_company_id,
+          allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+        },
+      },
     });
     return response.data?.map((it) => ({ key: it.id, value: it.display_name })) || [];
   };
@@ -75,7 +82,10 @@ export const useTerminationEditorApi = () => {
   };
 
   const reasonOptionsSwr = useSWR(['get_infor_departure_reason'], reasonFetcher);
-  const employeeOptionsSwr = useSWR(['get_list_employee_infor'], employeeFetcher);
+  const employeeOptionsSwr = useSWR(
+    ['get_list_employee_infor', app.current_company_id],
+    employeeFetcher,
+  );
 
   const createTerminationSwr = useSWRMutation(
     ['get_resignation_letter'],
