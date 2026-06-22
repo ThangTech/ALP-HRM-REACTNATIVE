@@ -59,12 +59,12 @@ const compareVersions = (current: string, min: string): number => {
 const DEFAULT_CONFIG: AppVersionConfig = {
   ios: {
     minimum_version: '1.0',
-    store_url: 'https://apps.apple.com/vn/app/my-savani/id6754069517?l=vi',
+    store_url: 'https://apps.apple.com/us/app/anlocphat-hrm/id6778250271',
     force_update: false,
   },
   android: {
     minimum_version: '0.0.1',
-    store_url: 'https://play.google.com/store/apps/details?id=com.vdx.savani&hl=vi',
+    store_url: 'https://play.google.com/store/apps/details?id=com.vdx.alphrm',
     force_update: false,
   },
 };

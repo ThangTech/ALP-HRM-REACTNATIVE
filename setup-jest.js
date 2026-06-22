@@ -34,6 +34,7 @@ jest.mock('react-native-fs', () => ({
 jest.mock('react-native-device-info', () => ({
   getVersion: () => '1.0.0',
   getBuildNumber: () => '100',
+  isTablet: () => false,
 }));
 
 jest.mock('@revopush/react-native-code-push', () => {

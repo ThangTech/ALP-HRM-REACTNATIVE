@@ -1,11 +1,13 @@
 import { Dimensions } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 const { width, height } = Dimensions.get('window');
 const [shortDimension, longDimension] = width < height ? [width, height] : [height, width];
 
 //Default guideline sizes are based on standard ~5" screen mobile device
-const guidelineBaseWidth = 428;
-const guidelineBaseHeight = 926;
+const isTablet = DeviceInfo.isTablet();
+const guidelineBaseWidth = isTablet ? 768 : 428;
+const guidelineBaseHeight = isTablet ? 1024 : 926;
 
 export const horizontalScale = (size: number) => (shortDimension / guidelineBaseWidth) * size;
 export const verticalScale = (size: number): number => (longDimension / guidelineBaseHeight) * size;
