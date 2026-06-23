@@ -1,9 +1,8 @@
 import React from 'react';
-import { getTokens, Image, Text, View } from 'tamagui';
+import { Image, Text, View, getTokens } from 'tamagui';
 import { RegisterProvider } from './provider';
 import { Images } from 'assets';
 import { verticalScale, horizontalScale, scale } from 'utils';
-import { useSafeArea } from 'hooks';
 import { Button, Form, Input, Screen, showToast } from 'components';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { IcShowPassword, IcHidePassword } from 'assets/svgs';
@@ -31,45 +30,32 @@ function ViewPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef<any>(null);
-  const { top } = useSafeArea();
 
   const renderHeader = () => {
     return (
-      <View bg={'$blue'} jc={'center'}>
-        <TouchableOpacity
-          onPress={() => goBack()}
-          style={[styles.backButton, { top: top + scale(10) }]}
-        >
-          <IcBack size={scale(30)} />
-        </TouchableOpacity>
-        <Image
-          source={Images.login_bg}
-          alignSelf="flex-end"
-          resizeMode="contain"
-          mt={verticalScale(150)}
-          w={horizontalScale(200)}
-          h={verticalScale(150)}
-          mb={verticalScale(5)}
-        />
-        <View position="absolute" top={scale(20)} left={0} right={0} bottom={0}>
+      <View>
+        <View pt={verticalScale(52)} pl={horizontalScale(8)}>
+          <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
+            <IcBack size={scale(24)} tintColor={getTokens().color.$red500.val} />
+          </TouchableOpacity>
+        </View>
+        <View jc={'center'} alignItems={'center'} pt={verticalScale(16)}>
           <Image
-            source={Images.savani_logo}
-            w={horizontalScale(140)}
-            h={verticalScale(140)}
-            bg={'white'}
-            br={scale(100)}
-            as={'center'}
-            mt={top}
+            source={Images.alp_logo}
+            w={horizontalScale(124)}
+            h={verticalScale(121)}
+            resizeMode="contain"
           />
           <Text
+            mt={0}
+            color={'$red500'}
+            fontSize={scale(32)}
+            fontWeight="600"
             textAlign="center"
-            mt={verticalScale(20)}
-            mb={verticalScale(50)}
-            color={'$white'}
-            fontSize={scale(28)}
-            fontW={'bold'}
+            lineHeight={scale(45)}
+            style={{ fontFamily: 'Lexend' }}
           >
-            SAVANI
+            An Lộc Phát
           </Text>
         </View>
       </View>
@@ -101,13 +87,30 @@ function ViewPage() {
   }
 
   return (
-    <Screen>
+    <Screen style={styles.container}>
       {renderHeader()}
-      <View f={1} p={scale(16)}>
+      <View
+        f={1}
+        pt={verticalScale(50)}
+        backgroundColor={'white'}
+        ph={horizontalScale(24)}
+        gap={scale(15)}
+      >
+        <Text
+          fontSize={scale(32)}
+          pb={verticalScale(20)}
+          fontWeight="600"
+          color={'$red500'}
+          lineHeight={scale(45)}
+          style={{ fontFamily: 'Lexend' }}
+        >
+          Đăng ký
+        </Text>
         <Form<RegisterFormData> ref={formRef} onSubmit={handleSubmit} gap={scale(20)}>
           <Form.Item
             name="username"
             label="Tên đăng nhập"
+            floatingLabel={true}
             rules={{
               required: 'Vui lòng nhập tên đăng nhập',
               minLength: {
@@ -116,12 +119,16 @@ function ViewPage() {
               },
             }}
           >
-            <Input placeholder="Nhập tên đăng nhập" />
+            <Input
+              placeholder="Nhập tên đăng nhập"
+              activeBorderColor={getTokens().color.$red500.val}
+            />
           </Form.Item>
 
           <Form.Item
             name="password"
             label="Mật khẩu"
+            floatingLabel={true}
             rules={{
               required: 'Vui lòng nhập mật khẩu',
               minLength: {
@@ -133,6 +140,7 @@ function ViewPage() {
             <Input
               placeholder="Nhập mật khẩu"
               isPassword={!showPassword}
+              activeBorderColor={getTokens().color.$red500.val}
               onIconRightPress={() => setShowPassword(!showPassword)}
               iconRight={showPassword ? <IcShowPassword size={20} /> : <IcHidePassword size={20} />}
             />
@@ -141,6 +149,7 @@ function ViewPage() {
           <Form.Item
             name="confirmPassword"
             label="Nhập lại mật khẩu"
+            floatingLabel={true}
             rules={{
               required: 'Vui lòng nhập lại mật khẩu',
               validate: (value, formValues) => {
@@ -154,13 +163,18 @@ function ViewPage() {
             <Input
               placeholder="Nhập lại mật khẩu"
               isPassword={!showConfirmPassword}
+              activeBorderColor={getTokens().color.$red500.val}
               onIconRightPress={() => setShowConfirmPassword(!showConfirmPassword)}
               iconRight={
                 showConfirmPassword ? <IcShowPassword size={20} /> : <IcHidePassword size={20} />
               }
             />
           </Form.Item>
-          <Button style={styles.btn} onPress={handleRegisterPress} loading={isLoading}>
+          <Button
+            onPress={handleRegisterPress}
+            loading={isLoading}
+            style={[styles.btn, { backgroundColor: getTokens().color.$red500.val }]}
+          >
             <Button.Text>Đăng Ký</Button.Text>
           </Button>
         </Form>
@@ -172,13 +186,16 @@ function ViewPage() {
 const styles = StyleSheet.create({
   btn: {
     marginTop: scale(20),
-    backgroundColor: getTokens().color.$backgroundHeader.val,
+    borderRadius: scale(16),
+    height: verticalScale(48),
+    borderWidth: 0,
   },
   backButton: {
-    position: 'absolute',
-    left: horizontalScale(16),
-    zIndex: 10,
     padding: scale(8),
+    alignSelf: 'flex-start',
+  },
+  container: {
+    backgroundColor: getTokens().color.$white.val,
   },
 });
 
