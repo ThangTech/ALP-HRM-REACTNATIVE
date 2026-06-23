@@ -10,22 +10,22 @@ default:
 variables:
   GIT_DEPTH: 20
 
-# # ============ ANCHOR: SHIP BASE ============
-# .ship_android_base: &ship_android_base
-#   stage: ship
-#   image: reactnativecommunity/react-native-android:latest
-#   cache:
-#     key:
-#       files:
-#         - yarn.lock
-#     paths:
-#       - .yarn-cache/
-#   before_script:
-#     - yarn config set cache-folder .yarn-cache
-#     - yarn install --frozen-lockfile
-#     - cp $GOOGLE_SERVICES_JSON android/app/google-services.json
-#     - npm install -g firebase-tools
-#   when: manual
+# ============ ANCHOR: SHIP BASE ============
+.ship_android_base: &ship_android_base
+  stage: ship
+  image: reactnativecommunity/react-native-android:latest
+  cache:
+    key:
+      files:
+        - yarn.lock
+    paths:
+      - .yarn-cache/
+  before_script:
+    - yarn config set cache-folder .yarn-cache
+    - yarn install --frozen-lockfile
+    - cp $GOOGLE_SERVICES_JSON android/app/google-services.json
+    - npm install -g firebase-tools
+  when: manual
 
 # ============ ANCHOR: NOTIFY BASE ============
 .notify_base: &notify_base
