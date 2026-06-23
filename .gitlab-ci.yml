@@ -48,8 +48,6 @@ test-and-lint:
     - yarn install --frozen-lockfile
   stage: test
   script:
-    - echo "DEBUG TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}"
-    - echo "DEBUG TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"
     - yarn lint
     - yarn test
   rules:
@@ -74,6 +72,8 @@ notify-success:
   <<: *notify_base
   when: on_success
   script:
+    - echo "DEBUG TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}"
+    - echo "DEBUG TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"
     - STATUS_ICON="✅"; STATUS_TEXT="SUCCESS"
     - |
       MESSAGE="${STATUS_ICON} *React Native CI/CD Report*
@@ -96,6 +96,8 @@ notify-failure:
   <<: *notify_base
   when: on_failure
   script:
+    - echo "DEBUG TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}"
+    - echo "DEBUG TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"
     - STATUS_ICON="❌"; STATUS_TEXT="FAILED"
     - |
       MESSAGE="${STATUS_ICON} *React Native CI/CD Report*
