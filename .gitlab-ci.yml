@@ -48,6 +48,8 @@ test-and-lint:
     - yarn install --frozen-lockfile
   stage: test
   script:
+    - echo "DEBUG TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}"
+    - echo "DEBUG TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"
     - yarn lint
     - yarn test
   rules:
