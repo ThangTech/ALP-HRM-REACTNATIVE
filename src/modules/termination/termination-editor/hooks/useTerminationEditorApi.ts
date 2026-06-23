@@ -13,7 +13,7 @@ export const useTerminationEditorApi = () => {
   const app = useAppContext();
   const employeeFetcher = async (): Promise<OptionItem[]> => {
     const response = await api.POST<BaseResponse<{ id: number; display_name: string }[]>>({
-      path: '/api/models/hr-employee/execute/get_list_employee_infor',
+      path: '/api/models/hr-employee/execute/get_list_all_employee_infor',
       data: {
         context: {
           company_id: app.current_company_id,
@@ -83,7 +83,7 @@ export const useTerminationEditorApi = () => {
 
   const reasonOptionsSwr = useSWR(['get_infor_departure_reason'], reasonFetcher);
   const employeeOptionsSwr = useSWR(
-    ['get_list_employee_infor', app.current_company_id],
+    ['get_list_all_employee_infor', app.current_company_id],
     employeeFetcher,
   );
 
