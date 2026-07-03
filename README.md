@@ -1,80 +1,552 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# ALP HRM
 
-# Getting Started
+ALP HRM is a React Native CLI mobile HRM application built with React Native `0.77.3`, React `18`, TypeScript, Tamagui, React Navigation, SWR, Firebase Messaging/Remote Config, Notifee, and RevoPush CodePush. The app focuses on employee self-service and HR workflows such as profile lookup, timesheets, attendance explanations, leave registration, overtime, termination, discipline, insurance, tax, salary tickets, notifications, GPS tracking, suggestions, and company news.
 
-> **Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+The app entry path is `index.js` -> `App.tsx`. `App.tsx` composes the root providers: `SWRConfig`, `AppProvider`, `TamaguiProvider`, `PortalProvider`, `GestureHandlerRootView`, `BottomSheetModalProvider`, `MenuProvider`, `Host`, `AppNavigator`, `Toast`, and `ForceUpdateModal`.
 
-## Before start
+## Projects And OS / Apps And Platforms
 
-- Patch package:
+| Project/app name | Platform/OS | Native target/module | Bundle ID/Application ID | Notes |
+| --- | --- | --- | --- | --- |
+| ALP HRM | React Native JS | `App.tsx`, `src/`, registered by `app.json` name `ALP HRM` | N/A | Shared TypeScript source for Android and iOS. |
+| ALP HRM | Android production release | Gradle module `android/app` | `com.vdx.alphrm` | App name `ALP HRM`; version is read from `.env`; Firebase and RevoPush are integrated. |
+| ALP HRM Dbg | Android debug | `android/app` build type `debug` | `com.vdx.alphrm.debug` | `applicationIdSuffix ".debug"` and app name `ALP HRM Dbg`; used by `yarn run-android`. |
+| ALP HRM Dev | Android development release | `android/app` build type `release` with `APP_ENV=development` | `com.vdx.alphrm.dev` | `applicationIdSuffix ".dev"`, `versionNameSuffix "-dev"`, and app name `ALP HRM Dev`; built by `yarn build-android-dev`. |
+| ALPHRM | iOS app | `ios/ALPHRM.xcworkspace`, target/scheme `ALPHRM` | `com.vdx.alphrm` | iOS deployment target is `15.5`; React Native new architecture is disabled in `ios/Podfile`. |
+| ALPHRMTests | iOS tests | `ios/ALPHRM.xcodeproj`, target `ALPHRMTests` | `com.vdx.alphrm` in current project settings | Native iOS test target. |
 
-```
-yarn patch-package
-```
+There are no separate web or backend projects in this repository.
 
-## Start the Metro Server
+## Setup
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+### Required Toolchain
 
-To start Metro, run the following command from the _root_ of your React Native project:
+- Node.js `>=18`.
+- Yarn. `.yarnrc.yml` uses the `node-modules` linker.
+- React Native CLI local environment for Android and iOS.
+- Android Studio / Android SDK:
+  - `compileSdkVersion 35`
+  - `targetSdkVersion 35`
+  - `minSdkVersion 24`
+  - Android NDK `27.0.12077973`
+  - Kotlin `1.9.22`
+- Xcode and CocoaPods for iOS.
+- Ruby/Bundler if you manage iOS dependencies through the included `Gemfile`.
+- `revopush` CLI for CodePush release commands.
+
+### Install Dependencies
 
 ```bash
-# using npm
-npm install
-npm start
-
-# OR using Yarn
 yarn install
-yarn start
 ```
+
+`postinstall` runs `patch-package`, so patches in `patches/` are applied automatically.
+
+Install iOS Pods after dependency or native iOS changes:
+
+```bash
+cd ios
+pod install
+cd ..
+```
+
+### Environment Files
+
+The project uses `react-native-dotenv` with `APP_ENV` as the environment selector. Keep base env files in the project root and put machine-specific or secret values in local override files.
+
+| File | Purpose |
+| --- | --- |
+| `.env` | Base/development values. Android Gradle reads version values from this file. |
+| `.env.local` | Optional local development overrides. |
+| `.env.production` | Production values. |
+| `.env.production.local` | Optional production overrides for local or CI builds. |
+
+Env keys currently referenced by source code and scripts:
+
+| Key | Used for |
+| --- | --- |
+| `ANDROID_VERSION_CODE`, `ANDROID_VERSION_NAME` | Android `versionCode`, `versionName`, RevoPush target version, and release description. |
+| `IOS_VERSION_CODE`, `IOS_VERSION_NAME` | iOS build/version values and RevoPush target version. |
+| `APP_BUNDLE_VERSION` | RevoPush release description. |
+| `API_URL` | API base URL in `src/utils/client.ts` through `src/configs/env.ts`. |
+| `HOST` | Shared host config. |
+| `APP_NAME` | App name value exposed through env helpers. |
+| `DB_NAME` | Secondary env helper value in `src/config/env.ts`. |
+| `WS_URL` | WebSocket URL exposed by `src/configs/env.ts`. |
+| `CODE_PUSH_ANDROID_DEPLOYMENT_KEY`, `CODE_PUSH_IOS_DEPLOYMENT_KEY` | RevoPush/CodePush deployment keys. |
+
+Note: `src/configs/env.ts` imports `APP_NAME`, but `src/@types/env.d.ts` does not currently declare it. Add it there before relying on strict type coverage for env imports.
+
+### Secret And Native Config Files
+
+- Android Firebase: place `google-services.json` at `android/app/google-services.json`.
+- iOS Firebase: this repo uses RNFirebase and the iOS target has the RNFB core build phase. If Firebase is enabled for iOS in your environment, add the matching `GoogleService-Info.plist` to the `ALPHRM` target.
+- Android release signing currently uses `debug.keystore` for release builds in `android/app/build.gradle`. Configure a production keystore before any real store or production distribution release.
+
+## App Folder Structure
+
+### Root Project
+
+| Path | Role |
+| --- | --- |
+| `App.tsx` | Main app component and provider composition. |
+| `index.js` | React Native registry entry. |
+| `app.json` | App name/display name: `ALP HRM`. |
+| `package.json` | Dependencies and run/build/test scripts. |
+| `src/` | Main TypeScript application source. |
+| `android/` | Native Android project, Gradle config, Firebase plugin, RevoPush Gradle integration, resources, manifests. |
+| `ios/` | Native iOS project/workspace for `ALPHRM`, Podfile, plist, assets, entitlements, and build phases. |
+| `scripts/` | Local Android build/run helpers, iOS build script, and RevoPush release script. |
+| `patches/` | `patch-package` patches applied after install. |
+| `__tests__/` | Jest tests. Currently contains `App.test.tsx`. |
+| `__mocks__/` | Jest mocks for Notifee, Firebase Messaging, geolocation, and Keychain. |
+| `tamagui.config.ts` | Tamagui design/token config. |
+| `babel.config.js` | Babel config, dotenv plugin, Reanimated plugin, and module aliases. |
+| `metro.config.js` | Metro config for SVG transformer and extra asset extensions. |
+| `jest.config.js`, `setup-jest.js` | Jest transform and mock setup. |
+| `.gitlab-ci.yml` | GitLab CI lint/test pipeline and Telegram notifications. |
+
+### Source Folders
+
+| Path | Role |
+| --- | --- |
+| `src/assets/` | Static images and SVG icon components. SVGs are transformed through `react-native-svg-transformer`. |
+| `src/components/` | Shared UI such as `Screen`, `Header`, `Toast`, `Table`, `SearchInput`, upload/viewer components, cards, dropdowns, and menus. |
+| `src/components/base/` | Base primitives such as `Button`, `Input`, `Text`, `Modal`, `FlatList`, date/time pickers, option pickers, form helpers, and `Pressable`. |
+| `src/configs/` | Current app config: env, navigation, storage, constants. |
+| `src/config/` | Secondary env helper with `ENV` and `getEnv`. |
+| `src/hooks/` | Shared hooks for API helpers, profile, storage, permissions, websocket, debounce, remote config, force update, and unauthorized handling. |
+| `src/i18n/` | i18next setup with `en` and `vi` namespaces: `common`, `home`, `login`, `report`, `transfer`. |
+| `src/modules/` | Feature modules and business screens. Most product code lives here. |
+| `src/navigators/` | React Navigation setup, typed navigation utilities, bottom tabs, and app context provider. |
+| `src/common/` | Shared enums, API/domain models, and styles. |
+| `src/@types/`, `src/types/`, `custom.d.ts` | Project declarations, dotenv typings, and module declarations. |
+| `src/@model/` | Small shared models such as `department` and `group`. |
+| `src/utils/` | Shared API client, file viewer helper, scaling helpers, and general utilities. |
+
+### Navigation
+
+Navigation is centralized in:
+
+- `src/navigators/AppNavigator.tsx`: creates the native stack, selects the initial route from `useAppContext().user`, and registers screens.
+- `src/configs/navigation.ts`: defines `RouteName` and `AppStackParamList`.
+- `src/navigators/BottomTabBar.tsx`: renders the custom bottom tab bar.
+
+Initial route behavior:
+
+| Condition | Initial route |
+| --- | --- |
+| `user?.employee_id` exists | `RouteName.BottomBarStack` |
+| No logged-in user | `RouteName.Login` |
+
+Bottom tabs:
+
+| Tab | Route | Component |
+| --- | --- | --- |
+| Home | `RouteName.Home` | `modules/home/screens/Home` |
+| Notification | `RouteName.Notification` | `modules/notification/screens/Notification` |
+| User/Setting | `RouteName.Setting` | `modules/user/screens/User` |
+
+### Module Structure
+
+The codebase is feature-oriented, but modules are not perfectly uniform. Current modules commonly use this shape:
+
+```text
+src/modules/<feature>/
+├── screens/ or <page-name>/
+├── components/
+├── hooks/
+├── provider.tsx
+├── <Feature>State.ts
+├── data/
+├── types/
+└── utils/
+```
+
+For new modules, prefer this shape when it fits the feature:
+
+```text
+src/modules/<feature>/
+├── screens/pages
+├── components
+├── hooks
+├── services/api
+├── configs/constants
+└── types
+```
+
+In this repo, feature API work is usually implemented in feature hooks such as `useHomeApi`, `useNewsApi`, `useTaxApi`, `useTimeSheet`, and `useLeaveRegistrationApi`, using shared utilities and `src/utils/client.ts`.
+
+### Existing Modules/Features
+
+| Module | Main paths | Role |
+| --- | --- | --- |
+| `home` | `screens/Home.tsx`, `hooks/useHomeApi.ts`, `hooks/useNotificationCountApi.ts`, `components/HeaderHome.tsx` | Home dashboard, menu entry points, recent activities, notification count, FCM token saving, foreground notification display. |
+| `user` | `screens/*`, `register/`, `hooks/*`, `components/*`, `types/`, `utils/credentials.ts` | Login, forgot password, profile, employee information, employee list, company/profile data, document list, company switch. |
+| `notification` | `screens/Notification.tsx`, `hooks/useNotifications.ts`, `components/NotificationItem.tsx` | Notification list and item rendering. |
+| `news` | `screens/News.tsx`, `screens/NewsDetail.tsx`, `hooks/useNewsApi.ts` | Company/news list and detail. |
+| `timesheet` | `screens/*`, `hooks/*`, `state/`, `timesheet-filter/` | Timesheet, attendance explanations, attendance violations, and filters. |
+| `leave-registration` | `list/`, `detail/`, `editor/`, `leave-report/` | Leave list/detail/editor and leave report flows. |
+| `over-time` | `over-times/`, `over-time-editor/`, `over-time-detail/` | Overtime list, create/edit, and detail flows. |
+| `termination` | `terminations/`, `termination-editor/`, `termination-detail/` | Termination/resignation list, editor, and detail flows. |
+| `discipline` | `discipline-list/`, `discipline-detail/` | Discipline records list and detail. |
+| `personal-report` | `personal-report-list/`, `personal-report-editor/` | Personal report list and editor. |
+| `insurance` | `insurance-menu.tsx`, `insurance-detail/` | Insurance menu and detail views. |
+| `tax` | `index.tsx`, `provider.tsx`, `hooks/useTaxApi.ts`, `components/TaxItem.tsx` | Tax screen and tax API hook. |
+| `salary-ticket` | `salary-ticket-list/`, `salary-ticket-detail/` | Salary ticket list and detail. |
+| `gps` | `gps-list/`, `gps-tracking/` | GPS list and tracking screens. |
+| `suggestion` | `screens/Suggestion*.tsx`, `hooks/*`, `components/*` | Suggestions/feedback list, detail/editor, and upload helpers. |
+| `comment` | `screens/CommentEditor.tsx`, `hooks/useCommentEditor.tsx` | Shared comment editor flow. |
+| `menu` | `FullMenu.tsx`, `components/MenuItem.tsx` | Full menu and menu item rendering. |
+| `vps` | `screens/Vps.tsx` | VPS feature screen. |
+
+### Imports And Aliases
+
+`tsconfig.json` sets `baseUrl` to `./src`, so imports like `components`, `hooks`, `utils`, and `configs/env` work from source files. Explicit aliases are also configured for:
+
+- `home`
+- `notification`
+- `user`
+- `vps`
+- `news`
+- `timesheet`
+- `setting`
+
+The `setting` alias exists in `babel.config.js` and `tsconfig.json`, but there is currently no `src/modules/setting` folder. When adding a new alias, update both `tsconfig.json` and `babel.config.js`.
 
 ## Development
 
-### Config environment:
+Start Metro:
 
-- Create `.env.local`, `.env.production.local` to setup secret (API key, code push key,....)
+```bash
+yarn start
+```
 
-### Run Android
+Run Android debug:
 
-- Create or download `google-services.json` from firebase then put to `./android/app/`
-- Build debug app: `./scripts/run-android.sh`
+```bash
+yarn run-android
+```
 
-Now that you have successfully run the app, let's modify it.
+`yarn run-android` installs dependencies, loads `.env` and optional `.env.local`, then runs:
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+```bash
+yarn android --no-packager --active-arch-only --appIdSuffix=debug
+```
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+You can also use the raw React Native Android command:
 
-## Congratulations! :tada:
+```bash
+yarn android
+```
 
-You've successfully run and modified your React Native App. :partying_face:
+Run iOS simulator:
 
-### Now what?
+```bash
+yarn ios
+```
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+If Pods or native iOS dependencies changed:
 
-# Troubleshooting
+```bash
+cd ios
+pod install
+cd ..
+```
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+Reload behavior:
 
-# Learn More
+| Change type | Usual action |
+| --- | --- |
+| JS/TS/UI only | Use Fast Refresh or reload the app. |
+| Env values | Restart Metro; rebuild if the value is embedded in native build/version/config. |
+| Android Gradle/manifest/Firebase/permissions/resources/native modules | Rebuild Android. |
+| iOS Podfile/plist/entitlements/signing/assets/native modules | Run `pod install` when needed, then rebuild iOS. |
+| Dependencies | Run `yarn install`; run `pod install` too when native iOS pods are affected. |
 
-To learn more about React Native, take a look at the following resources:
+## Build And Update Commands
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Commands from `package.json`:
 
-## Build Android
+| Command | What it does |
+| --- | --- |
+| `yarn start` | Starts Metro bundler with `react-native start`. |
+| `yarn android` | Runs `react-native run-android`. |
+| `yarn ios` | Runs `react-native run-ios`. |
+| `yarn run-android` | Runs `scripts/run-android.sh` for Android debug with `.debug` app id suffix. |
+| `yarn build-android-dev` | Runs `scripts/build-android.sh --development`; builds Android release with `.dev` id suffix. |
+| `yarn build-android-prod` | Runs `scripts/build-android.sh --production`; builds Android production release. |
+| `yarn code-push-dev` | Runs `scripts/code-push.sh android --development`. Current script does not parse this `--development` argument; it uses `APP_ENV` from env files or defaults to development. |
+| `yarn code-push-prod` | Runs `scripts/code-push.sh android --production`. Current script does not parse this `--production` argument; it uses `APP_ENV` from env files. |
+| `yarn lint` | Runs ESLint for JS/TS/TSX/JSON files. |
+| `yarn format` | Runs ESLint fix for TS/TSX and Prettier write for `src/**/*.{ts,tsx}`. |
+| `yarn format:check` | Runs Prettier check across the repo. |
+| `yarn test` | Runs Jest. |
+| `yarn postinstall` | Runs `patch-package`; normally invoked automatically after install. |
 
-- Development: `yarn ./scripts/build-android.sh --development`
-- Production: `yarn ./scripts/build-android.sh --production`
+Shell script notes:
 
-### Codepush
+| Script | Notes |
+| --- | --- |
+| `scripts/run-android.sh` | Local Android debug runner. Loads `.env` and `.env.local`. |
+| `scripts/build-android.sh --development` | Sets `APP_ENV=development`, loads development env files, exports `COMMIT_HASH`, removes `android/app/build`, then runs `yarn react-native build-android --tasks assembleRelease`. |
+| `scripts/build-android.sh --production` | Sets `APP_ENV=production`, loads production env files, exports `COMMIT_HASH`, removes `android/app/build`, then builds release. |
+| `scripts/code-push.sh android` | Releases Android bundle to RevoPush app `may10-qms`. This app name looks copied from another repo and should be corrected for ALP HRM before real releases. |
+| `scripts/code-push.sh ios` | Contains an iOS RevoPush branch, also targeting app `may10-qms`. |
+| `scripts/build-ios.sh` | Currently outdated: it references `PortalApp.xcworkspace`, scheme `PortalApp`, and `PortalApp.xcarchive`, while the actual project is `ALPHRM`. Fix this script before relying on it. |
 
-- If code push dev, using : `yarn code-push-dev`
-- If production, using: `yarn code-push-production`
+Important mismatch from older documentation: `yarn code-push-production` does not exist. Use `yarn code-push-prod`.
+
+## Development / Coding Flow
+
+Use this flow for normal feature or bug work:
+
+1. Pull the latest code from the target branch.
+2. Run `yarn install` so dependencies and `patch-package` patches are applied.
+3. Prepare env/config files:
+   - ensure `.env` exists
+   - create/update `.env.local` for local secrets
+   - create/update `.env.production.local` only when building production locally or in CI
+   - place `android/app/google-services.json` for Android Firebase
+4. Start Metro with `yarn start`.
+5. Run the target app:
+   - Android debug: `yarn run-android`
+   - iOS simulator: `yarn ios`
+6. Implement the change inside the matching `src/modules/<feature>` folder when possible.
+7. Update `src/configs/navigation.ts` and `src/navigators/AppNavigator.tsx` when adding screens.
+8. Put shared UI in `src/components` or `src/components/base`; keep feature-only UI in the module's `components` folder.
+9. Put shared models/enums in `src/common`; feature-only types can stay inside the module.
+10. Keep feature-specific API/state hooks near the feature and reuse shared client/util patterns.
+11. Use Fast Refresh/reload for JS/UI-only changes.
+12. Rebuild/restart the app for native/config/env/dependency changes.
+13. Run quality checks.
+14. Commit and open a PR/MR with platform impact, env/config changes, and any required rebuild notes.
+
+```mermaid
+flowchart TD
+  A[Developer pulls latest code] --> B[Install dependencies]
+  B --> C[Prepare env and native config]
+  C --> D[Run Metro and target app]
+  D --> E[Implement feature or fix]
+  E --> F[Run lint, format check, and tests]
+  F --> G{Native, env, dependency, or build config changed?}
+  G -- No --> H[Reload or Fast Refresh]
+  G -- Yes --> I[Rebuild or restart app]
+  H --> J[Commit and open PR/MR]
+  I --> J
+```
+
+## How To Develop A Feature
+
+The main user entry point after login is the Home tab:
+
+- Home tab registration: `src/navigators/AppNavigator.tsx`
+- Home screen/menu implementation: `src/modules/home/screens/Home.tsx`
+- Route names and params: `src/configs/navigation.ts`
+- Navigation helper: `src/navigators/navigationUtilities.ts`
+
+`Home.tsx` defines `menuItems` with menu labels, icons, and `onPress` handlers. Some actions navigate directly, while others open `OptionPickerModal2` first based on approval flags from `useUser()`.
+
+Current Home menu flow:
+
+```mermaid
+flowchart TD
+  A[Logged-in user] --> B[BottomBarStack]
+  B --> C[Home tab]
+  C --> D[Home screen menuItems]
+  D --> E{Action needs approval-mode selection?}
+  E -- No --> F[Navigate directly]
+  E -- Yes --> G[Open OptionPickerModal2]
+  G --> H[Select ME or APPROVE viewType]
+  F --> I[Route registered in AppNavigator]
+  H --> I
+  I --> J[Feature screen]
+```
+
+Checklist for adding a Home-driven feature:
+
+1. Add the route name and route params to `src/configs/navigation.ts`.
+2. Create the screen/page in the owning feature module under `src/modules/<feature>`.
+3. Export the screen if the module uses a `screens/index.ts` barrel.
+4. Import and register the screen in `src/navigators/AppNavigator.tsx`.
+5. Add a new `menuItems` entry in `src/modules/home/screens/Home.tsx`, or add an option handler/modal path if the feature needs mode selection.
+6. Put feature-only UI in `src/modules/<feature>/components`; put reusable UI in `src/components` or `src/components/base`.
+7. Put feature-specific API/state logic in a module hook/provider/state file; use `src/utils/client.ts` and shared hooks where appropriate.
+8. Add or update translations in both `src/i18n/en/*.json` and `src/i18n/vi/*.json` if the screen has user-facing text.
+9. Check approval flags, role values, or feature access fields near the existing Home logic if visibility or routing depends on user permissions.
+10. Test direct navigation, option modal selection, route params, back navigation, loading, empty state, error state, and any create/update callbacks.
+
+Example: add a new employee document route from Home.
+
+```ts
+// src/configs/navigation.ts
+export enum RouteName {
+  // ...
+  EmployeeDocuments = 'EmployeeDocuments',
+}
+
+type ParamList = Record<RouteName | string, any> & {
+  // ...
+  [RouteName.EmployeeDocuments]: {
+    employeeId?: number;
+  };
+};
+```
+
+```tsx
+// src/modules/user/screens/EmployeeDocuments.tsx
+import React from 'react';
+import { Text } from 'components';
+import { RouteName } from 'configs/navigation';
+import { AppStackScreenProps } from 'navigators/AppNavigator';
+
+type Props = AppStackScreenProps<RouteName.EmployeeDocuments>;
+
+const EmployeeDocuments = ({ route }: Props) => {
+  return <Text>{`Employee: ${route.params?.employeeId ?? 'current'}`}</Text>;
+};
+
+export default EmployeeDocuments;
+```
+
+```ts
+// src/modules/user/screens/index.ts
+export { default as EmployeeDocuments } from './EmployeeDocuments';
+```
+
+```tsx
+// src/navigators/AppNavigator.tsx
+import { EmployeeDocuments } from 'modules/user/screens';
+
+// inside Stack.Navigator
+<Stack.Screen name={RouteName.EmployeeDocuments} component={EmployeeDocuments} />;
+```
+
+```tsx
+// src/modules/home/screens/Home.tsx
+const menuItems = useMemo(
+  () => [
+    // ...
+    {
+      key: 'employee_documents',
+      label: 'Documents',
+      icon: Images.tai_lieu,
+      onPress: () => {
+        navigate(RouteName.EmployeeDocuments, {
+          employeeId: user?.employee_id,
+        });
+      },
+    },
+  ],
+  [user?.employee_id],
+);
+```
+
+Responsibility rules:
+
+- Entry points such as `Home.tsx` coordinate menu actions, approval-mode selection, and navigation.
+- Parent list screens decide which detail/editor screen to open.
+- Hooks/providers handle data fetching, mutation, normalization, loading, and errors.
+- Components render UI and emit events upward.
+- Route params should stay explicit and narrow, such as `id`, `employeeId`, `viewType`, `date`, or callbacks already used by existing flows.
+
+## Deploy Pipeline
+
+### Android Build Pipeline
+
+```mermaid
+flowchart TD
+  A[Choose development or production] --> B[Run yarn build-android-dev or yarn build-android-prod]
+  B --> C[Install dependencies]
+  C --> D[Load env files]
+  D --> E[Set APP_ENV and COMMIT_HASH]
+  E --> F[Clean android/app/build]
+  F --> G[Assemble release APK]
+  G --> H[Verify artifact locally]
+  H --> I[Distribute through the chosen external channel]
+```
+
+Android env behavior:
+
+| Environment | Command | Application ID | App name |
+| --- | --- | --- | --- |
+| Debug local | `yarn run-android` | `com.vdx.alphrm.debug` | `ALP HRM Dbg` |
+| Development release | `yarn build-android-dev` | `com.vdx.alphrm.dev` | `ALP HRM Dev` |
+| Production release | `yarn build-android-prod` | `com.vdx.alphrm` | `ALP HRM` |
+
+The GitLab file contains commented Android Firebase App Distribution jobs. They are not active.
+
+### RevoPush / CodePush Pipeline
+
+```mermaid
+flowchart TD
+  A[Finish JS-only compatible change] --> B[Run quality gates]
+  B --> C[Set correct APP_ENV]
+  C --> D{Target platform?}
+  D -- Android --> E[yarn code-push-dev or yarn code-push-prod]
+  D -- iOS --> F[scripts/code-push.sh ios]
+  E --> G[RevoPush deployment Dev or Production]
+  F --> G
+  G --> H[Installed app receives update if native runtime is compatible]
+```
+
+Only use RevoPush/CodePush for JavaScript/assets changes that are compatible with the already installed native binary. Native dependencies, permissions, Firebase files, bundle IDs, Gradle/Pod changes, signing, app version behavior, or native resources require a new binary build.
+
+Before using the current CodePush script for ALP HRM, fix `scripts/code-push.sh` because it currently releases to the RevoPush app name `may10-qms`.
+
+### iOS Build Pipeline
+
+There is no aligned npm iOS archive script at the moment. Use Xcode with:
+
+```text
+ios/ALPHRM.xcworkspace
+scheme: ALPHRM
+target: ALPHRM
+bundle id: com.vdx.alphrm
+```
+
+`scripts/build-ios.sh` should be corrected before use because it still references `PortalApp`.
+
+### GitLab CI Pipeline
+
+The active pipeline is `.gitlab-ci.yml`.
+
+```mermaid
+flowchart TD
+  A[Push, merge request, or manual web pipeline] --> B[Install dependencies with frozen lockfile]
+  B --> C[yarn lint]
+  C --> D[yarn test]
+  D --> E[Telegram success notification]
+  C --> F[Telegram failure notification]
+  D --> F
+```
+
+Active CI currently runs lint and tests. Build/distribution jobs are present but commented out.
+
+## Quality Gates
+
+Run these before merging:
+
+```bash
+yarn lint
+yarn format:check
+yarn test
+```
+
+Recommended extra gates when the change touches typed contracts or native/build behavior:
+
+```bash
+npx tsc --noEmit
+yarn build-android-dev
+```
+
+`npx tsc --noEmit` and the Android build smoke test are recommendations because they are not currently required package scripts or active CI jobs.
+
+## Notes For New Developers
+
+- Keep route names and route params typed in `src/configs/navigation.ts`.
+- `AppProvider` and `useAppContext` drive login state and initial navigation.
+- `src/configs/env.ts` is the env helper used by the API client. `src/config/env.ts` also exists as a smaller secondary helper.
+- The project uses Hermes and has React Native new architecture disabled.
+- Android app version is read by Gradle from `.env`; iOS has a build phase named `Update Version from .env`.
+- Avoid committing local secrets. Use `.env.local` and `.env.production.local` for machine-specific or CI-specific overrides.
