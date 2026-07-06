@@ -1,5 +1,5 @@
 import { Linking, Platform } from 'react-native';
-import FileViewer from 'react-native-file-viewer';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import RNFS from 'react-native-fs';
 
 export const openMediaFile = async (uri: string, fileType?: string, fileName?: string) => {
@@ -13,7 +13,7 @@ export const openMediaFile = async (uri: string, fileType?: string, fileName?: s
         toFile: localPath,
       }).promise;
 
-      await FileViewer.open(localPath, { showOpenWithDialog: true });
+      await ReactNativeBlobUtil.ios.previewDocument(localPath);
     } catch (error) {
       console.warn('Lỗi tải/mở video iOS:', error);
       Linking.openURL(uri);
