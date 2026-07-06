@@ -16,7 +16,7 @@ import { goBack, navigate } from 'navigators';
 import { RouteName } from 'configs/navigation';
 import { useRoute, useFocusEffect } from '@react-navigation/native';
 import { useSignRequests } from '../hooks/useSignRequests';
-import { SignFilterType, SignRequest } from '../types/sign-request';
+import { SignFilterType, SignRequest } from '../hooks/useSignRequests';
 import { FilterModal } from '../components/FilterModal';
 import { ItemActionModal } from '../components/ItemActionModal';
 

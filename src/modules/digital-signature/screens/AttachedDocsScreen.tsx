@@ -12,7 +12,7 @@ import { useFileViewer } from 'hooks/useFileViewer';
 import { FileViewerOverlay } from 'components';
 import { DocumentType } from 'types/document';
 import { getFileType } from 'utils/fileUtils';
-import { SignAttachedDocument, SignAttachment } from '../types/sign-request';
+import { SignAttachedDocument, SignAttachment } from '../hooks/useSignRequests';
 
 const flattenAttachments = (attachedDocs: SignAttachedDocument[]): SignAttachment[] =>
   attachedDocs.flatMap((group) => group.attachments || []);

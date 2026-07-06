@@ -6,7 +6,7 @@ import Modal from 'react-native-modal';
 import { IcCheckbox, IcUnCheckbox } from 'assets/svgs';
 import { scale, horizontalScale, verticalScale } from 'utils';
 import { useSafeArea } from 'hooks';
-import { StateFilter } from '../types/sign-request';
+import { StateFilter } from '../hooks/useSignRequests';
 
 interface FilterOption {
   id: StateFilter | 'all';

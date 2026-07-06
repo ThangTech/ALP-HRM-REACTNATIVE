@@ -4,7 +4,7 @@ import { View, getTokens } from 'tamagui';
 import { Text } from 'components';
 import Modal from 'react-native-modal';
 import { scale } from 'utils';
-import { SignRequest } from '../types/sign-request';
+import { SignRequest } from '../hooks/useSignRequests';
 
 const ACTION_OPTIONS = [
   { id: 'attachments', label: 'Xem tài liệu đính kèm' },
