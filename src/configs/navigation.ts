@@ -55,6 +55,8 @@ export enum RouteName {
   AttendanceViolation = 'AttendanceViolation',
   AttendanceViolationDetail = 'AttendanceViolationDetail',
   EmployeeList = 'EmployeeList',
+  DocumentList = 'DocumentList',
+  DocumentPdf = 'DocumentPdf',
 }
 
 type ParamList = Record<RouteName | string, any> & {
@@ -162,6 +164,11 @@ type ParamList = Record<RouteName | string, any> & {
     group?: string;
     month: number;
     year: number;
+  };
+  [RouteName.DocumentList]: undefined;
+  [RouteName.DocumentPdf]: {
+    url: string;
+    title: string;
   };
 };
 
