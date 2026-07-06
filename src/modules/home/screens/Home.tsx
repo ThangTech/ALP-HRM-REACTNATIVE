@@ -28,6 +28,7 @@ const Home = () => {
   const timesheetExplanationOptionRef = useRef<BottomSheetModal>(null);
   const profileOptionRef = useRef<BottomSheetModal>(null);
   const timesheetOptionRef = useRef<BottomSheetModal>(null);
+  const kysoOptionRef = useRef<BottomSheetModal>(null);
   const [isShowMore, setShowMore] = useState(false);
   const homeApi = useHomeApi();
   const { recentActivities } = homeApi;
@@ -281,7 +282,7 @@ const Home = () => {
               label: 'Ký số',
               icon: Images.ky_so,
               onPress: () => {
-                Alert.alert('Tính năng đang trong quá trình phát triển');
+                kysoOptionRef.current?.present();
               },
             },
             {
@@ -474,6 +475,18 @@ const Home = () => {
           { value: 'Bảng công nhân viên', key: 2 },
         ]}
         onSelect={onTimesheetOptionSelected}
+      />
+      <OptionPickerModal2
+        bottomSheetRef={kysoOptionRef}
+        title="Chọn loại tài liệu ký"
+        data={[
+          { value: 'Của tôi', key: 1 },
+          { value: 'Tất cả', key: 2 },
+        ]}
+        onSelect={(item) => {
+          const filterType = item.key === 1 ? 'my' : 'all';
+          navigate(RouteName.SignRequestList, { filterType });
+        }}
       />
     </View>
   );

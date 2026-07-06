@@ -60,6 +60,11 @@ import GpsListPage from 'modules/gps/gps-list';
 import GpsTrackingPage from 'modules/gps/gps-tracking';
 import SuggestionList from 'modules/suggestion/screens/SuggestionList';
 import { DocumentListScreen, DocumentPdfScreen } from 'modules/document';
+import {
+  SignRequestListScreen,
+  AttachedDocsScreen,
+  SignWebViewScreen,
+} from 'modules/digital-signature';
 
 export type AppStackScreenProps<T extends RouteName> = NativeStackScreenProps<AppStackParamList, T>;
 type BottomTabBarType = ComponentProps<any>['tabs'];
@@ -182,6 +187,9 @@ const AppStack = () => {
       />
       <Stack.Screen name={RouteName.DocumentList} component={DocumentListScreen} />
       <Stack.Screen name={RouteName.DocumentPdf} component={DocumentPdfScreen} />
+      <Stack.Screen name={RouteName.SignRequestList} component={SignRequestListScreen} />
+      <Stack.Screen name={RouteName.SignAttachedDocs} component={AttachedDocsScreen} />
+      <Stack.Screen name={RouteName.SignWebView} component={SignWebViewScreen} />
     </Stack.Navigator>
   );
 };
