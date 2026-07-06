@@ -76,10 +76,6 @@ jest.mock('react-native-calendars', () => ({
   },
 }));
 
-jest.mock('react-native-file-viewer', () => ({
-  open: jest.fn(),
-}));
-
 jest.mock('@react-native-firebase/remote-config', () => {
   const mockRemoteConfigInstance = {};
   return {
@@ -94,3 +90,34 @@ jest.mock('@react-native-firebase/remote-config', () => {
     })),
   };
 });
+
+jest.mock('react-native-blob-util', () => ({
+  fs: {
+    dirs: {
+      DocumentDir: '',
+      CacheDir: '',
+      PictureDir: '',
+      MusicDir: '',
+      DownloadDir: '',
+      DCIMDir: '',
+      SDCardDir: '',
+      SDCardApplicationDir: '',
+      MainBundleDir: '',
+      LibraryDir: '',
+    },
+  },
+  fetch: jest.fn(),
+  base64: {
+    encode: jest.fn(),
+    decode: jest.fn(),
+  },
+  android: {
+    actionViewIntent: jest.fn(),
+  },
+  ios: {
+    previewDocument: jest.fn(),
+    openDocument: jest.fn(),
+  },
+}));
+
+jest.mock('react-native-pdf', () => 'Pdf');
