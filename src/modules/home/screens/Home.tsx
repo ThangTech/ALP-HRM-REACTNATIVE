@@ -11,7 +11,7 @@ import useAppContext from 'hooks/useAppContext';
 import api from 'hooks/api';
 import { navigate } from 'navigators';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Image, PermissionsAndroid, StyleSheet } from 'react-native';
+import { Image, PermissionsAndroid, StyleSheet } from 'react-native';
 import { ScrollView, View } from 'tamagui';
 import { useUser } from 'user/hooks';
 import { scale, verticalScale } from 'utils';
@@ -289,7 +289,7 @@ const Home = () => {
               label: 'Tài liệu',
               icon: Images.tai_lieu,
               onPress: () => {
-                Alert.alert('Tính năng đang trong quá trình phát triển');
+                navigate(RouteName.DocumentList);
               },
             },
             ...(!user?.access_staff_transfer || (isShowMore && user?.access_staff_transfer)

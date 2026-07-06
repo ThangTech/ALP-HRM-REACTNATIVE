@@ -59,6 +59,7 @@ import SalaryTicketDetailPage from 'modules/salary-ticket/salary-ticket-detail';
 import GpsListPage from 'modules/gps/gps-list';
 import GpsTrackingPage from 'modules/gps/gps-tracking';
 import SuggestionList from 'modules/suggestion/screens/SuggestionList';
+import { DocumentListScreen, DocumentPdfScreen } from 'modules/document';
 
 export type AppStackScreenProps<T extends RouteName> = NativeStackScreenProps<AppStackParamList, T>;
 type BottomTabBarType = ComponentProps<any>['tabs'];
@@ -179,6 +180,8 @@ const AppStack = () => {
         name={RouteName.AttendanceViolationDetail}
         component={AttendanceViolationDetail}
       />
+      <Stack.Screen name={RouteName.DocumentList} component={DocumentListScreen} />
+      <Stack.Screen name={RouteName.DocumentPdf} component={DocumentPdfScreen} />
     </Stack.Navigator>
   );
 };

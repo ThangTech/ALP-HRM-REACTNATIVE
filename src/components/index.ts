@@ -7,3 +7,4 @@ export { default as ColumnDefinition, type TableData, type TableProps } from './
 export { default as RadioButton } from './base/RadioButton';
 export { default as SearchInput } from './SearchInput';
 export { default as ForceUpdateModal } from './ForceUpdateModal';
+export { FileViewerOverlay } from './FileViewerOverlay';
