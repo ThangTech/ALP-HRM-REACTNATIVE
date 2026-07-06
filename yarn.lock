@@ -2456,7 +2456,7 @@
     metro-config "^0.81.5"
     metro-runtime "^0.81.5"
 
-"@react-native/normalize-color@^2.1.0":
+"@react-native/normalize-color@*", "@react-native/normalize-color@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@react-native/normalize-color/-/normalize-color-2.1.0.tgz#939b87a9849e81687d3640c5efa2a486ac266f91"
   integrity sha512-Z1jQI2NpdFJCVgpY+8Dq/Bt3d+YUi1928Q+/CZm/oh66fzM0RUl54vvuXlPJKybH4pdCZey1eDTPaLHkMPNgWA==
@@ -4472,6 +4472,11 @@ balanced-match@^4.0.2:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-4.0.4.tgz#bfb10662feed8196a2c62e7c68e17720c274179a"
   integrity sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==
 
+base-64@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/base-64/-/base-64-1.0.0.tgz#09d0f2084e32a3fd08c2475b973788eee6ae8f4a"
+  integrity sha512-kwDPIFCGx0NZHog36dj+tHiwP4QMzsZ3AgMViUBKI0+V5n4U0ufTCUMhnQ04diaRI8EX/QcPfql7zlhZ7j4zgg==
+
 base-64@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/base-64/-/base-64-0.1.0.tgz#780a99c84e7d600260361511c4877613bf24f6bb"
@@ -5060,6 +5065,11 @@ crypto-js@3.1.9-1:
   resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-3.1.9-1.tgz#fda19e761fc077e01ffbfdc6e9fdfc59e8806cd8"
   integrity sha512-W93aKztssqf29OvUlqfikzGyYbD1rpkXvGP9IQ1JchLY3bxaLXZSWYbwrtib2vk8DobrDzX7PIXcDWHp0B6Ymw==
 
+crypto-js@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.2.0.tgz#4d931639ecdfd12ff80e8186dba6af2c2e856631"
+  integrity sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==
+
 css-color-keywords@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/css-color-keywords/-/css-color-keywords-1.0.0.tgz#fea2616dc676b2962686b3af8dbdbe180b244e05"
@@ -5264,6 +5274,15 @@ depd@2.0.0, depd@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/depd/-/depd-2.0.0.tgz#b696163cc757560d09cf22cc8fad1571b79e76df"
   integrity sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==
+
+deprecated-react-native-prop-types@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/deprecated-react-native-prop-types/-/deprecated-react-native-prop-types-2.3.0.tgz#c10c6ee75ff2b6de94bb127f142b814e6e08d9ab"
+  integrity sha512-pWD0voFtNYxrVqvBMYf5gq3NA2GCpfodS1yNynTPc93AYA/KEMGeWDqqeUB6R2Z9ZofVhks2aeJXiuQqKNpesA==
+  dependencies:
+    "@react-native/normalize-color" "*"
+    invariant "*"
+    prop-types "*"
 
 dequal@^2.0.3:
   version "2.0.3"
@@ -6358,7 +6377,7 @@ glob-parent@^6.0.2:
   dependencies:
     is-glob "^4.0.3"
 
-glob@^13.0.0:
+glob@13.0.6, glob@^13.0.0:
   version "13.0.6"
   resolved "https://registry.yarnpkg.com/glob/-/glob-13.0.6.tgz#078666566a425147ccacfbd2e332deb66a2be71d"
   integrity sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==
@@ -6715,7 +6734,7 @@ internal-slot@^1.1.0:
     hasown "^2.0.2"
     side-channel "^1.1.0"
 
-invariant@2.2.4, invariant@^2.2.4:
+invariant@*, invariant@2.2.4, invariant@^2.2.4:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/invariant/-/invariant-2.2.4.tgz#610f3c92c9359ce1db616e538008d23ff35158e6"
   integrity sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==
@@ -8703,7 +8722,7 @@ prompts@^2.0.1, prompts@^2.4.2:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@15.8.1, prop-types@^15.5.10, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.8.0, prop-types@^15.8.1:
+prop-types@*, prop-types@15.8.1, prop-types@^15.5.10, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.8.0, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -8888,6 +8907,14 @@ react-native-animatable@1.4.0:
   dependencies:
     prop-types "^15.8.1"
 
+react-native-blob-util@^0.24.10:
+  version "0.24.10"
+  resolved "https://registry.yarnpkg.com/react-native-blob-util/-/react-native-blob-util-0.24.10.tgz#f213e3efd5ee42037d9d39efb1fe23926ef5304e"
+  integrity sha512-4yazgoCstXgt2/CRURtowGP3furAzbWdfMQ4jyUPDo5xtLx7KE2F/xMz3oU3shLwfL4id0iEKsBywoxvJSHPzQ==
+  dependencies:
+    base-64 "1.0.0"
+    glob "13.0.6"
+
 react-native-calendars@^1.1313.0:
   version "1.1314.0"
   resolved "https://registry.yarnpkg.com/react-native-calendars/-/react-native-calendars-1.1314.0.tgz#4a318c385ae370bf782b79039c4c6f96abed29a7"
@@ -8903,9 +8930,9 @@ react-native-calendars@^1.1313.0:
   optionalDependencies:
     moment "^2.29.4"
 
-"react-native-date-picker@git+https://github.com/vdx-vn/react-native-date-picker#feat-year-month":
+"react-native-date-picker@git+https://gitlab.vdx.vn/huynq/react-native-date-picker-yearandmonth.git#master":
   version "5.0.13"
-  resolved "git+https://github.com/vdx-vn/react-native-date-picker#30613aff53efa7fdbc7838cfbf9a58e5aaaf6715"
+  resolved "git+https://gitlab.vdx.vn/huynq/react-native-date-picker-yearandmonth.git#6cc2dd324a28988e576de3230bf99dae5cac7234"
 
 react-native-device-info@^15.0.1:
   version "15.0.2"
@@ -8940,11 +8967,6 @@ react-native-fetch-api@^3.0.0:
   integrity sha512-g2rtqPjdroaboDKTsJCTlcmtw54E25OjyaunUP0anOZn4Fuo2IKs8BVfe02zVggA/UysbmfSnRJIqtNkAgggNA==
   dependencies:
     p-defer "^3.0.0"
-
-react-native-file-viewer@^2.1.5:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/react-native-file-viewer/-/react-native-file-viewer-2.1.5.tgz#cd4544f573108e79002b5c7e1ebfce4371885250"
-  integrity sha512-MGC6sx9jsqHdefhVQ6o0akdsPGpkXgiIbpygb2Sg4g4bh7v6K1cardLV1NwGB9A6u1yICOSDT/MOC//9Ez6EUg==
 
 react-native-fs@^2.20.0:
   version "2.20.0"
@@ -9019,6 +9041,14 @@ react-native-nitro-modules@^0.33.2:
   version "0.33.9"
   resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-0.33.9.tgz#77983bd170b81b87e05c2989c82d91475649569d"
   integrity sha512-BM9C5mCGYYjrc8CDWZZ0anLWU/knH2xaEuFzvzogKTOW6fzgS6mmsCdM3ty+AhImJNSYwK19DLrHaqwnrrwEzw==
+
+react-native-pdf@^7.0.4:
+  version "7.0.4"
+  resolved "https://registry.yarnpkg.com/react-native-pdf/-/react-native-pdf-7.0.4.tgz#f48d485d32cef24f41511ba2072bc99ba94b13c9"
+  integrity sha512-Uhxn5SSguMKvbwD50iIZfYPmYeKcX+9I3tc4J3HCbRExAN0uqXTAKx2pvbR2Y62umAj0JS274FcbSldQfoQfyg==
+  dependencies:
+    crypto-js "4.2.0"
+    deprecated-react-native-prop-types "^2.3.0"
 
 react-native-popup-menu@^0.19.0:
   version "0.19.0"

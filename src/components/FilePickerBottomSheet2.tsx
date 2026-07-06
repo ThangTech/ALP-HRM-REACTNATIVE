@@ -1,5 +1,5 @@
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
-import { IcDocument, IcImage, IcVideo } from 'assets/svgs';
+import { IcDocs, IcImage, IcVideo } from 'assets/svgs';
 import { Button, Text, SmartBackdrop } from 'components';
 import React, { RefObject, useCallback } from 'react';
 import { StyleSheet } from 'react-native';
@@ -48,7 +48,7 @@ const FilePickerBottomSheet2: React.FC<FilePickerBottomSheet2Props> = ({
 
             <Button variant="secondary" onPress={onSelectDocument} style={styles.optionButton}>
               <View fd="row" ai="center" gap={12}>
-                <IcDocument size={20} />
+                <IcDocs size={20} />
                 <Button.Text variant="secondary">Upload file tài liệu</Button.Text>
               </View>
             </Button>
