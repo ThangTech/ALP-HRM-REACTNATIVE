@@ -1,14 +1,16 @@
 import * as React from 'react';
 import Svg, { Circle } from 'react-native-svg';
 
-function IcEllipsisVertical() {
+import { IconProps } from '.';
+
+function IcEllipsisVertical({ size = 24, tintColor = 'black' }: IconProps) {
   return (
     <Svg
-      width={24}
-      height={24}
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
-      fill="white"
-      stroke="white"
+      fill={tintColor}
+      stroke={tintColor}
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
