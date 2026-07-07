@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { StyleSheet, ActivityIndicator, BackHandler } from 'react-native';
 import { View, getTokens } from 'tamagui';
 import { Text } from 'components';
 import WebView from 'react-native-webview';
@@ -12,20 +12,34 @@ const SignWebViewScreen = () => {
   const route = useRoute();
   const { sign_url, title } = (route.params as { sign_url?: string; title?: string }) || {};
 
+  const webViewRef = useRef<WebView>(null);
+  const [canGoBack, setCanGoBack] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
   const hasValidUrl = !!sign_url && sign_url.trim() !== '';
 
+  const handleBackPress = useCallback(() => {
+    canGoBack && webViewRef.current ? webViewRef.current.goBack() : goBack();
+    return true;
+  }, [canGoBack]);
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    return () => backHandler.remove();
+  }, [handleBackPress]);
+
   return (
     <View style={styles.container}>
-      <Header title={title} onPressLeft={goBack} />
+      <Header title={title} onPressLeft={handleBackPress} />
 
       {hasValidUrl ? (
         <View style={styles.webViewContainer}>
           <WebView
+            ref={webViewRef}
             source={{ uri: sign_url }}
             style={styles.webView}
+            onNavigationStateChange={(navState) => setCanGoBack(navState.canGoBack)}
             onLoadStart={() => {
               setIsLoading(true);
               setHasError(false);
