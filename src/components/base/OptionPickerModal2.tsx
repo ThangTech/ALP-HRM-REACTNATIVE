@@ -23,7 +23,7 @@ const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
   searchable = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const snapPoints = useMemo(() => ['45%'], []);
+  const snapPoints = useMemo(() => ['30%'], []);
 
   // Filter data based on search query
   const filteredData = useMemo(() => {

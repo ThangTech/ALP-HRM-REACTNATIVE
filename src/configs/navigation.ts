@@ -57,6 +57,9 @@ export enum RouteName {
   EmployeeList = 'EmployeeList',
   DocumentList = 'DocumentList',
   DocumentPdf = 'DocumentPdf',
+  SignRequestList = 'SignRequestList',
+  SignAttachedDocs = 'SignAttachedDocs',
+  SignWebView = 'SignWebView',
 }
 
 type ParamList = Record<RouteName | string, any> & {
@@ -169,6 +172,17 @@ type ParamList = Record<RouteName | string, any> & {
   [RouteName.DocumentPdf]: {
     url: string;
     title: string;
+  };
+  [RouteName.SignRequestList]: {
+    filterType: 'my' | 'all';
+  };
+  [RouteName.SignAttachedDocs]: {
+    attached_documents: any[];
+    title?: string;
+  };
+  [RouteName.SignWebView]: {
+    sign_url?: string;
+    title?: string;
   };
 };
 
