@@ -181,7 +181,7 @@ const Timesheet = (props: TimeSheetProps) => {
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const { hasPermission } = useAttendanceViolationPermission();
   const [selectedEmployee, setSelectedEmployee] = useState<OptionItem | undefined>(undefined);
-  const [{ attendanceList, isLoadingAttendanceList }] = useTimeSheet({
+  const [{ attendanceList, isLoadingAttendanceList, attendanceSummary }] = useTimeSheet({
     date,
     viewType,
     employeeId: selectedEmployee?.key ? Number(selectedEmployee.key) : undefined,
@@ -434,6 +434,30 @@ const Timesheet = (props: TimeSheetProps) => {
           <CardContainer>
             <View p={scale(8)}>
               <StatusLegend />
+
+              <View
+                mt={verticalScale(12)}
+                pt={verticalScale(12)}
+                borderTopWidth={1}
+                borderTopColor="$border"
+              >
+                <View fd="row" jc="space-between" ai="center" mb={verticalScale(4)}>
+                  <Text fontSize={scale(13)} color="$grey">
+                    Công chuẩn trên tháng:
+                  </Text>
+                  <Text fontSize={scale(14)} fontW="600">
+                    {attendanceSummary?.standard_work} công
+                  </Text>
+                </View>
+                <View fd="row" jc="space-between" ai="center">
+                  <Text fontSize={scale(13)} color="$grey">
+                    Công thực tế trên tháng:
+                  </Text>
+                  <Text fontSize={scale(14)} fontW="600" color="$blue700">
+                    {attendanceSummary?.total_work ?? 0} công
+                  </Text>
+                </View>
+              </View>
             </View>
             <Calendar
               onMonthChange={handleMonthChange}
