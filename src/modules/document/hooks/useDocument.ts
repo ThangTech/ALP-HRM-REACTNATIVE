@@ -5,7 +5,7 @@ import { useFilePicker } from 'modules/user/hooks/useFilePicker';
 import { showToast } from 'components';
 import useAppContext from 'hooks/useAppContext';
 import { DocumentItemModel } from 'types/document';
-import { mapApiTypeToDocumentType } from 'utils/fileUtils';
+import { mapApiTypeToDocumentType, decodeSafeFileName } from 'utils/fileUtils';
 
 export interface BreadcrumbItem {
   id: number | false;
@@ -86,6 +86,7 @@ export const useDocument = () => {
 
       const mapItem = (item: any, itemType: 'folder' | 'binary' | 'url'): DocumentItemModel => ({
         ...item,
+        name: decodeSafeFileName(item.name),
         attachment_id: item.attachment_id,
         originalType: itemType,
         type: mapApiTypeToDocumentType(itemType, item.mimetype),
@@ -125,6 +126,11 @@ export const useDocument = () => {
       setSize((s) => s + 1);
     }
   }, [setSize, isReachingEnd, isLoadingMore]);
+
+  const refresh = useCallback(async () => {
+    setSize(1);
+    await mutate();
+  }, [mutate, setSize]);
 
   const refreshData = useCallback(async () => {
     await mutate();
@@ -262,8 +268,10 @@ export const useDocument = () => {
     documents,
     isLoading: isLoading || (isValidating && size === 1 && documents.length === 0),
     isLoadingMore: !!isLoadingMore,
+    isRefreshing: isValidating && size === 1,
     hasMore: !isReachingEnd,
     loadMore,
+    refresh,
     isUploading,
     handleCreateLink,
     handleSelectFile,

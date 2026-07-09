@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   BackHandler,
   FlatList,
+  RefreshControl,
 } from 'react-native';
 import { View, getTokens } from 'tamagui';
 import { Text } from 'components';
@@ -352,6 +353,9 @@ export const DocumentListScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl refreshing={state.isRefreshing} onRefresh={state.refresh} />
+          }
           onEndReached={state.loadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={

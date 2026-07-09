@@ -5,6 +5,15 @@ import { navigate } from 'navigators';
 import { RouteName } from 'configs/navigation';
 import { BaseFileItem, DocumentType } from 'types/document';
 
+export const decodeSafeFileName = (fileName?: string | null): string => {
+  if (!fileName) return '';
+  try {
+    return decodeURIComponent(fileName);
+  } catch (e) {
+    return fileName;
+  }
+};
+
 export const getFileType = (item: BaseFileItem): DocumentType => {
   if (item.type && Object.values(DocumentType).includes(item.type as DocumentType)) {
     return item.type as DocumentType;
@@ -57,7 +66,7 @@ export const downloadAndroid = async (
   token: string,
 ): Promise<void> => {
   const dirs = ReactNativeBlobUtil.fs.dirs;
-  const fileName = decodeURIComponent(item.name || 'document_file');
+  const fileName = decodeSafeFileName(item.name || 'document_file');
   await ReactNativeBlobUtil.config({
     addAndroidDownloads: {
       useDownloadManager: true,
@@ -76,7 +85,7 @@ export const getOrDownloadCachedFile = async (
   url: string,
   token: string,
 ): Promise<string> => {
-  const fileName = decodeURIComponent(item.name || 'document_file');
+  const fileName = decodeSafeFileName(item.name || 'document_file');
   const uniqueId = item.attachment_id || item.id;
   const uniqueFileName = `${uniqueId}_${fileName}`;
   const dirPath = `${RNFS.CachesDirectoryPath}/documents`;

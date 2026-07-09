@@ -6,6 +6,7 @@ import {
 } from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
 import { FilePickerResult } from '../types/document';
+import { decodeSafeFileName } from 'utils/fileUtils';
 
 export const useFilePicker = () => {
   const pickVideo = (): Promise<FilePickerResult | null> => {
@@ -26,7 +27,7 @@ export const useFilePicker = () => {
         if (asset) {
           const fileType = getFileTypeFromUri(asset.uri || '');
           resolve({
-            name: asset.fileName || `video_${Date.now()}.mp4`,
+            name: decodeSafeFileName(asset.fileName) || `video_${Date.now()}.mp4`,
             type: fileType,
             uri: asset.uri || '',
             size: asset.fileSize,
@@ -58,7 +59,7 @@ export const useFilePicker = () => {
         if (asset) {
           const fileType = getFileTypeFromUri(asset.uri || '');
           resolve({
-            name: asset.fileName || `image_${Date.now()}.jpg`,
+            name: decodeSafeFileName(asset.fileName) || `image_${Date.now()}.jpg`,
             type: fileType,
             uri: asset.uri || '',
             size: asset.fileSize,
@@ -93,7 +94,7 @@ export const useFilePicker = () => {
         if (asset) {
           const fileType = getFileTypeFromUri(asset.uri || '');
           resolve({
-            name: asset.fileName || `image_${Date.now()}.jpg`,
+            name: decodeSafeFileName(asset.fileName) || `image_${Date.now()}.jpg`,
             type: fileType,
             uri: asset.uri || '',
             size: asset.fileSize,
@@ -123,7 +124,7 @@ export const useFilePicker = () => {
           const fileType = getFileTypeFromUri(file.uri);
 
           resolve({
-            name: file.name || 'document',
+            name: decodeSafeFileName(file.name) || 'document',
             type: fileType,
             uri: file.uri,
             size: file.size || undefined,
