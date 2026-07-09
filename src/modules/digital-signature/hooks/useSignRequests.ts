@@ -2,6 +2,7 @@ import api from 'hooks/api';
 import useSWRInfinite from 'swr/infinite';
 import { useMemo, useCallback, useState } from 'react';
 import useAppContext from 'hooks/useAppContext';
+import useDebounce from 'hooks/useDebounce';
 export type SignFilterType = 'my' | 'all';
 export type StateFilter = 'sent' | 'signed';
 export type SignRequestState = 'sent' | 'signed' | 'canceled';
@@ -62,6 +63,8 @@ const LIMIT = 50;
 export const useSignRequests = (filterType: SignFilterType) => {
   const app = useAppContext();
   const [stateFilter, setStateFilter] = useState<StateFilter | undefined>(undefined);
+  const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebounce(searchText, 300);
 
   const getKey = useCallback(
     (pageIndex: number, previousPageData: SignRequest[] | null) => {
@@ -72,13 +75,14 @@ export const useSignRequests = (filterType: SignFilterType) => {
         {
           filter_type: filterType,
           ...(stateFilter && { state: stateFilter }),
+          ...(debouncedSearchText.trim() ? { search_text: debouncedSearchText.trim() } : {}),
           offset: pageIndex * LIMIT,
           limit: LIMIT,
         },
         app.current_company_id,
       ];
     },
-    [filterType, stateFilter, app.current_company_id],
+    [filterType, stateFilter, debouncedSearchText, app.current_company_id],
   );
 
   const fetcher = async ([_key, filters]: [string, any]) => {
@@ -134,7 +138,9 @@ export const useSignRequests = (filterType: SignFilterType) => {
   return {
     signRequests,
     stateFilter,
-    isLoading,
+    searchText,
+    setSearchText,
+    isLoading: isLoading || (isValidating && size === 1 && signRequests.length === 0),
     isLoadingMore: !!isLoadingMore,
     isReachingEnd: !!isReachingEnd,
     isRefreshing: isValidating && size === 1,
