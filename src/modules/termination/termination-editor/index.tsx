@@ -41,7 +41,7 @@ function ViewPage() {
 
   return (
     <View f={1}>
-      <Header title={'Chi tiết đơn nghỉ'} />
+      <Header title={'Tạo đơn nghỉ việc'} />
       <ScrollView f={1} automaticallyAdjustKeyboardInsets>
         <View gap={scale(16)} p={scale(16)}>
           {blocks.map((block) => (

@@ -216,9 +216,11 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   });
 
   // Helper function to convert mimetype to file type
-  const getFileTypeFromMimetype = (mimetype: string): 'image' | 'pdf' | 'docx' => {
+  const getFileTypeFromMimetype = (mimetype: string): 'image' | 'pdf' | 'docx' | 'video' => {
     if (mimetype.startsWith('image/')) {
       return 'image';
+    } else if (mimetype.startsWith('video/')) {
+      return 'video';
     } else if (mimetype === 'application/pdf') {
       return 'pdf';
     } else if (

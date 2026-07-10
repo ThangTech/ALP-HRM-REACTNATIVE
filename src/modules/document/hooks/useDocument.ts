@@ -204,7 +204,7 @@ export const useDocument = () => {
         showToast('error', 'Lỗi', res.message || 'Không thể tải file lên');
       }
     } catch (e: any) {
-      showToast('error', 'Lỗi', 'Có lỗi xảy ra khi tải file lên');
+      showToast('error', 'Lỗi', e.message);
     } finally {
       setIsUploading(false);
     }
@@ -245,13 +245,20 @@ export const useDocument = () => {
   };
 
   const handleSelectFile = async (type: 'image' | 'document' | 'video') => {
-    let result;
-    if (type === 'image') result = await filePicker.pickImage();
-    else if (type === 'document') result = await filePicker.pickDocument();
-    else if (type === 'video') result = await filePicker.pickVideo();
+    setIsUploading(true);
+    try {
+      let result;
+      if (type === 'image') result = await filePicker.pickImage();
+      else if (type === 'document') result = await filePicker.pickDocument();
+      else if (type === 'video') result = await filePicker.pickVideo();
 
-    if (result) {
-      await handleUploadMobileFile([result]);
+      if (result) {
+        await handleUploadMobileFile([result]);
+      } else {
+        setIsUploading(false);
+      }
+    } catch (error) {
+      setIsUploading(false);
     }
   };
 
