@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import Modal from 'react-native-modal';
 import { View } from 'tamagui';
 import { Text } from 'components';
@@ -63,61 +70,69 @@ export const AddLinkModal = ({ isVisible, onClose, onSubmit, isLoading }: AddLin
       hideModalContentWhileAnimating={true}
       avoidKeyboard
     >
-      <View bg="$white" br={scale(16)} width="100%" overflow="hidden">
-        <View p={scale(20)}>
-          <Text fontSize={scale(18)} fontW="600" color="$black" ta="center" mb={verticalScale(20)}>
-            Liên kết
-          </Text>
-
-          <View mb={verticalScale(16)}>
-            <Input
-              placeholder="Tên liên kết"
-              value={name}
-              onChangeText={setName}
-              editable={!isLoading}
-            />
-          </View>
-
-          <View>
-            <Input
-              placeholder="example.com"
-              value={url}
-              onChangeText={setUrl}
-              editable={!isLoading}
-              autoCapitalize="none"
-              keyboardType="url"
-            />
-          </View>
-        </View>
-        <View h={1} bg="#f0f0f0" w="100%" />
-        <View fd="row" h={verticalScale(52)} ai="center">
-          <TouchableOpacity
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}
-            onPress={handleClose}
-            disabled={isLoading}
-          >
-            <Text fontSize={scale(16)} fontW="500" color="$black">
-              Huỷ
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View bg="$white" br={scale(16)} width="100%" overflow="hidden">
+          <View p={scale(20)}>
+            <Text
+              fontSize={scale(18)}
+              fontW="600"
+              color="$black"
+              ta="center"
+              mb={verticalScale(20)}
+            >
+              Liên kết
             </Text>
-          </TouchableOpacity>
 
-          <View w={1} h="100%" bg="#f0f0f0" />
+            <View mb={verticalScale(16)}>
+              <Input
+                placeholder="Tên liên kết"
+                value={name}
+                onChangeText={setName}
+                editable={!isLoading}
+              />
+            </View>
 
-          <TouchableOpacity
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}
-            onPress={handleSave}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#d32f2f" />
-            ) : (
-              <Text fontSize={scale(16)} fontW="600" color="$d_red">
-                Xác nhận
+            <View>
+              <Input
+                placeholder="example.com"
+                value={url}
+                onChangeText={setUrl}
+                editable={!isLoading}
+                autoCapitalize="none"
+                keyboardType="url"
+              />
+            </View>
+          </View>
+          <View h={1} bg="#f0f0f0" w="100%" />
+          <View fd="row" h={verticalScale(52)} ai="center">
+            <TouchableOpacity
+              style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}
+              onPress={handleClose}
+              disabled={isLoading}
+            >
+              <Text fontSize={scale(16)} fontW="500" color="$black">
+                Huỷ
               </Text>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+
+            <View w={1} h="100%" bg="#f0f0f0" />
+
+            <TouchableOpacity
+              style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}
+              onPress={handleSave}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#d32f2f" />
+              ) : (
+                <Text fontSize={scale(16)} fontW="600" color="$d_red">
+                  Xác nhận
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

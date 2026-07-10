@@ -4,13 +4,15 @@ import {
   Alert,
   ScrollView,
   TouchableOpacity,
+  Keyboard,
   ActivityIndicator,
   BackHandler,
   FlatList,
   RefreshControl,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { View, getTokens } from 'tamagui';
-import { Text } from 'components';
+import { Text, Input, FileViewerOverlay } from 'components';
 
 import Header from 'components/Header';
 import {
@@ -33,13 +35,14 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useDocument, BreadcrumbItem } from '../hooks/useDocument';
 import { DocumentType, DocumentItemModel } from 'types/document';
 import { useFileViewer } from 'hooks/useFileViewer';
-import { FileViewerOverlay } from 'components';
 import { goBack } from 'navigators';
 
 interface DocumentHeaderProps {
   breadcrumbs: BreadcrumbItem[];
   onFilterPress: () => void;
   onBreadcrumbPress: (index: number) => void;
+  searchText: string;
+  onChangeSearch: (text: string) => void;
   isSelectionMode?: boolean;
   selectedCount?: number;
   onClearSelection?: () => void;
@@ -50,6 +53,8 @@ const DocumentHeader = ({
   breadcrumbs,
   onFilterPress,
   onBreadcrumbPress,
+  searchText,
+  onChangeSearch,
   isSelectionMode,
   selectedCount = 0,
   onClearSelection,
@@ -64,7 +69,7 @@ const DocumentHeader = ({
           <IcFilter size={scale(28)} />
         </TouchableOpacity>
 
-        {isSelectionMode && (
+        {isSelectionMode ? (
           <View fd="row" ai="center">
             <Text fontSize={scale(14)} fontW="bold" color="$black" mr={scale(10)}>
               Đã chọn: {selectedCount}
@@ -86,6 +91,15 @@ const DocumentHeader = ({
               </Text>
             </TouchableOpacity>
           </View>
+        ) : (
+          <Input
+            containerStyle={{ flex: 1, marginLeft: horizontalScale(12) }}
+            placeholder="Tìm kiếm..."
+            value={searchText}
+            onChangeText={onChangeSearch}
+            returnKeyType="search"
+            rightAddon="clear"
+          />
         )}
       </View>
 
@@ -273,6 +287,7 @@ export const DocumentListScreen = () => {
   };
 
   const handlePressItem = (item: DocumentItemModel) => {
+    Keyboard.dismiss();
     if (isSelectionMode) {
       toggleSelection(item.id);
     } else {
@@ -334,17 +349,27 @@ export const DocumentListScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Tài Liệu" rightAction={renderHeaderRight()} onPressLeft={handleHeaderBack} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View>
+          <Header
+            title="Tài Liệu"
+            rightAction={renderHeaderRight()}
+            onPressLeft={handleHeaderBack}
+          />
 
-      <DocumentHeader
-        breadcrumbs={state.breadcrumbs}
-        onFilterPress={() => setIsFilterOpen(true)}
-        onBreadcrumbPress={state.handleGoToBreadcrumb}
-        isSelectionMode={isSelectionMode}
-        selectedCount={selectedIds.length}
-        onClearSelection={clearSelection}
-        onDeleteMultiple={handleDeleteMultiple}
-      />
+          <DocumentHeader
+            breadcrumbs={state.breadcrumbs}
+            onFilterPress={() => setIsFilterOpen(true)}
+            onBreadcrumbPress={state.handleGoToBreadcrumb}
+            searchText={state.searchText}
+            onChangeSearch={state.setSearchText}
+            isSelectionMode={isSelectionMode}
+            selectedCount={selectedIds.length}
+            onClearSelection={clearSelection}
+            onDeleteMultiple={handleDeleteMultiple}
+          />
+        </View>
+      </TouchableWithoutFeedback>
 
       <View f={1} ph={horizontalScale(20)}>
         <FlatList
@@ -433,6 +458,22 @@ export const DocumentListScreen = () => {
       />
 
       <FileViewerOverlay isViewing={isViewing} isDownloading={isDownloading} />
+
+      {(state.isUploading || state.isDeleting) && (
+        <View
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="rgba(0,0,0,0.3)"
+          ai="center"
+          jc="center"
+          zIndex={1000}
+        >
+          <ActivityIndicator size="large" color={getTokens().color.white.val} />
+        </View>
+      )}
     </View>
   );
 };

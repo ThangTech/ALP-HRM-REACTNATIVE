@@ -4,6 +4,7 @@ import api from 'hooks/api';
 import { useFilePicker } from 'modules/user/hooks/useFilePicker';
 import { showToast } from 'components';
 import useAppContext from 'hooks/useAppContext';
+import useDebounce from 'hooks/useDebounce';
 import { DocumentItemModel } from 'types/document';
 import { mapApiTypeToDocumentType, decodeSafeFileName } from 'utils/fileUtils';
 
@@ -37,12 +38,15 @@ const LIMIT = 50;
 export const useDocument = () => {
   const app = useAppContext();
   const [filter, setFilter] = useState<'all' | 'shared'>('all');
+  const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebounce(searchText, 300);
   const [currentFolderId, setCurrentFolderId] = useState<number | false>(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([
-    { id: false, name: 'Tất cả tài liệu' },
+    { id: false, name: 'Thư mục gốc' },
   ]);
 
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filePicker = useFilePicker();
 
@@ -60,13 +64,14 @@ export const useDocument = () => {
         {
           filter_type: filter,
           ...(currentFolderId !== false ? { folder_id: currentFolderId } : {}),
+          ...(debouncedSearchText.trim() ? { search_text: debouncedSearchText.trim() } : {}),
           offset: pageIndex * LIMIT,
           limit: LIMIT,
         },
         app.current_company_id,
       ];
     },
-    [filter, currentFolderId, app.current_company_id],
+    [filter, debouncedSearchText, currentFolderId, app.current_company_id],
   );
 
   const fetcher = async ([_key, filters]: [string, any]) => {
@@ -137,6 +142,7 @@ export const useDocument = () => {
   }, [mutate]);
 
   const deleteDocuments = async (documentIds: number[]) => {
+    setIsDeleting(true);
     try {
       const res = await api.POST<any>({
         path: '/api/models/documents-document/execute/move_to_trash_mobile',
@@ -161,6 +167,8 @@ export const useDocument = () => {
     } catch (error) {
       showToast('error', 'Lỗi', 'Không thể kết nối đến máy chủ.');
       return false;
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -196,7 +204,7 @@ export const useDocument = () => {
         showToast('error', 'Lỗi', res.message || 'Không thể tải file lên');
       }
     } catch (e: any) {
-      showToast('error', 'Lỗi', 'Có lỗi xảy ra khi tải file lên');
+      showToast('error', 'Lỗi', e.message);
     } finally {
       setIsUploading(false);
     }
@@ -237,13 +245,20 @@ export const useDocument = () => {
   };
 
   const handleSelectFile = async (type: 'image' | 'document' | 'video') => {
-    let result;
-    if (type === 'image') result = await filePicker.pickImage();
-    else if (type === 'document') result = await filePicker.pickDocument();
-    else if (type === 'video') result = await filePicker.pickVideo();
+    setIsUploading(true);
+    try {
+      let result;
+      if (type === 'image') result = await filePicker.pickImage();
+      else if (type === 'document') result = await filePicker.pickDocument();
+      else if (type === 'video') result = await filePicker.pickVideo();
 
-    if (result) {
-      await handleUploadMobileFile([result]);
+      if (result) {
+        await handleUploadMobileFile([result]);
+      } else {
+        setIsUploading(false);
+      }
+    } catch (error) {
+      setIsUploading(false);
     }
   };
 
@@ -263,6 +278,8 @@ export const useDocument = () => {
   return {
     filter,
     setFilter,
+    searchText,
+    setSearchText,
     breadcrumbs,
     currentFolderId,
     documents,
@@ -273,6 +290,7 @@ export const useDocument = () => {
     loadMore,
     refresh,
     isUploading,
+    isDeleting,
     handleCreateLink,
     handleSelectFile,
     handleNavigateToFolder,

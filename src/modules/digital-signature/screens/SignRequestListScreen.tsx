@@ -2,12 +2,14 @@ import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
+  Keyboard,
   RefreshControl,
   ActivityIndicator,
   FlatList,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { View, getTokens } from 'tamagui';
-import { Text } from 'components';
+import { Text, Input } from 'components';
 
 import Header from 'components/Header';
 import { IcPdf, IcFilter } from 'assets/svgs';
@@ -68,6 +70,8 @@ const SignRequestListScreen = () => {
   const {
     signRequests,
     stateFilter,
+    searchText,
+    setSearchText,
     isLoading,
     isLoadingMore,
     isReachingEnd,
@@ -109,47 +113,67 @@ const SignRequestListScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Danh sách tài liệu ký" onPressLeft={goBack} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View>
+          <Header title="Danh sách tài liệu ký" onPressLeft={goBack} />
 
-      <View bg="$white" pb={scale(10)}>
-        <View fd="row" ai="center" ph={horizontalScale(20)} pv={scale(10)}>
-          <TouchableOpacity onPress={() => setIsFilterOpen(true)}>
-            <IcFilter size={scale(28)} />
-          </TouchableOpacity>
+          <View bg="$white" pb={scale(10)}>
+            <View fd="row" ai="center" ph={horizontalScale(20)} pv={scale(10)}>
+              <TouchableOpacity onPress={() => setIsFilterOpen(true)}>
+                <IcFilter size={scale(28)} />
+              </TouchableOpacity>
+              <Input
+                containerStyle={{ flex: 1, marginLeft: horizontalScale(12) }}
+                placeholder="Tìm kiếm..."
+                value={searchText}
+                onChangeText={setSearchText}
+                returnKeyType="search"
+                rightAddon="clear"
+              />
+            </View>
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
 
       <View f={1} ph={horizontalScale(20)}>
         <FlatList
           data={signRequests}
           keyExtractor={(item) => String(item.id)}
           showsVerticalScrollIndicator={false}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}
           ListFooterComponent={
             isLoadingMore && signRequests.length > 0 ? (
-              <View pv={scale(20)} ai="center">
-                <ActivityIndicator size="small" color={getTokens().color.blue500.val} />
+              <View p={scale(20)} ai="center" jc="center">
+                <ActivityIndicator size="small" color={getTokens().color.black.val} />
               </View>
             ) : null
           }
           ListEmptyComponent={
             isLoading ? (
-              <View ai="center" mt={scale(40)}>
-                <Text color="$grey" fontSize={scale(14)}>
-                  Đang tải...
-                </Text>
+              <View f={1} ai="center" jc="center" mt={scale(40)}>
+                <ActivityIndicator size="large" color={getTokens().color.black.val} />
               </View>
             ) : (
-              <View ai="center" mt={scale(60)}>
+              <View f={1} ai="center" jc="center" mt={scale(60)}>
                 <Text fontSize={scale(16)} color="$grey">
                   Không có dữ liệu
                 </Text>
               </View>
             )
           }
-          renderItem={({ item }) => <SignRequestItemCard item={item} onPress={setActiveItem} />}
+          renderItem={({ item }) => (
+            <SignRequestItemCard
+              item={item}
+              onPress={(i) => {
+                Keyboard.dismiss();
+                setActiveItem(i);
+              }}
+            />
+          )}
         />
       </View>
 
