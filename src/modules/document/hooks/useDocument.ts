@@ -7,6 +7,7 @@ import useAppContext from 'hooks/useAppContext';
 import useDebounce from 'hooks/useDebounce';
 import { DocumentItemModel } from 'types/document';
 import { mapApiTypeToDocumentType, decodeSafeFileName } from 'utils/fileUtils';
+import { isValidUploadSize } from 'utils';
 
 export interface BreadcrumbItem {
   id: number | false;
@@ -253,6 +254,10 @@ export const useDocument = () => {
       else if (type === 'video') result = await filePicker.pickVideo();
 
       if (result) {
+        if (!isValidUploadSize([], result.size)) {
+          setIsUploading(false);
+          return;
+        }
         await handleUploadMobileFile([result]);
       } else {
         setIsUploading(false);

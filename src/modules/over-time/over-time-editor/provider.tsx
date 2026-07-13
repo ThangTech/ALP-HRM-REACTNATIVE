@@ -191,6 +191,7 @@ export function OverTimeEditorProvider({ children, id }: { children: ReactElemen
         name: file.name,
         uri: file.download_url,
         type: getLocalFileType(file.mimetype),
+        size: file.file_size,
       })) ?? [],
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
