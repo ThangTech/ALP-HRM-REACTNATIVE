@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   CameraOptions,
   launchCamera,
@@ -9,7 +10,10 @@ import { FilePickerResult } from '../types/document';
 import { decodeSafeFileName } from 'utils/fileUtils';
 
 export const useFilePicker = () => {
+  const [isPicking, setIsPicking] = useState(false);
+
   const pickVideo = (): Promise<FilePickerResult | null> => {
+    setIsPicking(true);
     return new Promise((resolve) => {
       const options = {
         mediaType: 'video' as MediaType,
@@ -18,6 +22,7 @@ export const useFilePicker = () => {
       };
 
       launchImageLibrary(options, (response) => {
+        setIsPicking(false);
         if (response.didCancel || response.errorMessage) {
           resolve(null);
           return;
@@ -40,6 +45,7 @@ export const useFilePicker = () => {
   };
 
   const pickImage = (): Promise<FilePickerResult | null> => {
+    setIsPicking(true);
     return new Promise((resolve) => {
       const options = {
         mediaType: 'photo' as MediaType,
@@ -50,6 +56,7 @@ export const useFilePicker = () => {
       };
 
       launchImageLibrary(options, (response) => {
+        setIsPicking(false);
         if (response.didCancel || response.errorMessage) {
           resolve(null);
           return;
@@ -72,6 +79,7 @@ export const useFilePicker = () => {
   };
 
   const takeImage = (): Promise<FilePickerResult | null> => {
+    setIsPicking(true);
     return new Promise((resolve) => {
       const options: CameraOptions = {
         mediaType: 'photo',
@@ -83,6 +91,7 @@ export const useFilePicker = () => {
       };
 
       launchCamera(options, (response) => {
+        setIsPicking(false);
         console.log('response', response);
 
         if (response.didCancel || response.errorMessage) {
@@ -107,6 +116,7 @@ export const useFilePicker = () => {
   };
 
   const pickDocument = (): Promise<FilePickerResult | null> => {
+    setIsPicking(true);
     return new Promise(async (resolve) => {
       try {
         const result = await DocumentPicker.pick({
@@ -139,6 +149,8 @@ export const useFilePicker = () => {
           console.error('Document picker error:', error);
           resolve(null);
         }
+      } finally {
+        setIsPicking(false);
       }
     });
   };
@@ -165,5 +177,6 @@ export const useFilePicker = () => {
     pickImage,
     takeImage,
     pickDocument,
+    isPicking,
   };
 };

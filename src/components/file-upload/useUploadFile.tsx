@@ -1,6 +1,7 @@
 import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRef, useState } from 'react';
 import { useFilePicker } from 'user/hooks/useFilePicker';
+import { isValidUploadSize } from 'utils';
 
 export interface UploadedFile {
   id: string;
@@ -21,9 +22,17 @@ export interface UseUploadFileReturn {
   handleSelectImage: () => Promise<void>;
   handleSelectDocument: () => Promise<void>;
   handleSelectVideo: () => Promise<void>;
+  isUploading: boolean;
 }
 
-export const useUploadFile = (): UseUploadFileReturn => {
+/**
+ * @param existingFiles - File cũ từ API không nằm trong uploadedFiles (dùng cho Termination).
+ *                        Sẽ được cộng dồn vào khi tính tổng dung lượng.
+ */
+
+export const useUploadFile = (
+  existingFiles?: { size?: number; file_size?: number }[],
+): UseUploadFileReturn => {
   const filePicker = useFilePicker();
   const filePickerRef = useRef<BottomSheet>(null);
   const filePickerModalRef = useRef<BottomSheetModal>(null);
@@ -35,6 +44,7 @@ export const useUploadFile = (): UseUploadFileReturn => {
     filePickerModalRef.current?.dismiss();
     const result = await filePicker.pickImage();
     if (result) {
+      if (!isValidUploadSize([...(existingFiles || []), ...uploadedFiles], result.size)) return;
       const newFile: UploadedFile = {
         id: 'temp' + Date.now().toString(),
         name: result.name,
@@ -51,6 +61,7 @@ export const useUploadFile = (): UseUploadFileReturn => {
     filePickerModalRef.current?.dismiss();
     const result = await filePicker.pickDocument();
     if (result) {
+      if (!isValidUploadSize([...(existingFiles || []), ...uploadedFiles], result.size)) return;
       const newFile: UploadedFile = {
         id: 'temp' + Date.now().toString(),
         name: result.name,
@@ -67,6 +78,7 @@ export const useUploadFile = (): UseUploadFileReturn => {
     filePickerModalRef.current?.dismiss();
     const result = await filePicker.pickVideo();
     if (result) {
+      if (!isValidUploadSize([...(existingFiles || []), ...uploadedFiles], result.size)) return;
       const newFile: UploadedFile = {
         id: 'temp' + Date.now().toString(),
         name: result.name,
@@ -77,6 +89,7 @@ export const useUploadFile = (): UseUploadFileReturn => {
       setUploadedFiles((prev) => [...prev, newFile]);
     }
   };
+
   return {
     filePickerRef,
     uploadedFiles,
@@ -85,5 +98,6 @@ export const useUploadFile = (): UseUploadFileReturn => {
     handleSelectImage,
     handleSelectDocument,
     handleSelectVideo,
+    isUploading: filePicker.isPicking,
   };
 };
