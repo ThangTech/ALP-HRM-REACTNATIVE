@@ -75,7 +75,6 @@ const SignRequestListScreen = () => {
     isLoading,
     isLoadingMore,
     isReachingEnd,
-    isRefreshing,
     loadMore,
     refresh,
     mutate,
@@ -90,9 +89,16 @@ const SignRequestListScreen = () => {
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<SignRequest | null>(null);
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
   const handleLoadMore = () => {
     if (!isLoadingMore && !isReachingEnd) loadMore();
+  };
+
+  const handleRefresh = async () => {
+    setIsManualRefreshing(true);
+    await refresh();
+    setIsManualRefreshing(false);
   };
 
   const handleViewAttachments = () => {
@@ -144,7 +150,9 @@ const SignRequestListScreen = () => {
           keyboardShouldPersistTaps="handled"
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
-          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}
+          refreshControl={
+            <RefreshControl refreshing={isManualRefreshing} onRefresh={handleRefresh} />
+          }
           ListFooterComponent={
             isLoadingMore && signRequests.length > 0 ? (
               <View p={scale(20)} ai="center" jc="center">

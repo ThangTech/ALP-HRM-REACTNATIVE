@@ -2,22 +2,19 @@
 #import <Firebase.h>
 
 #import <React/RCTBundleURLProvider.h>
+#import <RCTDefaultReactNativeFactoryDelegate.h>
 #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
 
-@implementation AppDelegate
+/**
+ * Separate delegate class for RCTReactNativeFactory.
+ * We intentionally do NOT use AppDelegate itself as the factory delegate,
+ * because Firebase swizzles AppDelegate (replacing self with GUL_AppDelegate-...)
+ * which causes a crash when setDependencyProvider: is called on the swizzled instance.
+ */
+@interface RNFactoryDelegate : RCTDefaultReactNativeFactoryDelegate
+@end
 
-- (BOOL)application:(UIApplication *)application
-    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  [FIRApp configure];
-  self.moduleName = @"ALP HRM";
-  // You can add your custom initial props in the dictionary below.
-  // They will be passed down to the ViewController used by React Native.
-  self.initialProps = @{};
-  self.dependencyProvider = [RCTAppDependencyProvider new];
-
-  return [super application:application
-      didFinishLaunchingWithOptions:launchOptions];
-}
+@implementation RNFactoryDelegate
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge {
   return [self bundleURL];
@@ -25,12 +22,37 @@
 
 - (NSURL *)bundleURL {
 #if DEBUG
-  return
-      [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
-  return [[NSBundle mainBundle] URLForResource:@"main"
-                                 withExtension:@"jsbundle"];
+  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
+}
+
+@end
+
+@implementation AppDelegate {
+  // Keep a strong reference to prevent ARC from releasing the delegate
+  RNFactoryDelegate *_rnDelegate;
+}
+
+- (BOOL)application:(UIApplication *)application
+    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  // Must configure Firebase before React Native initializes
+  [FIRApp configure];
+
+  // Create the separate delegate (isolated from Firebase swizzling of AppDelegate)
+  _rnDelegate = [RNFactoryDelegate new];
+  _rnDelegate.dependencyProvider = [RCTAppDependencyProvider new];
+
+  self.reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:_rnDelegate];
+
+  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+  [self.reactNativeFactory startReactNativeWithModuleName:@"ALP HRM"
+                                                 inWindow:self.window
+                                            launchOptions:launchOptions];
+
+  return YES;
 }
 
 @end
