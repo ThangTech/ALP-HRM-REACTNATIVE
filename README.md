@@ -450,23 +450,113 @@ Responsibility rules:
 - Components render UI and emit events upward.
 - Route params should stay explicit and narrow, such as `id`, `employeeId`, `viewType`, `date`, or callbacks already used by existing flows.
 
-## Deploy Pipeline
+## Deploy Pipeline / CI/CD Flow
 
-### Android Build Pipeline
+ALP HRM is a React Native CLI app (not Expo/EAS). GitLab CI runs lint and unit tests, then posts Telegram notifications. Native binaries are built locally (`scripts/build-android.sh`, Xcode for iOS). JS/asset OTA updates go to RevoPush via `scripts/code-push.sh`. Play Store / App Store submission is manual. Commented Firebase App Distribution ship jobs exist in `.gitlab-ci.yml` but are not active.
+
+### Architecture Overview
+
+```mermaid
+flowchart LR
+  subgraph Actors
+    Dev[Developer]
+    EndUser[End User]
+  end
+
+  subgraph SCM["Server: GitLab"]
+    Repo[Repo]
+    CI["GitLab CI<br/>.gitlab-ci.yml"]
+    Vars["CI Variables<br/>TELEGRAM_* / optional FIREBASE_*"]
+  end
+
+  subgraph Build["Build / Distribute"]
+    LocalAndroid["Local Android APK<br/>yarn build-android-*"]
+    RevoPush["RevoPush OTA<br/>scripts/code-push.sh"]
+  end
+
+  subgraph Store["Store release - manual"]
+    AndroidBin[Build APK / AAB]
+    XcodeBin[Build on Xcode]
+    Stores[Play Store / App Store]
+  end
+
+  Dev -->|Push / MR| Repo
+  Repo --> CI
+  Vars -->|Inject secrets| CI
+  CI -->|lint + test| CI
+  CI -->|Telegram notify| Dev
+
+  Dev -->|yarn build-android-dev/prod| LocalAndroid
+  Dev -->|yarn code-push-dev/prod<br/>or scripts/code-push.sh ios| RevoPush
+  Dev -->|Self build + submit| AndroidBin
+  Dev -->|Archive in Xcode + submit| XcodeBin
+  AndroidBin --> Stores
+  XcodeBin --> Stores
+
+  EndUser -->|Install / update| Stores
+  EndUser -->|JS OTA when compatible| RevoPush
+```
+
+| Actor / system | Role |
+| --- | --- |
+| Developer | Pushes code; runs local Android/iOS builds; releases RevoPush OTA; submits store binaries manually. |
+| End User | Installs from Play Store / App Store, or receives compatible JS updates via RevoPush. |
+| GitLab Repo | Source of truth for the React Native CLI codebase. |
+| GitLab CI | Runs `yarn lint` and `yarn test`; sends Telegram success/failure messages. Does not build or submit store binaries today. |
+| GitLab CI Variables | Injects secrets into CI (`TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID`; ship jobs would also need Firebase/Google Services vars when enabled). |
+| Local Android build | `scripts/build-android.sh` produces a release APK under `android/app/build/outputs/apk/release/`. |
+| RevoPush | OTA channel used by `@revopush/react-native-code-push` and `revopush release-react`. |
+| Xcode / Play Store / App Store | Manual archive and store upload; not wired in CI. |
+
+### End-to-End Pipeline Stages
+
+Defined stages in `.gitlab-ci.yml`: `test` → `ship` → `notify`. Only `test` and `notify` jobs are active. `ship` Android Firebase App Distribution jobs are commented out.
 
 ```mermaid
 flowchart TD
-  A[Choose development or production] --> B[Run yarn build-android-dev or yarn build-android-prod]
-  B --> C[Install dependencies]
-  C --> D[Load env files]
-  D --> E[Set APP_ENV and COMMIT_HASH]
-  E --> F[Clean android/app/build]
-  F --> G[Assemble release APK]
-  G --> H[Verify artifact locally]
-  H --> I[Distribute through the chosen external channel]
+  A[Push / merge request / web pipeline] --> B[test-and-lint]
+  B --> C[yarn install --frozen-lockfile]
+  C --> D[yarn lint]
+  D --> E[yarn test]
+  E --> F[notify-success]
+  D --> G[notify-failure]
+  E --> G
+
+  H["ship-android-dev / ship-android-prod<br/>(commented out)"] -.-> I["build-android.sh + firebase appdistribution:distribute"]
 ```
 
-Android env behavior:
+### Recommended Triggers
+
+| Event / source | What runs |
+| --- | --- |
+| `push` | `test-and-lint` → Telegram notify |
+| `merge_request_event` | `test-and-lint` → Telegram notify |
+| `web` (manual pipeline) | `test-and-lint` → Telegram notify |
+| Local developer machine | Android APK via `yarn build-android-*`; RevoPush via `yarn code-push-*` / `scripts/code-push.sh`; iOS archive via Xcode |
+| Commented `ship-*` jobs | Would be `when: manual` Firebase App Distribution if uncommented |
+
+### Native Build vs OTA
+
+| Change type | Path |
+| --- | --- |
+| JS/TS, assets, styles compatible with the installed native binary | RevoPush OTA (`yarn code-push-dev` / `yarn code-push-prod`, or `scripts/code-push.sh ios`) |
+| Native modules, permissions, Firebase config, bundle IDs, Gradle/Podfile, signing, app version behavior, native resources | New native binary: Android `yarn build-android-*`, iOS archive in Xcode |
+| First install or store version bump | Manual Play Store / App Store release |
+
+Only use RevoPush for JavaScript/asset changes that remain compatible with the already installed native runtime. Before real ALP HRM OTA releases, fix `scripts/code-push.sh`: it currently targets RevoPush app name `may10-qms`.
+
+### Local Build / Update Commands
+
+| Command | What it does |
+| --- | --- |
+| `yarn build-android-dev` | `scripts/build-android.sh --development` → release APK with `.dev` application id suffix |
+| `yarn build-android-prod` | `scripts/build-android.sh --production` → production release APK |
+| `yarn code-push-dev` | `scripts/code-push.sh android --development` (script reads `APP_ENV` from env files; does not parse the CLI flag) |
+| `yarn code-push-prod` | `scripts/code-push.sh android --production` (same: uses `APP_ENV` from env files) |
+| `scripts/code-push.sh ios` | iOS RevoPush release branch (no package.json alias) |
+| Xcode archive | `ios/ALPHRM.xcworkspace`, scheme/target `ALPHRM`, bundle id `com.vdx.alphrm` |
+
+Android env ↔ application id:
 
 | Environment | Command | Application ID | App name |
 | --- | --- | --- | --- |
@@ -474,54 +564,58 @@ Android env behavior:
 | Development release | `yarn build-android-dev` | `com.vdx.alphrm.dev` | `ALP HRM Dev` |
 | Production release | `yarn build-android-prod` | `com.vdx.alphrm` | `ALP HRM` |
 
-The GitLab file contains commented Android Firebase App Distribution jobs. They are not active.
-
-### RevoPush / CodePush Pipeline
-
-```mermaid
-flowchart TD
-  A[Finish JS-only compatible change] --> B[Run quality gates]
-  B --> C[Set correct APP_ENV]
-  C --> D{Target platform?}
-  D -- Android --> E[yarn code-push-dev or yarn code-push-prod]
-  D -- iOS --> F[scripts/code-push.sh ios]
-  E --> G[RevoPush deployment Dev or Production]
-  F --> G
-  G --> H[Installed app receives update if native runtime is compatible]
-```
-
-Only use RevoPush/CodePush for JavaScript/assets changes that are compatible with the already installed native binary. Native dependencies, permissions, Firebase files, bundle IDs, Gradle/Pod changes, signing, app version behavior, or native resources require a new binary build.
-
-Before using the current CodePush script for ALP HRM, fix `scripts/code-push.sh` because it currently releases to the RevoPush app name `may10-qms`.
-
-### iOS Build Pipeline
-
-There is no aligned npm iOS archive script at the moment. Use Xcode with:
-
-```text
-ios/ALPHRM.xcworkspace
-scheme: ALPHRM
-target: ALPHRM
-bundle id: com.vdx.alphrm
-```
-
-`scripts/build-ios.sh` should be corrected before use because it still references `PortalApp`.
-
 ### GitLab CI Pipeline
 
-The active pipeline is `.gitlab-ci.yml`.
+Primary file: `.gitlab-ci.yml`. Runner tag: `test-runner`. Active job image: `node:20`.
 
-```mermaid
-flowchart TD
-  A[Push, merge request, or manual web pipeline] --> B[Install dependencies with frozen lockfile]
-  B --> C[yarn lint]
-  C --> D[yarn test]
-  D --> E[Telegram success notification]
-  C --> F[Telegram failure notification]
-  D --> F
-```
+Active jobs:
 
-Active CI currently runs lint and tests. Build/distribution jobs are present but commented out.
+| Job | Stage | Behavior |
+| --- | --- | --- |
+| `test-and-lint` | `test` | `yarn install --frozen-lockfile`, `yarn lint`, `yarn test` |
+| `notify-success` | `notify` | Telegram message when pipeline succeeds (`when: on_success`) |
+| `notify-failure` | `notify` | Telegram message when pipeline fails (`when: on_failure`) |
+
+Commented (inactive) ship jobs would use image `reactnativecommunity/react-native-android:latest`, copy `$GOOGLE_SERVICES_JSON` into `android/app/google-services.json`, build with `scripts/build-android.sh`, and distribute the APK via `firebase appdistribution:distribute`.
+
+GitLab CI Variables / Secrets referenced by `.gitlab-ci.yml`:
+
+| Variable | Used by | Status |
+| --- | --- | --- |
+| `TELEGRAM_TOKEN` | `notify-success`, `notify-failure` | Active |
+| `TELEGRAM_CHAT_ID` | `notify-success`, `notify-failure` | Active |
+| `TARGET_ENV` | Optional label in Telegram message (`Push/MR Mode` fallback) | Active if set |
+| `GOOGLE_SERVICES_JSON` | Commented `ship_*` before_script | Inactive until ship jobs are enabled |
+| `FIREBASE_TOKEN` | Commented Firebase App Distribution | Inactive until ship jobs are enabled |
+| `FIREBASE_ANDROID_DEV_APP_ID` | Commented `ship-android-dev` | Inactive until ship jobs are enabled |
+| `FIREBASE_ANDROID_PROD_APP_ID` | Commented `ship-android-prod` | Inactive until ship jobs are enabled |
+
+Secrets come from GitLab CI/CD Variables. There is no Vault, Teleport, or EAS configuration in this repository.
+
+### Store Release (manual)
+
+CI does not submit to Play Store or App Store.
+
+**Android**
+
+1. Configure a production keystore before real store distribution (release currently uses `debug.keystore` in `android/app/build.gradle`).
+2. Run `yarn build-android-prod` (or build an AAB locally if required by Play Console).
+3. Take the artifact from `android/app/build/outputs/apk/release/` (or your AAB output path).
+4. Upload manually in Google Play Console.
+
+**iOS**
+
+1. Open `ios/ALPHRM.xcworkspace` in Xcode.
+2. Select scheme `ALPHRM`, archive a Release build.
+3. Distribute / upload to App Store Connect from Xcode (or Transporter).
+4. Do not use `scripts/build-ios.sh` until it is fixed (see notes below).
+
+### iOS / Android Notes
+
+- `scripts/build-ios.sh` is outdated: it references `PortalApp.xcworkspace`, scheme `PortalApp`, and `PortalApp.xcarchive`. The real project is `ALPHRM`. Fix or avoid this script.
+- `scripts/code-push.sh` releases to RevoPush app `may10-qms` for both Android and iOS. Correct the app name before production OTA.
+- `yarn code-push-dev` / `yarn code-push-prod` pass `--development` / `--production`, but `scripts/code-push.sh` does not parse those flags; set `APP_ENV` via `.env` / `.env.production` (and optional `*.local` overrides).
+- There is no Expo / `eas.json` in this repo. OTA is RevoPush only.
 
 ## Quality Gates
 
