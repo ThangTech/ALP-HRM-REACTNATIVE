@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   CameraOptions,
   launchCamera,
@@ -6,9 +7,13 @@ import {
 } from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
 import { FilePickerResult } from '../types/document';
+import { decodeSafeFileName } from 'utils/fileUtils';
 
 export const useFilePicker = () => {
+  const [isPicking, setIsPicking] = useState(false);
+
   const pickVideo = (): Promise<FilePickerResult | null> => {
+    setIsPicking(true);
     return new Promise((resolve) => {
       const options = {
         mediaType: 'video' as MediaType,
@@ -17,6 +22,7 @@ export const useFilePicker = () => {
       };
 
       launchImageLibrary(options, (response) => {
+        setIsPicking(false);
         if (response.didCancel || response.errorMessage) {
           resolve(null);
           return;
@@ -26,7 +32,7 @@ export const useFilePicker = () => {
         if (asset) {
           const fileType = getFileTypeFromUri(asset.uri || '');
           resolve({
-            name: asset.fileName || `video_${Date.now()}.mp4`,
+            name: decodeSafeFileName(asset.fileName) || `video_${Date.now()}.mp4`,
             type: fileType,
             uri: asset.uri || '',
             size: asset.fileSize,
@@ -39,6 +45,7 @@ export const useFilePicker = () => {
   };
 
   const pickImage = (): Promise<FilePickerResult | null> => {
+    setIsPicking(true);
     return new Promise((resolve) => {
       const options = {
         mediaType: 'photo' as MediaType,
@@ -49,6 +56,7 @@ export const useFilePicker = () => {
       };
 
       launchImageLibrary(options, (response) => {
+        setIsPicking(false);
         if (response.didCancel || response.errorMessage) {
           resolve(null);
           return;
@@ -58,7 +66,7 @@ export const useFilePicker = () => {
         if (asset) {
           const fileType = getFileTypeFromUri(asset.uri || '');
           resolve({
-            name: asset.fileName || `image_${Date.now()}.jpg`,
+            name: decodeSafeFileName(asset.fileName) || `image_${Date.now()}.jpg`,
             type: fileType,
             uri: asset.uri || '',
             size: asset.fileSize,
@@ -71,6 +79,7 @@ export const useFilePicker = () => {
   };
 
   const takeImage = (): Promise<FilePickerResult | null> => {
+    setIsPicking(true);
     return new Promise((resolve) => {
       const options: CameraOptions = {
         mediaType: 'photo',
@@ -82,6 +91,7 @@ export const useFilePicker = () => {
       };
 
       launchCamera(options, (response) => {
+        setIsPicking(false);
         console.log('response', response);
 
         if (response.didCancel || response.errorMessage) {
@@ -93,7 +103,7 @@ export const useFilePicker = () => {
         if (asset) {
           const fileType = getFileTypeFromUri(asset.uri || '');
           resolve({
-            name: asset.fileName || `image_${Date.now()}.jpg`,
+            name: decodeSafeFileName(asset.fileName) || `image_${Date.now()}.jpg`,
             type: fileType,
             uri: asset.uri || '',
             size: asset.fileSize,
@@ -106,6 +116,7 @@ export const useFilePicker = () => {
   };
 
   const pickDocument = (): Promise<FilePickerResult | null> => {
+    setIsPicking(true);
     return new Promise(async (resolve) => {
       try {
         const result = await DocumentPicker.pick({
@@ -123,7 +134,7 @@ export const useFilePicker = () => {
           const fileType = getFileTypeFromUri(file.uri);
 
           resolve({
-            name: file.name || 'document',
+            name: decodeSafeFileName(file.name) || 'document',
             type: fileType,
             uri: file.uri,
             size: file.size || undefined,
@@ -138,6 +149,8 @@ export const useFilePicker = () => {
           console.error('Document picker error:', error);
           resolve(null);
         }
+      } finally {
+        setIsPicking(false);
       }
     });
   };
@@ -164,5 +177,6 @@ export const useFilePicker = () => {
     pickImage,
     takeImage,
     pickDocument,
+    isPicking,
   };
 };

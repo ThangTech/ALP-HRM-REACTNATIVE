@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { TerminationEditorProvider, useTerminationEditorProvider } from './provider';
-import { ScrollView, View } from 'tamagui';
+import { ScrollView, View, getTokens } from 'tamagui';
 import { Button, Header, Input, OptionItem, Text } from 'components';
+import { ActivityIndicator } from 'react-native';
 import { scale } from 'utils';
 import DatePicker from 'modules/leave-registration/list/components/DatePicker';
 import OptionPicker from 'modules/leave-registration/list/components/OptionPicker';
@@ -41,7 +42,7 @@ function ViewPage() {
 
   return (
     <View f={1}>
-      <Header title={'Chi tiết đơn nghỉ'} />
+      <Header title={'Tạo đơn nghỉ việc'} />
       <ScrollView f={1} automaticallyAdjustKeyboardInsets>
         <View gap={scale(16)} p={scale(16)}>
           {blocks.map((block) => (
@@ -129,6 +130,21 @@ function ViewPage() {
           </Button>
         </View>
       </View>
+      {provider.uploadFiles.isUploading && (
+        <View
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="rgba(0,0,0,0.3)"
+          ai="center"
+          jc="center"
+          zIndex={1000}
+        >
+          <ActivityIndicator size="large" color={getTokens().color.white.val} />
+        </View>
+      )}
     </View>
   );
 }

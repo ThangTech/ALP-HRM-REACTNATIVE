@@ -68,6 +68,7 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
     STATUS_OPTIONS[0] || { key: 'all', value: 'Tất cả' },
   );
   const [employee, setEmployee] = useState<OptionItem>({ key: 'all', value: 'Tất cả' });
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -93,7 +94,7 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
 
   // Single hook instance - switch params based on active tab
   const [
-    { timesheetExplanationList, isRefreshing, isLoadingMore, isReachingEnd, employeeOptions },
+    { timesheetExplanationList, isLoadingMore, isReachingEnd, employeeOptions },
     { refresh, loadMore },
   ] = useTimesheetExplanation(params);
 
@@ -308,7 +309,9 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
   };
 
   const handleRefresh = async () => {
+    setIsManualRefreshing(true);
     await refresh();
+    setIsManualRefreshing(false);
   };
 
   return (
@@ -338,7 +341,7 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
           ListEmptyComponent={renderEmptyList}
           ListFooterComponent={renderFooter}
           refreshControl={
-            <RefreshControl refreshing={isRefreshing || false} onRefresh={handleRefresh} />
+            <RefreshControl refreshing={isManualRefreshing} onRefresh={handleRefresh} />
           }
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}

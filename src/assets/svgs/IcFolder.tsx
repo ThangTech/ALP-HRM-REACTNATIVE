@@ -1,29 +1,13 @@
 import * as React from 'react';
-import Svg, { G, Circle, Path } from 'react-native-svg';
+import Svg, { G, Path } from 'react-native-svg';
 import { IconProps } from '.';
-const IcFolder = ({ size = 30 }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 40 40">
-    <G id="Group_213" data-name="Group 213" transform="translate(-33 -393)">
-      <G
-        id="Ellipse_21"
-        data-name="Ellipse 21"
-        transform="translate(33 393)"
-        fill="none"
-        stroke="#707070"
-        strokeWidth={1}
-        opacity={0.1}
-      >
-        <Circle cx={20} cy={20} r={20} stroke="none" />
-        <Circle cx={20} cy={20} r={19.5} fill="none" />
-      </G>
-      <Path
-        id="folder_2_"
-        data-name="folder (2)"
-        d="M19.163,10.833H18V8.744a.912.912,0,0,0-.911-.911H8.838L7.172,5.5H.911A.912.912,0,0,0,0,6.411V20.973H0a.851.851,0,0,0,.853.86h14.92a.846.846,0,0,0,.817-.6L20,11.883v-.059A.893.893,0,0,0,19.163,10.833ZM.667,6.411a.244.244,0,0,1,.244-.244H6.828L8.495,8.5h8.594a.244.244,0,0,1,.244.244v2.089H4.244a.855.855,0,0,0-.816.6L.667,18.966Zm15.29,14.617a.189.189,0,0,1-.182.139H.855a.184.184,0,0,1-.149-.074.181.181,0,0,1-.041-.136l3.4-9.318a.189.189,0,0,1,.182-.139h14.92c.127,0,.159.182.167.273Z"
-        transform="translate(43 399.5)"
-        fill="#7b7b7b"
-      />
+
+const IcFolder = ({ size = 32 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 72 72" preserveAspectRatio="xMidYMid meet">
+    <G transform="translate(0, 72) scale(0.1, -0.1)" fill="#000000" stroke="none">
+      <Path d="M65 641 c-45 -19 -46 -27 -46 -282 0 -231 2 -244 21 -263 20 -20 31 -21 320 -21 290 0 300 1 320 21 20 20 21 32 22 233 1 273 14 254 -186 257 l-145 2 -24 28 c-24 27 -27 28 -143 31 -66 1 -128 -1 -139 -6z m251 -36 c9 -6 28 -33 42 -60 l27 -50 125 3 c95 2 131 -1 145 -12 17 -12 19 -27 17 -186 0 -95 -5 -177 -10 -182 -5 -5 -140 -9 -303 -9 -266 0 -295 1 -306 17 -9 13 -12 74 -10 242 3 209 4 225 22 238 24 18 227 17 251 -1z m328 -51 c9 -4 21 -16 27 -27 10 -17 9 -19 -7 -13 -11 4 -74 7 -141 6 -111 -1 -123 1 -132 19 -10 18 -6 19 113 20 69 1 132 -2 140 -5z" />
     </G>
   </Svg>
 );
+
 export default IcFolder;

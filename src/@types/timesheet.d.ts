@@ -143,6 +143,7 @@ interface fileType {
   name: string;
   mimetype: string; //sample-local-pdf.pdf or application/vnd.openxmlformats-officedocument.wordprocessingml.document or image/png or .....
   download_url: string;
+  file_size?: number;
 }
 
 interface ExplanationReasonType {

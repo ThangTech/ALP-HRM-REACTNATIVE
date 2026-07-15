@@ -1,4 +1,4 @@
-import { PermissionsAndroid, Platform } from 'react-native';
+import { Alert, PermissionsAndroid, Platform } from 'react-native';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -334,4 +334,18 @@ export const index2Roman = (index: number): string => {
     'XX',
   ];
   return romanNumerals[index] || '';
+};
+
+export const isValidUploadSize = (
+  currentFiles: { size?: number; file_size?: number }[],
+  newFileSize: number = 0,
+  maxMB: number = 900,
+): boolean => {
+  const totalBytes =
+    currentFiles.reduce((sum, f) => sum + (f.size || f.file_size || 0), 0) + newFileSize;
+  if (totalBytes > maxMB * 1024 * 1024) {
+    Alert.alert('Cảnh báo', `Tổng dung lượng file đính kèm không được vượt quá ${maxMB}MB.`);
+    return false;
+  }
+  return true;
 };

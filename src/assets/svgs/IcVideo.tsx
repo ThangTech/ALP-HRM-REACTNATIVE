@@ -1,38 +1,13 @@
 import * as React from 'react';
-import Svg, { Path, Rect, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { G, Path } from 'react-native-svg';
 import { IconProps } from '.';
 
-const IcVideo = ({ size = 24 }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Defs>
-      <LinearGradient id="vidGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <Stop offset="0%" stopColor="#8B5CF6" />
-        <Stop offset="100%" stopColor="#3B82F6" />
-      </LinearGradient>
-      <LinearGradient id="vidGradFill" x1="0%" y1="0%" x2="100%" y2="100%">
-        <Stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.2" />
-        <Stop offset="100%" stopColor="#3B82F6" stopOpacity="0.2" />
-      </LinearGradient>
-    </Defs>
-    <Rect
-      x="2"
-      y="6"
-      width="14"
-      height="12"
-      rx="2"
-      ry="2"
-      fill="url(#vidGradFill)"
-      stroke="url(#vidGrad)"
-      strokeWidth="1.5"
-    />
-    <Path
-      d="M22 8l-6 3.5v1L22 16V8z"
-      fill="url(#vidGradFill)"
-      stroke="url(#vidGrad)"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+const IcVideo = ({ size = 32 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 72 72" preserveAspectRatio="xMidYMid meet">
+    <G transform="translate(0, 72) scale(0.1, -0.1)" fill="#000000" stroke="none">
+      <Path d="M525 713 c-91 -22 -443 -128 -454 -136 -27 -22 -32 -57 -16 -110 11 -37 15 -99 15 -233 0 -236 -5 -228 149 -232 96 -3 111 -2 111 12 0 14 -16 16 -103 16 -67 0 -107 4 -115 12 -8 8 -12 49 -12 120 l0 108 275 0 275 0 0 -102 c0 -57 -5 -110 -10 -118 -7 -11 -36 -16 -117 -20 -62 -3 -108 -9 -108 -15 0 -14 183 -18 216 -5 44 19 50 49 47 240 l-3 175 -243 0 c-133 0 -242 3 -242 8 0 4 6 7 14 7 12 0 407 111 443 124 14 6 -16 109 -38 131 -17 16 -56 25 -84 18z m69 -45 c8 -13 17 -37 21 -54 5 -28 3 -32 -21 -38 -23 -6 -34 0 -76 41 l-49 48 28 12 c45 19 81 16 97 -9z m-110 -57 c50 -51 50 -55 1 -65 -27 -6 -36 -1 -79 43 l-49 50 34 9 c19 6 36 11 39 11 3 1 27 -21 54 -48z m-56 -78 c2 0 -13 -6 -32 -13 -35 -11 -37 -11 -90 37 l-53 48 36 11 c35 11 37 10 86 -35 27 -25 51 -47 53 -48z m-158 21 c27 -26 47 -50 45 -54 -3 -4 -19 -10 -37 -14 -29 -6 -37 -1 -80 41 l-48 48 32 12 c18 6 34 12 36 12 2 1 25 -20 52 -45z m-113 -104 c-69 -18 -67 -19 -81 47 -6 25 -3 36 14 53 l22 22 54 -53 54 -53 -63 -16z m36 -100 c-25 -44 -32 -50 -60 -50 -33 0 -33 0 -33 50 l0 50 61 0 60 0 -28 -50z m110 0 c-26 -46 -31 -50 -65 -50 -21 0 -38 2 -38 5 0 2 12 25 27 50 25 41 31 45 66 45 l38 0 -28 -50z m110 0 c-26 -46 -31 -50 -65 -50 -21 0 -38 2 -38 5 0 2 12 25 27 50 25 41 31 45 66 45 l38 0 -28 -50z m111 1 c-26 -45 -31 -50 -70 -53 l-43 -3 22 35 c11 19 26 43 31 53 7 11 23 17 49 17 l38 0 -27 -49z m126 -1 l0 -50 -60 0 c-33 0 -60 2 -60 5 0 2 12 25 27 50 24 39 32 45 60 45 33 0 33 0 33 -50z" />
+      <Path d="M327 233 c-9 -8 -9 -157 -1 -165 7 -8 144 71 144 82 0 5 -16 18 -35 29 -19 12 -50 30 -68 41 -19 11 -37 17 -40 13z m53 -53 c14 -11 32 -20 40 -20 17 0 7 -9 -40 -38 l-35 -21 0 50 c0 27 2 49 5 49 3 0 16 -9 30 -20z" />
+    </G>
   </Svg>
 );
 

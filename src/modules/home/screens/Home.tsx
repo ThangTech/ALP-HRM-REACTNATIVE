@@ -11,7 +11,7 @@ import useAppContext from 'hooks/useAppContext';
 import api from 'hooks/api';
 import { navigate } from 'navigators';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Image, PermissionsAndroid, StyleSheet } from 'react-native';
+import { Image, PermissionsAndroid, StyleSheet } from 'react-native';
 import { ScrollView, View } from 'tamagui';
 import { useUser } from 'user/hooks';
 import { scale, verticalScale } from 'utils';
@@ -28,6 +28,7 @@ const Home = () => {
   const timesheetExplanationOptionRef = useRef<BottomSheetModal>(null);
   const profileOptionRef = useRef<BottomSheetModal>(null);
   const timesheetOptionRef = useRef<BottomSheetModal>(null);
+  const kysoOptionRef = useRef<BottomSheetModal>(null);
   const [isShowMore, setShowMore] = useState(false);
   const homeApi = useHomeApi();
   const { recentActivities } = homeApi;
@@ -281,7 +282,7 @@ const Home = () => {
               label: 'Ký số',
               icon: Images.ky_so,
               onPress: () => {
-                Alert.alert('Tính năng đang trong quá trình phát triển');
+                kysoOptionRef.current?.present();
               },
             },
             {
@@ -289,7 +290,7 @@ const Home = () => {
               label: 'Tài liệu',
               icon: Images.tai_lieu,
               onPress: () => {
-                Alert.alert('Tính năng đang trong quá trình phát triển');
+                navigate(RouteName.DocumentList);
               },
             },
             ...(!user?.access_staff_transfer || (isShowMore && user?.access_staff_transfer)
@@ -474,6 +475,18 @@ const Home = () => {
           { value: 'Bảng công nhân viên', key: 2 },
         ]}
         onSelect={onTimesheetOptionSelected}
+      />
+      <OptionPickerModal2
+        bottomSheetRef={kysoOptionRef}
+        title="Chọn loại tài liệu ký"
+        data={[
+          { value: 'Của tôi', key: 1 },
+          { value: 'Tất cả', key: 2 },
+        ]}
+        onSelect={(item) => {
+          const filterType = item.key === 1 ? 'my' : 'all';
+          navigate(RouteName.SignRequestList, { filterType });
+        }}
       />
     </View>
   );

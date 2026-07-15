@@ -52,6 +52,7 @@ import {
   openMediaFile,
   scale,
   verticalScale,
+  isValidUploadSize,
 } from 'utils';
 
 type TimesheetExplanationDetailProps = NativeStackScreenProps<
@@ -146,7 +147,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   const filePickerRef = useRef<BottomSheet>(null);
   const dialogRef = useRef<BaseModalRef>(null);
 
-  const { pickImage, pickDocument, pickVideo } = useFilePicker();
+  const { pickImage, pickDocument, pickVideo, isPicking } = useFilePicker();
 
   const [state, setState] = useState<TimeSheetExplanationDetailState>({
     timeSheetDetail: {
@@ -216,9 +217,11 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   });
 
   // Helper function to convert mimetype to file type
-  const getFileTypeFromMimetype = (mimetype: string): 'image' | 'pdf' | 'docx' => {
+  const getFileTypeFromMimetype = (mimetype: string): 'image' | 'pdf' | 'docx' | 'video' => {
     if (mimetype.startsWith('image/')) {
       return 'image';
+    } else if (mimetype.startsWith('video/')) {
+      return 'video';
     } else if (mimetype === 'application/pdf') {
       return 'pdf';
     } else if (
@@ -247,6 +250,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
         type: getFileTypeFromMimetype(file.mimetype),
         uri: file.download_url,
         isFromAPI: true,
+        size: file.file_size,
       }));
       setState((prev) => ({ ...prev, uploadedFiles: apiFiles, apiFilesLoaded: true }));
     }
@@ -679,6 +683,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
     filePickerRef.current?.close();
     const result = await pickImage();
     if (result) {
+      if (!isValidUploadSize(uploadedFiles, result.size)) return;
       const newFile: UploadedFile = {
         id: 'temp' + Date.now().toString(),
         name: result.name,
@@ -694,6 +699,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
     filePickerRef.current?.close();
     const result = await pickDocument();
     if (result) {
+      if (!isValidUploadSize(uploadedFiles, result.size)) return;
       const newFile: UploadedFile = {
         id: 'temp' + Date.now().toString(),
         name: result.name,
@@ -709,6 +715,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
     filePickerRef.current?.close();
     const result = await pickVideo();
     if (result) {
+      if (!isValidUploadSize(uploadedFiles, result.size)) return;
       const newFile: UploadedFile = {
         id: 'temp' + Date.now().toString(),
         name: result.name,
@@ -1559,6 +1566,21 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
           handleReject(text);
         }}
       />
+      {isPicking && (
+        <View
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="rgba(0,0,0,0.3)"
+          ai="center"
+          jc="center"
+          zIndex={1000}
+        >
+          <ActivityIndicator size="large" color={getTokens().color.white.val} />
+        </View>
+      )}
     </Screen>
   );
 };

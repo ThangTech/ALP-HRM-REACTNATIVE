@@ -4,7 +4,7 @@ import { Button, Text, SmartBackdrop } from 'components';
 import { View } from 'tamagui';
 import { StyleSheet } from 'react-native';
 import { verticalScale } from 'utils';
-import { IcDocument, IcImage, IcVideo } from 'assets/svgs';
+import { IcDocs, IcImage, IcVideo } from 'assets/svgs';
 
 interface FilePickerBottomSheetProps {
   bottomSheetRef: React.RefObject<BottomSheet>;
@@ -52,7 +52,7 @@ const FilePickerBottomSheet: React.FC<FilePickerBottomSheetProps> = ({
 
             <Button variant="secondary" onPress={onSelectDocument} style={styles.optionButton}>
               <View fd="row" ai="center" gap={12}>
-                <IcDocument size={20} />
+                <IcDocs size={20} />
                 <Button.Text variant="secondary">Upload file tài liệu</Button.Text>
               </View>
             </Button>
