@@ -1,4 +1,5 @@
 package com.vdx.alphrm
+import expo.modules.ReactActivityDelegateWrapper
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -29,6 +30,6 @@ class MainActivity : ReactActivity() {
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate {
       SplashScreen.show(this) 
-      return DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+      return ReactActivityDelegateWrapper(this, BuildConfig.IS_NEW_ARCHITECTURE_ENABLED, DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled))
   }
 }
