@@ -1,7 +1,7 @@
 import { TamaguiProvider } from '@tamagui/core';
 import React from 'react';
 import config from './tamagui.config';
-import { AppState } from 'react-native';
+import { AppState, Alert } from 'react-native';
 import { SWRConfig } from 'swr';
 import AppProvider from './src/navigators/AppProvider';
 import SplashScreen from 'react-native-splash-screen';
@@ -16,12 +16,34 @@ import { useForceUpdate } from 'hooks';
 import { ForceUpdateModal } from 'components';
 import Geolocation from '@react-native-community/geolocation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Updates from 'expo-updates';
+
+async function checkForOTAUpdate() {
+  try {
+    const update = await Updates.checkForUpdateAsync();
+    if (update.isAvailable) {
+      await Updates.fetchUpdateAsync();
+      Alert.alert('Có bản vá lỗi mới', 'Ứng dụng sẽ khởi động lại để áp dụng cập nhật.', [
+        { text: 'OK', onPress: () => Updates.reloadAsync() },
+      ]);
+    }
+  } catch {
+    // expo-updates không hoạt động với Metro dev server - bỏ qua lỗi
+  }
+}
 
 const AppContent = () => {
   const { isUpdateRequired, isLoading, currentVersion, minVersion, openStore } = useForceUpdate();
   Geolocation.setRNConfiguration({
     skipPermissionRequests: true,
   });
+
+  React.useEffect(() => {
+    if (!isLoading && !isUpdateRequired) {
+      checkForOTAUpdate();
+    }
+  }, [isLoading, isUpdateRequired]);
+
   return (
     <>
       <AppNavigator onReady={() => SplashScreen.hide()} />

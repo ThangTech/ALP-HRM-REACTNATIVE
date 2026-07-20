@@ -37,17 +37,18 @@ jest.mock('react-native-device-info', () => ({
   isTablet: () => false,
 }));
 
-jest.mock('@revopush/react-native-code-push', () => {
-  const codePush = () => (AppComponent) => AppComponent;
-
-  codePush.CheckFrequency = {
-    ON_APP_START: 1,
-    ON_APP_RESUME: 2,
-    MANUAL: 3,
-  };
-
-  return codePush;
-});
+jest.mock('expo-updates', () => ({
+  useUpdates: () => ({
+    currentlyRunning: { updateId: 'mock-id', channel: 'development' },
+    availableUpdate: null,
+    isUpdateAvailable: false,
+    isUpdatePending: false,
+    isDownloading: false,
+  }),
+  checkForUpdateAsync: jest.fn(),
+  fetchUpdateAsync: jest.fn(),
+  reloadAsync: jest.fn(),
+}));
 
 jest.mock('react-native-view-shot', () => ({
   __esModule: true,

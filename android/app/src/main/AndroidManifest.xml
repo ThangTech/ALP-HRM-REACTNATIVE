@@ -31,5 +31,11 @@
         tools:replace="android:value"
         android:name="com.google.firebase.messaging.default_notification_channel_id"
         android:value="default_channel_id" />
+      <meta-data android:name="expo.modules.updates.ENABLED" android:value="true"/>
+      <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
+      <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
+      <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL" android:value="https://u.expo.dev/d26e434c-0b78-4d72-ba7f-ec034c09aa72"/>
+      <meta-data android:name="expo.modules.updates.EXPO_RUNTIME_VERSION" android:value="@string/expo_runtime_version"/>
+      <meta-data android:name="expo.modules.updates.UPDATES_CONFIGURATION_REQUEST_HEADERS_KEY" android:value="{&quot;expo-channel-name&quot;:&quot;${updatesChannel}&quot;}"/>
     </application>
 </manifest>
