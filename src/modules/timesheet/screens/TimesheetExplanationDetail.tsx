@@ -39,6 +39,7 @@ import { useFilePicker } from 'modules/user/hooks/useFilePicker';
 import { goBack } from 'navigators';
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { TouchableOpacity as RNGHTouchableOpacity } from 'react-native-gesture-handler';
 import { getTokens, ScrollView, View } from 'tamagui';
 import { useTimesheetExplanationDetail } from 'timesheet/hooks';
 import { TimeSheetExplanationDetailState } from 'timesheet/state/TimeSheetExplanationDetailState';
@@ -920,7 +921,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
 
         {/* Upload Area */}
         {!isLocked && (
-          <TouchableOpacity
+          <RNGHTouchableOpacity
             style={styles.uploadArea}
             activeOpacity={0.7}
             onPress={handleUploadPress}
@@ -935,14 +936,14 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                 </Text>
               </View>
             </View>
-          </TouchableOpacity>
+          </RNGHTouchableOpacity>
         )}
 
         {/* Uploaded Files List */}
         {uploadedFiles.length > 0 && (
           <TouchableOpacity activeOpacity={1} style={styles.filesListContainer}>
             {uploadedFiles.map((file) => (
-              <TouchableOpacity
+              <RNGHTouchableOpacity
                 key={file.id}
                 style={styles.fileItem}
                 onPress={() => openMediaFile(file.uri, file.type, file.name)}
@@ -961,14 +962,14 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                   </View>
                 </View>
                 {!isLocked && (
-                  <TouchableOpacity
+                  <RNGHTouchableOpacity
                     onPress={() => handleDeleteFile(file.id)}
                     style={styles.deleteButton}
                   >
                     <IcTrash size={20} />
-                  </TouchableOpacity>
+                  </RNGHTouchableOpacity>
                 )}
-              </TouchableOpacity>
+              </RNGHTouchableOpacity>
             ))}
           </TouchableOpacity>
         )}
