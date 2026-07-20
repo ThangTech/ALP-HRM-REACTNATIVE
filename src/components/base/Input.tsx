@@ -5,7 +5,7 @@ import { View, Text, Input as InputBase, InputProps } from 'tamagui';
 import { horizontalScale, scale, verticalScale } from 'utils';
 import Pressable from './Pressable';
 import { IcHidePassword, IcShowPassword } from 'assets/svgs';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface InputBaseProps extends InputProps {
   Icon?: ReactElement; // Deprecated: use leftIcon instead
@@ -226,27 +226,39 @@ const Input = React.memo(
             >
               {LeftIcon && <View mr={horizontalScale(12)}>{LeftIcon}</View>}
 
-              <InputBase
-                ref={ref}
-                flex={1}
-                fontSize={scale(16)}
-                minHeight={verticalScale(45)}
-                pv={0}
-                borderWidth={0}
-                backgroundColor={'transparent'}
-                disableFullscreenUI
-                secureTextEntry={secureText}
-                placeholder={placeholder ? t(placeholder as ParseKeys) : undefined}
-                value={format || parse ? text : value}
-                onChangeText={format || parse ? onChange : handleTextChange}
-                onKeyPress={handleKeyPress}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                editable={editable && !onPress}
-                pointerEvents={onPress ? 'none' : 'auto'}
-                height={'auto'}
-                {...otherProps}
-              />
+              {onPress ? (
+                <View flex={1} jc="center" minHeight={verticalScale(45)}>
+                  <Text
+                    fontSize={scale(16)}
+                    color={value ? '$black' : '$textMuted'}
+                    numberOfLines={otherProps.multiline ? undefined : 1}
+                  >
+                    {value || placeholder}
+                  </Text>
+                </View>
+              ) : (
+                <InputBase
+                  ref={ref}
+                  flex={1}
+                  fontSize={scale(16)}
+                  minHeight={verticalScale(45)}
+                  pv={0}
+                  borderWidth={0}
+                  backgroundColor={'transparent'}
+                  disableFullscreenUI
+                  secureTextEntry={secureText}
+                  placeholder={placeholder ? t(placeholder as ParseKeys) : undefined}
+                  value={format || parse ? text : value}
+                  onChangeText={format || parse ? onChange : handleTextChange}
+                  onKeyPress={handleKeyPress}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  editable={editable && !onPress}
+                  pointerEvents={onPress ? 'none' : 'auto'}
+                  height={'auto'}
+                  {...otherProps}
+                />
+              )}
 
               {RightIcon && <View ml={horizontalScale(8)}>{RightIcon}</View>}
             </View>
