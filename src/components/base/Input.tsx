@@ -7,6 +7,23 @@ import Pressable from './Pressable';
 import { IcHidePassword, IcShowPassword } from 'assets/svgs';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
+// Chỉ dùng RNGH TouchableOpacity khi có onPress (cần cho BottomSheet).
+// Khi không có onPress, render trực tiếp để touch truyền đúng đến icon bên trong (fix Fabric).
+const TouchableWrapper = ({
+  onPress,
+  children,
+}: {
+  onPress?: () => void;
+  children: React.ReactNode;
+}) => {
+  if (!onPress) return <>{children}</>;
+  return (
+    <TouchableOpacity style={{}} activeOpacity={0.7} onPress={onPress}>
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 interface InputBaseProps extends InputProps {
   Icon?: ReactElement; // Deprecated: use leftIcon instead
   leftIcon?: ReactElement;
@@ -198,7 +215,7 @@ const Input = React.memo(
               {isRequired && <Text color="$m_red">*</Text>}
             </Text>
           )}
-          <TouchableOpacity style={{}} activeOpacity={onPress ? 0.7 : 1} onPress={onPress}>
+          <TouchableWrapper onPress={onPress}>
             <View
               flexDirection="row"
               alignItems={otherProps.multiline ? 'flex-start' : 'center'}
@@ -276,7 +293,7 @@ const Input = React.memo(
                 </Text>
               </View>
             )}
-          </TouchableOpacity>
+          </TouchableWrapper>
         </View>
       );
     },
