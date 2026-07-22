@@ -68,50 +68,50 @@ test-and-lint:
 #     - bash ./scripts/build-android.sh --production
 #     - firebase appdistribution:distribute android/app/build/outputs/apk/release/app-release.apk --app "$FIREBASE_ANDROID_PROD_APP_ID" --token "$FIREBASE_TOKEN" --groups testers --release-notes "PROD-$CI_PIPELINE_ID"
 # ============ STAGE: NOTIFY ============
-notify-success:
-  <<: *notify_base
-  when: on_success
-  script:
-    - echo "DEBUG TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}"
-    - echo "DEBUG TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"
-    - STATUS_ICON="✅"; STATUS_TEXT="SUCCESS"
-    - |
-      MESSAGE="${STATUS_ICON} *React Native CI/CD Report*
+# notify-success:
+#   <<: *notify_base
+#   when: on_success
+#   script:
+#     - echo "DEBUG TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}"
+#     - echo "DEBUG TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"
+#     - STATUS_ICON="✅"; STATUS_TEXT="SUCCESS"
+#     - |
+#       MESSAGE="${STATUS_ICON} *React Native CI/CD Report*
 
-      📱 *Project:* \`${CI_PROJECT_PATH}\`
-      🛠 *Pipeline:* \`#${CI_PIPELINE_ID}\`
-      🌿 *Branch:* \`${CI_COMMIT_REF_NAME}\`
-      👤 *Actor:* \`${GITLAB_USER_LOGIN}\`
+#       📱 *Project:* \`${CI_PROJECT_PATH}\`
+#       🛠 *Pipeline:* \`#${CI_PIPELINE_ID}\`
+#       🌿 *Branch:* \`${CI_COMMIT_REF_NAME}\`
+#       👤 *Actor:* \`${GITLAB_USER_LOGIN}\`
 
-      📍 *Environment:* \`${TARGET_ENV:-Push/MR Mode}\`
-      📊 *Status:* ${STATUS_TEXT}
+#       📍 *Environment:* \`${TARGET_ENV:-Push/MR Mode}\`
+#       📊 *Status:* ${STATUS_TEXT}
 
-      🔗 [View detail on GitLab](${CI_PIPELINE_URL})"
-      curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
-        -d chat_id="${TELEGRAM_CHAT_ID}" \
-        -d parse_mode="Markdown" \
-        --data-urlencode text="${MESSAGE}"
+#       🔗 [View detail on GitLab](${CI_PIPELINE_URL})"
+#       curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+#         -d chat_id="${TELEGRAM_CHAT_ID}" \
+#         -d parse_mode="Markdown" \
+#         --data-urlencode text="${MESSAGE}"
 
-notify-failure:
-  <<: *notify_base
-  when: on_failure
-  script:
-    - echo "DEBUG TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}"
-    - echo "DEBUG TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"
-    - STATUS_ICON="❌"; STATUS_TEXT="FAILED"
-    - |
-      MESSAGE="${STATUS_ICON} *React Native CI/CD Report*
+# notify-failure:
+#   <<: *notify_base
+#   when: on_failure
+#   script:
+#     - echo "DEBUG TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}"
+#     - echo "DEBUG TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"
+#     - STATUS_ICON="❌"; STATUS_TEXT="FAILED"
+#     - |
+#       MESSAGE="${STATUS_ICON} *React Native CI/CD Report*
 
-      📱 *Project:* \`${CI_PROJECT_PATH}\`
-      🛠 *Pipeline:* \`#${CI_PIPELINE_ID}\`
-      🌿 *Branch:* \`${CI_COMMIT_REF_NAME}\`
-      👤 *Actor:* \`${GITLAB_USER_LOGIN}\`
+#       📱 *Project:* \`${CI_PROJECT_PATH}\`
+#       🛠 *Pipeline:* \`#${CI_PIPELINE_ID}\`
+#       🌿 *Branch:* \`${CI_COMMIT_REF_NAME}\`
+#       👤 *Actor:* \`${GITLAB_USER_LOGIN}\`
 
-      📍 *Environment:* \`${TARGET_ENV:-Push/MR Mode}\`
-      📊 *Status:* ${STATUS_TEXT}
+#       📍 *Environment:* \`${TARGET_ENV:-Push/MR Mode}\`
+#       📊 *Status:* ${STATUS_TEXT}
 
-      🔗 [View detail on GitLab](${CI_PIPELINE_URL})"
-      curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
-        -d chat_id="${TELEGRAM_CHAT_ID}" \
-        -d parse_mode="Markdown" \
-        --data-urlencode text="${MESSAGE}"
+#       🔗 [View detail on GitLab](${CI_PIPELINE_URL})"
+#       curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+#         -d chat_id="${TELEGRAM_CHAT_ID}" \
+#         -d parse_mode="Markdown" \
+#         --data-urlencode text="${MESSAGE}"

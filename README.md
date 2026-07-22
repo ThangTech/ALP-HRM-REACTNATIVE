@@ -1,747 +1,459 @@
 # ALP HRM
 
-ALP HRM is a React Native CLI mobile HRM application built with React Native `0.77.3`, React `18`, TypeScript, Tamagui, React Navigation, SWR, Firebase Messaging/Remote Config, Notifee, and RevoPush CodePush. The app focuses on employee self-service and HR workflows such as profile lookup, timesheets, attendance explanations, leave registration, overtime, termination, discipline, insurance, tax, salary tickets, notifications, GPS tracking, suggestions, and company news.
+Mobile HRM app for An Loc Phat, built with **React Native 0.79**, **Expo Modules** (`expo-updates`, `expo-asset`), **Tamagui**, **React Navigation**, and **SWR**. Package name in `package.json` is `alphrm`; display name is **ALP HRM**.
 
-The app entry path is `index.js` -> `App.tsx`. `App.tsx` composes the root providers: `SWRConfig`, `AppProvider`, `TamaguiProvider`, `PortalProvider`, `GestureHandlerRootView`, `BottomSheetModalProvider`, `MenuProvider`, `Host`, `AppNavigator`, `Toast`, and `ForceUpdateModal`.
+Primary use cases: employee self-service (profile, timesheet, leave, payroll, insurance, resignation), approver flows, documents, and digital signature.
 
 ## Projects And OS / Apps And Platforms
 
-| Project/app name | Platform/OS | Native target/module | Bundle ID/Application ID | Notes |
-| --- | --- | --- | --- | --- |
-| ALP HRM | React Native JS | `App.tsx`, `src/`, registered by `app.json` name `ALP HRM` | N/A | Shared TypeScript source for Android and iOS. |
-| ALP HRM | Android production release | Gradle module `android/app` | `com.vdx.alphrm` | App name `ALP HRM`; version is read from `.env`; Firebase and RevoPush are integrated. |
-| ALP HRM Dbg | Android debug | `android/app` build type `debug` | `com.vdx.alphrm.debug` | `applicationIdSuffix ".debug"` and app name `ALP HRM Dbg`; used by `yarn run-android`. |
-| ALP HRM Dev | Android development release | `android/app` build type `release` with `APP_ENV=development` | `com.vdx.alphrm.dev` | `applicationIdSuffix ".dev"`, `versionNameSuffix "-dev"`, and app name `ALP HRM Dev`; built by `yarn build-android-dev`. |
-| ALPHRM | iOS app | `ios/ALPHRM.xcworkspace`, target/scheme `ALPHRM` | `com.vdx.alphrm` | iOS deployment target is `15.5`; React Native new architecture is disabled in `ios/Podfile`. |
-| ALPHRMTests | iOS tests | `ios/ALPHRM.xcodeproj`, target `ALPHRMTests` | `com.vdx.alphrm` in current project settings | Native iOS test target. |
+| Project / App | Platform | Native target | Bundle / Application ID | Notes |
+|---------------|----------|---------------|-------------------------|-------|
+| ALP HRM | Android | `android/` (`com.vdx.alphrm`) | `com.vdx.alphrm` | Release + `APP_ENV=production` |
+| ALP HRM Dev | Android | same | `com.vdx.alphrm.dev` | Release + `APP_ENV=development` (`applicationIdSuffix ".dev"`) |
+| ALP HRM Dbg | Android | same | `com.vdx.alphrm.debug` | Debug build (`applicationIdSuffix ".debug"`) |
+| ALP HRM | iOS | `ios/ALPHRM.xcworkspace` / scheme `ALPHRM` | `com.vdx.alphrm` | CocoaPods + Firebase |
 
-There are no separate web or backend projects in this repository.
+Env / OTA channels:
+
+| Env | How it is selected | EAS Update branch / channel |
+|-----|--------------------|-----------------------------|
+| Development | `APP_ENV=development` (default local `.env`) | `development` |
+| Production | `APP_ENV=production` + `.env.production` | `production` |
+
+Expo project slug: `anlocphat-hrm` (`app.config.js`).
 
 ## Setup
 
-### Required Toolchain
+### Prerequisites
 
-- Node.js `>=18`.
-- Yarn. `.yarnrc.yml` uses the `node-modules` linker.
-- React Native CLI local environment for Android and iOS.
-- Android Studio / Android SDK:
-  - `compileSdkVersion 35`
-  - `targetSdkVersion 35`
-  - `minSdkVersion 24`
-  - Android NDK `27.0.12077973`
-  - Kotlin `1.9.22`
-- Xcode and CocoaPods for iOS.
-- Ruby/Bundler if you manage iOS dependencies through the included `Gemfile`.
-- `revopush` CLI for CodePush release commands.
+- Node.js `>= 18` (CI uses Node 20)
+- Yarn (Berry config present via `.yarnrc.yml`; install with project lockfile)
+- Xcode + CocoaPods (iOS)
+- Android Studio / SDK / NDK (Android)
+- Ruby + Bundler for CocoaPods (`Gemfile`)
+- EAS CLI (for OTA updates): `npm i -g eas-cli` (optional for local run)
 
-### Install Dependencies
+### Install dependencies
 
 ```bash
 yarn install
+# postinstall runs patch-package automatically
+
+cd ios && pod install && cd ..
 ```
 
-`postinstall` runs `patch-package`, so patches in `patches/` are applied automatically.
+### Environment files
 
-Install iOS Pods after dependency or native iOS changes:
-
-```bash
-cd ios
-pod install
-cd ..
-```
-
-### Environment Files
-
-The project uses `react-native-dotenv` with `APP_ENV` as the environment selector. Keep base env files in the project root and put machine-specific or secret values in local override files.
+Create / keep these at repo root (do **not** commit secrets in `*.local`):
 
 | File | Purpose |
-| --- | --- |
-| `.env` | Base/development values. Android Gradle reads version values from this file. |
-| `.env.local` | Optional local development overrides. |
-| `.env.production` | Production values. |
-| `.env.production.local` | Optional production overrides for local or CI builds. |
+|------|---------|
+| `.env` | Default / development values |
+| `.env.local` | Local overrides (gitignored) |
+| `.env.production` | Production values |
+| `.env.production.local` | Production local overrides (gitignored) |
 
-Env keys currently referenced by source code and scripts:
+Variables used by the app / build (names only):
 
-| Key | Used for |
-| --- | --- |
-| `ANDROID_VERSION_CODE`, `ANDROID_VERSION_NAME` | Android `versionCode`, `versionName`, RevoPush target version, and release description. |
-| `IOS_VERSION_CODE`, `IOS_VERSION_NAME` | iOS build/version values and RevoPush target version. |
-| `APP_BUNDLE_VERSION` | RevoPush release description. |
-| `API_URL` | API base URL in `src/utils/client.ts` through `src/configs/env.ts`. |
-| `HOST` | Shared host config. |
-| `APP_NAME` | App name value exposed through env helpers. |
-| `DB_NAME` | Secondary env helper value in `src/config/env.ts`. |
-| `WS_URL` | WebSocket URL exposed by `src/configs/env.ts`. |
-| `CODE_PUSH_ANDROID_DEPLOYMENT_KEY`, `CODE_PUSH_IOS_DEPLOYMENT_KEY` | RevoPush/CodePush deployment keys. |
+- `ANDROID_VERSION_NAME`, `ANDROID_VERSION_CODE`
+- `IOS_VERSION_NAME`, `IOS_VERSION_CODE`, `APP_BUNDLE_VERSION`
+- `HOST`, `API_URL`, `DB_NAME`
+- `CODE_PUSH_IOS_DEPLOYMENT_KEY`, `CODE_PUSH_ANDROID_DEPLOYMENT_KEY` (legacy; primary OTA is EAS Update)
 
-Note: `src/configs/env.ts` imports `APP_NAME`, but `src/@types/env.d.ts` does not currently declare it. Add it there before relying on strict type coverage for env imports.
+`react-native-dotenv` loads env via Babel (`envName: APP_ENV`). Set `APP_ENV=production` to prefer production env files.
 
-### Secret And Native Config Files
+Typed access lives in `src/config/env.ts` and `src/configs/env.ts` (import from `react-native-dotenv`).
 
-- Android Firebase: place `google-services.json` at `android/app/google-services.json`.
-- iOS Firebase: this repo uses RNFirebase and the iOS target has the RNFB core build phase. If Firebase is enabled for iOS in your environment, add the matching `GoogleService-Info.plist` to the `ALPHRM` target.
-- Android release signing currently uses `debug.keystore` for release builds in `android/app/build.gradle`. Configure a production keystore before any real store or production distribution release.
+### Native secrets / config (gitignored)
+
+Place these before building or shipping:
+
+| File | Location |
+|------|----------|
+| `google-services.json` | `android/app/google-services.json` |
+| `GoogleService-Info.plist` | iOS app target (pattern `GoogleService-Info*.plist` is gitignored) |
+| Release keystore | Android signing (do not commit `*.keystore` except `debug.keystore`) |
+
+CI copies `google-services.json` from `$GOOGLE_SERVICES_JSON` in ship jobs (currently commented in `.gitlab-ci.yml`).
 
 ## App Folder Structure
 
-### Root Project
+### Root
 
-| Path | Role |
-| --- | --- |
-| `App.tsx` | Main app component and provider composition. |
-| `index.js` | React Native registry entry. |
-| `app.json` | App name/display name: `ALP HRM`. |
-| `package.json` | Dependencies and run/build/test scripts. |
-| `src/` | Main TypeScript application source. |
-| `android/` | Native Android project, Gradle config, Firebase plugin, RevoPush Gradle integration, resources, manifests. |
-| `ios/` | Native iOS project/workspace for `ALPHRM`, Podfile, plist, assets, entitlements, and build phases. |
-| `scripts/` | Local Android build/run helpers, iOS build script, and RevoPush release script. |
-| `patches/` | `patch-package` patches applied after install. |
-| `__tests__/` | Jest tests. Currently contains `App.test.tsx`. |
-| `__mocks__/` | Jest mocks for Notifee, Firebase Messaging, geolocation, and Keychain. |
-| `tamagui.config.ts` | Tamagui design/token config. |
-| `babel.config.js` | Babel config, dotenv plugin, Reanimated plugin, and module aliases. |
-| `metro.config.js` | Metro config for SVG transformer and extra asset extensions. |
-| `jest.config.js`, `setup-jest.js` | Jest transform and mock setup. |
-| `.gitlab-ci.yml` | GitLab CI lint/test pipeline and Telegram notifications. |
+```text
+mobile-hrm-alp/
+├── android/           # Native Android project
+├── ios/               # Native iOS project (ALPHRM)
+├── src/               # Application source
+├── scripts/           # run/build helpers
+├── patches/           # patch-package patches
+├── __mocks__/         # Jest mocks
+├── __tests__/         # Tests
+├── App.tsx            # Providers, OTA check, navigator
+├── index.js           # AppRegistry entry
+├── app.config.js      # Expo / EAS Update config
+├── eas.json           # EAS build profiles & channels
+├── tamagui.config.ts  # UI theme tokens
+└── .gitlab-ci.yml     # lint/test (+ optional ship/notify)
+```
 
-### Source Folders
+### `src/`
 
-| Path | Role |
-| --- | --- |
-| `src/assets/` | Static images and SVG icon components. SVGs are transformed through `react-native-svg-transformer`. |
-| `src/components/` | Shared UI such as `Screen`, `Header`, `Toast`, `Table`, `SearchInput`, upload/viewer components, cards, dropdowns, and menus. |
-| `src/components/base/` | Base primitives such as `Button`, `Input`, `Text`, `Modal`, `FlatList`, date/time pickers, option pickers, form helpers, and `Pressable`. |
-| `src/configs/` | Current app config: env, navigation, storage, constants. |
-| `src/config/` | Secondary env helper with `ENV` and `getEnv`. |
-| `src/hooks/` | Shared hooks for API helpers, profile, storage, permissions, websocket, debounce, remote config, force update, and unauthorized handling. |
-| `src/i18n/` | i18next setup with `en` and `vi` namespaces: `common`, `home`, `login`, `report`, `transfer`. |
-| `src/modules/` | Feature modules and business screens. Most product code lives here. |
-| `src/navigators/` | React Navigation setup, typed navigation utilities, bottom tabs, and app context provider. |
-| `src/common/` | Shared enums, API/domain models, and styles. |
-| `src/@types/`, `src/types/`, `custom.d.ts` | Project declarations, dotenv typings, and module declarations. |
-| `src/@model/` | Small shared models such as `department` and `group`. |
-| `src/utils/` | Shared API client, file viewer helper, scaling helpers, and general utilities. |
+| Folder | Role |
+|--------|------|
+| `modules/` | Feature modules (screens, hooks, providers) |
+| `navigators/` | Root stack, bottom tabs, `AppProvider`, navigation helpers |
+| `components/` | Shared UI (`Header`, `Screen`, forms, modals, …) |
+| `hooks/` | Shared hooks + API singleton (`hooks/api.ts`) |
+| `configs/` | Routes (`navigation.ts`), constants, storage |
+| `config/` | Env helper |
+| `i18n/` | `en` / `vi` translation JSON |
+| `common/` | Shared enums and models |
+| `utils/` | HTTP client, scaling, file helpers |
+| `assets/` | Images and SVG icon components |
+| `@types/`, `types/` | TypeScript declarations |
+| `@model/` | Shared model helpers |
 
-### Navigation
+### Feature module layout
 
-Navigation is centralized in:
-
-- `src/navigators/AppNavigator.tsx`: creates the native stack, selects the initial route from `useAppContext().user`, and registers screens.
-- `src/configs/navigation.ts`: defines `RouteName` and `AppStackParamList`.
-- `src/navigators/BottomTabBar.tsx`: renders the custom bottom tab bar.
-
-Initial route behavior:
-
-| Condition | Initial route |
-| --- | --- |
-| `user?.employee_id` exists | `RouteName.BottomBarStack` |
-| No logged-in user | `RouteName.Login` |
-
-Bottom tabs:
-
-| Tab | Route | Component |
-| --- | --- | --- |
-| Home | `RouteName.Home` | `modules/home/screens/Home` |
-| Notification | `RouteName.Notification` | `modules/notification/screens/Notification` |
-| User/Setting | `RouteName.Setting` | `modules/user/screens/User` |
-
-### Module Structure
-
-The codebase is feature-oriented, but modules are not perfectly uniform. Current modules commonly use this shape:
+Most features follow list / detail / editor folders:
 
 ```text
 src/modules/<feature>/
-├── screens/ or <page-name>/
-├── components/
-├── hooks/
-├── provider.tsx
-├── <Feature>State.ts
-├── data/
-├── types/
-└── utils/
+├── list/                 # or <feature>-list/
+│   ├── index.tsx         # Screen + Provider wrapper
+│   ├── provider.tsx
+│   ├── *State.ts
+│   ├── hooks/use*Api.ts  # SWR + api.POST
+│   └── components/
+├── detail/
+├── editor/
+└── …
 ```
 
-For new modules, prefer this shape when it fits the feature:
+### Modules
 
-```text
-src/modules/<feature>/
-├── screens/pages
-├── components
-├── hooks
-├── services/api
-├── configs/constants
-└── types
-```
-
-In this repo, feature API work is usually implemented in feature hooks such as `useHomeApi`, `useNewsApi`, `useTaxApi`, `useTimeSheet`, and `useLeaveRegistrationApi`, using shared utilities and `src/utils/client.ts`.
-
-### Existing Modules/Features
-
-| Module | Main paths | Role |
-| --- | --- | --- |
-| `home` | `screens/Home.tsx`, `hooks/useHomeApi.ts`, `hooks/useNotificationCountApi.ts`, `components/HeaderHome.tsx` | Home dashboard, menu entry points, recent activities, notification count, FCM token saving, foreground notification display. |
-| `user` | `screens/*`, `register/`, `hooks/*`, `components/*`, `types/`, `utils/credentials.ts` | Login, forgot password, profile, employee information, employee list, company/profile data, document list, company switch. |
-| `notification` | `screens/Notification.tsx`, `hooks/useNotifications.ts`, `components/NotificationItem.tsx` | Notification list and item rendering. |
-| `news` | `screens/News.tsx`, `screens/NewsDetail.tsx`, `hooks/useNewsApi.ts` | Company/news list and detail. |
-| `timesheet` | `screens/*`, `hooks/*`, `state/`, `timesheet-filter/` | Timesheet, attendance explanations, attendance violations, and filters. |
-| `leave-registration` | `list/`, `detail/`, `editor/`, `leave-report/` | Leave list/detail/editor and leave report flows. |
-| `over-time` | `over-times/`, `over-time-editor/`, `over-time-detail/` | Overtime list, create/edit, and detail flows. |
-| `termination` | `terminations/`, `termination-editor/`, `termination-detail/` | Termination/resignation list, editor, and detail flows. |
-| `discipline` | `discipline-list/`, `discipline-detail/` | Discipline records list and detail. |
-| `personal-report` | `personal-report-list/`, `personal-report-editor/` | Personal report list and editor. |
-| `insurance` | `insurance-menu.tsx`, `insurance-detail/` | Insurance menu and detail views. |
-| `tax` | `index.tsx`, `provider.tsx`, `hooks/useTaxApi.ts`, `components/TaxItem.tsx` | Tax screen and tax API hook. |
-| `salary-ticket` | `salary-ticket-list/`, `salary-ticket-detail/` | Salary ticket list and detail. |
-| `gps` | `gps-list/`, `gps-tracking/` | GPS list and tracking screens. |
-| `suggestion` | `screens/Suggestion*.tsx`, `hooks/*`, `components/*` | Suggestions/feedback list, detail/editor, and upload helpers. |
-| `comment` | `screens/CommentEditor.tsx`, `hooks/useCommentEditor.tsx` | Shared comment editor flow. |
-| `menu` | `FullMenu.tsx`, `components/MenuItem.tsx` | Full menu and menu item rendering. |
-| `vps` | `screens/Vps.tsx` | VPS feature screen. |
-
-### Imports And Aliases
-
-`tsconfig.json` sets `baseUrl` to `./src`, so imports like `components`, `hooks`, `utils`, and `configs/env` work from source files. Explicit aliases are also configured for:
-
-- `home`
-- `notification`
-- `user`
-- `vps`
-- `news`
-- `timesheet`
-- `setting`
-
-The `setting` alias exists in `babel.config.js` and `tsconfig.json`, but there is currently no `src/modules/setting` folder. When adding a new alias, update both `tsconfig.json` and `babel.config.js`.
+| Module | Role |
+|--------|------|
+| `home` | Home dashboard, feature menu, FCM registration |
+| `user` | Login, register, forgot password, profile / employee info |
+| `notification` | Notifications tab |
+| `menu` | Full menu screen (`FullMenu`) |
+| `leave-registration` | Leave list, detail, editor, leave report |
+| `timesheet` | Timesheet, explanations, attendance violations |
+| `termination` | Resignation letters |
+| `over-time` | Overtime requests |
+| `discipline` | Rewards / discipline |
+| `personal-report` | Staff transfer / HCNS reports |
+| `insurance` | Insurance menu + detail |
+| `tax` | Personal income tax |
+| `salary-ticket` | Payslip list + detail |
+| `gps` | GPS list + tracking |
+| `suggestion` | Suggestions / feedback |
+| `comment` | Shared comment editor |
+| `document` | Document list + PDF viewer |
+| `digital-signature` | Sign request list, attachments, WebView signer |
+| `news` | News list + detail |
+| `vps` | VPS WebView screen |
 
 ## Development
 
-Start Metro:
+### Start Metro
 
 ```bash
 yarn start
 ```
 
-Run Android debug:
+### Run apps
 
 ```bash
+# Android (debug, applicationIdSuffix=debug)
 yarn run-android
-```
+# or: yarn android
 
-`yarn run-android` installs dependencies, loads `.env` and optional `.env.local`, then runs:
-
-```bash
-yarn android --no-packager --active-arch-only --appIdSuffix=debug
-```
-
-You can also use the raw React Native Android command:
-
-```bash
-yarn android
-```
-
-Run iOS simulator:
-
-```bash
+# iOS
 yarn ios
 ```
 
-If Pods or native iOS dependencies changed:
+`yarn run-android` runs `scripts/run-android.sh` (loads `.env` / `.env.local`, then `react-native run-android` with `--appIdSuffix=debug`).
 
-```bash
-cd ios
-pod install
-cd ..
-```
+### Hot reload vs rebuild
 
-Reload behavior:
-
-| Change type | Usual action |
-| --- | --- |
-| JS/TS/UI only | Use Fast Refresh or reload the app. |
-| Env values | Restart Metro; rebuild if the value is embedded in native build/version/config. |
-| Android Gradle/manifest/Firebase/permissions/resources/native modules | Rebuild Android. |
-| iOS Podfile/plist/entitlements/signing/assets/native modules | Run `pod install` when needed, then rebuild iOS. |
-| Dependencies | Run `yarn install`; run `pod install` too when native iOS pods are affected. |
+| Change type | Action |
+|-------------|--------|
+| JS / TS / UI under `src/` | Metro Fast Refresh / reload |
+| Env vars (`.env*`), Babel, native deps, `android/` / `ios/` | Rebuild native app |
+| Pods / Gradle / Firebase plist | Reinstall pods / clean build |
 
 ## Build And Update Commands
 
-Commands from `package.json`:
+| Command | Description |
+|---------|-------------|
+| `yarn android` | Run Android via RN CLI |
+| `yarn ios` | Run iOS via RN CLI |
+| `yarn start` | Start Metro |
+| `yarn lint` | ESLint |
+| `yarn format` | ESLint `--fix` + Prettier write on `src/**/*.{ts,tsx}` |
+| `yarn format:check` | Prettier check |
+| `yarn test` | Jest |
+| `yarn run-android` | `./scripts/run-android.sh` |
+| `yarn build-android-dev` | `./scripts/build-android.sh --development` → `assembleRelease` |
+| `yarn build-android-prod` | `./scripts/build-android.sh --production` → `assembleRelease` |
+| `yarn update-android-dev` | `eas update --branch development --platform android` |
+| `yarn update-android-prod` | `eas update --branch production --platform android` |
+| `yarn update-ios-dev` | `eas update --branch development --platform ios` |
+| `yarn update-ios-prod` | `eas update --branch production --platform ios` |
 
-| Command | What it does |
-| --- | --- |
-| `yarn start` | Starts Metro bundler with `react-native start`. |
-| `yarn android` | Runs `react-native run-android`. |
-| `yarn ios` | Runs `react-native run-ios`. |
-| `yarn run-android` | Runs `scripts/run-android.sh` for Android debug with `.debug` app id suffix. |
-| `yarn build-android-dev` | Runs `scripts/build-android.sh --development`; builds Android release with `.dev` id suffix. |
-| `yarn build-android-prod` | Runs `scripts/build-android.sh --production`; builds Android production release. |
-| `yarn code-push-dev` | Runs `scripts/code-push.sh android --development`. Current script does not parse this `--development` argument; it uses `APP_ENV` from env files or defaults to development. |
-| `yarn code-push-prod` | Runs `scripts/code-push.sh android --production`. Current script does not parse this `--production` argument; it uses `APP_ENV` from env files. |
-| `yarn lint` | Runs ESLint for JS/TS/TSX/JSON files. |
-| `yarn format` | Runs ESLint fix for TS/TSX and Prettier write for `src/**/*.{ts,tsx}`. |
-| `yarn format:check` | Runs Prettier check across the repo. |
-| `yarn test` | Runs Jest. |
-| `yarn postinstall` | Runs `patch-package`; normally invoked automatically after install. |
+### Script notes (mismatches)
 
-Shell script notes:
-
-| Script | Notes |
-| --- | --- |
-| `scripts/run-android.sh` | Local Android debug runner. Loads `.env` and `.env.local`. |
-| `scripts/build-android.sh --development` | Sets `APP_ENV=development`, loads development env files, exports `COMMIT_HASH`, removes `android/app/build`, then runs `yarn react-native build-android --tasks assembleRelease`. |
-| `scripts/build-android.sh --production` | Sets `APP_ENV=production`, loads production env files, exports `COMMIT_HASH`, removes `android/app/build`, then builds release. |
-| `scripts/code-push.sh android` | Releases Android bundle to RevoPush app `may10-qms`. This app name looks copied from another repo and should be corrected for ALP HRM before real releases. |
-| `scripts/code-push.sh ios` | Contains an iOS RevoPush branch, also targeting app `may10-qms`. |
-| `scripts/build-ios.sh` | Currently outdated: it references `PortalApp.xcworkspace`, scheme `PortalApp`, and `PortalApp.xcarchive`, while the actual project is `ALPHRM`. Fix this script before relying on it. |
-
-Important mismatch from older documentation: `yarn code-push-production` does not exist. Use `yarn code-push-prod`.
+- `scripts/build-ios.sh` still references `PortalApp.xcworkspace` / scheme `PortalApp`. Current native project is `ALPHRM` — **do not use this script as-is** until it is updated.
+- `scripts/code-push.sh` targets legacy RevoPush (`revopush release-react …`). Prefer EAS Update scripts above for JS OTA.
+- GitLab `ship-android-*` and Telegram notify jobs in `.gitlab-ci.yml` are currently **commented out**. Active CI stage is `test-and-lint` (`yarn lint` + `yarn test`).
 
 ## Development / Coding Flow
 
-Use this flow for normal feature or bug work:
-
-1. Pull the latest code from the target branch.
-2. Run `yarn install` so dependencies and `patch-package` patches are applied.
-3. Prepare env/config files:
-   - ensure `.env` exists
-   - create/update `.env.local` for local secrets
-   - create/update `.env.production.local` only when building production locally or in CI
-   - place `android/app/google-services.json` for Android Firebase
-4. Start Metro with `yarn start`.
-5. Run the target app:
-   - Android debug: `yarn run-android`
-   - iOS simulator: `yarn ios`
-6. Implement the change inside the matching `src/modules/<feature>` folder when possible.
-7. Update `src/configs/navigation.ts` and `src/navigators/AppNavigator.tsx` when adding screens.
-8. Put shared UI in `src/components` or `src/components/base`; keep feature-only UI in the module's `components` folder.
-9. Put shared models/enums in `src/common`; feature-only types can stay inside the module.
-10. Keep feature-specific API/state hooks near the feature and reuse shared client/util patterns.
-11. Use Fast Refresh/reload for JS/UI-only changes.
-12. Rebuild/restart the app for native/config/env/dependency changes.
-13. Run quality checks.
-14. Commit and open a PR/MR with platform impact, env/config changes, and any required rebuild notes.
+1. Pull latest code.
+2. `yarn install` (and `pod install` on iOS when native deps change).
+3. Ensure `.env` / `.env.local` and Firebase config files are in place.
+4. `yarn start` + `yarn run-android` or `yarn ios`.
+5. Implement feature under `src/modules/<feature>/`.
+6. Reload for JS/UI changes; rebuild for native/env/config.
+7. Run `yarn lint`, `yarn format:check`, `yarn test`.
+8. Commit and open MR/PR.
 
 ```mermaid
 flowchart TD
-  A[Developer pulls latest code] --> B[Install dependencies]
-  B --> C[Prepare env and native config]
-  C --> D[Run Metro and target app]
-  D --> E[Implement feature or fix]
-  E --> F[Run lint, format check, and tests]
-  F --> G{Native, env, dependency, or build config changed?}
-  G -- No --> H[Reload or Fast Refresh]
-  G -- Yes --> I[Rebuild or restart app]
-  H --> J[Commit and open PR/MR]
+  A[Developer pulls latest code] --> B[yarn install]
+  B --> C[Prepare .env and Firebase configs]
+  C --> D[yarn start + run Android/iOS]
+  D --> E[Implement feature in src/modules]
+  E --> F[yarn lint / format:check / test]
+  F --> G{Native / env / config changed?}
+  G -- No --> H[Metro reload / Fast Refresh]
+  G -- Yes --> I[Rebuild native app]
+  H --> J[Commit and open MR]
   I --> J
 ```
 
-## How To Develop A Feature
+## How to develop a feature
 
-The main user entry point after login is the Home tab:
+Entry point for most HR features is the Home menu.
 
-- Home tab registration: `src/navigators/AppNavigator.tsx`
-- Home screen/menu implementation: `src/modules/home/screens/Home.tsx`
-- Route names and params: `src/configs/navigation.ts`
-- Navigation helper: `src/navigators/navigationUtilities.ts`
+### 1. Entry point
 
-`Home.tsx` defines `menuItems` with menu labels, icons, and `onPress` handlers. Some actions navigate directly, while others open `OptionPickerModal2` first based on approval flags from `useUser()`.
+- File: `src/modules/home/screens/Home.tsx`
+- Menu items are the `menuItems` array (`key`, `label`, `icon`, `onPress`).
+- Navigation helper: `navigate` from `navigators`.
+- Approver options use bottom sheets (`OptionPickerModal2`) when `userApprovalInfor` flags allow.
 
-Current Home menu flow:
+Example — leave registration entry:
 
-```mermaid
-flowchart TD
-  A[Logged-in user] --> B[BottomBarStack]
-  B --> C[Home tab]
-  C --> D[Home screen menuItems]
-  D --> E{Action needs approval-mode selection?}
-  E -- No --> F[Navigate directly]
-  E -- Yes --> G[Open OptionPickerModal2]
-  G --> H[Select ME or APPROVE viewType]
-  F --> I[Route registered in AppNavigator]
-  H --> I
-  I --> J[Feature screen]
+```tsx
+{
+  key: 'dang_ky_nghi',
+  label: 'Đăng ký nghỉ',
+  icon: Images.dang_ky_nghi,
+  onPress: () => {
+    if (userApprovalInfor?.approve_hr_leave) {
+      sheetLeaveRef.current?.present();
+    } else {
+      navigate(RouteName.LeaveRegistrations, { viewType: LeaveRegistrationViewType.ME });
+    }
+  },
+}
 ```
 
-Checklist for adding a Home-driven feature:
+### 2. Add a new Home action
 
-1. Add the route name and route params to `src/configs/navigation.ts`.
-2. Create the screen/page in the owning feature module under `src/modules/<feature>`.
-3. Export the screen if the module uses a `screens/index.ts` barrel.
-4. Import and register the screen in `src/navigators/AppNavigator.tsx`.
-5. Add a new `menuItems` entry in `src/modules/home/screens/Home.tsx`, or add an option handler/modal path if the feature needs mode selection.
-6. Put feature-only UI in `src/modules/<feature>/components`; put reusable UI in `src/components` or `src/components/base`.
-7. Put feature-specific API/state logic in a module hook/provider/state file; use `src/utils/client.ts` and shared hooks where appropriate.
-8. Add or update translations in both `src/i18n/en/*.json` and `src/i18n/vi/*.json` if the screen has user-facing text.
-9. Check approval flags, role values, or feature access fields near the existing Home logic if visibility or routing depends on user permissions.
-10. Test direct navigation, option modal selection, route params, back navigation, loading, empty state, error state, and any create/update callbacks.
+Edit `menuItems` in `src/modules/home/screens/Home.tsx`. Add icon under `src/assets` if needed.
 
-Example: add a new employee document route from Home.
+### 3. Add a child screen
+
+Create under the feature module, for example:
+
+```text
+src/modules/leave-registration/list/index.tsx
+src/modules/leave-registration/detail/index.tsx
+src/modules/leave-registration/editor/index.tsx
+```
+
+### 4. Register the route
+
+1. Add enum + params in `src/configs/navigation.ts`:
 
 ```ts
-// src/configs/navigation.ts
 export enum RouteName {
-  // ...
-  EmployeeDocuments = 'EmployeeDocuments',
+  // …
+  LeaveRegistrations = 'LeaveRegistrations',
+  LeaveRegistrationsDetail = 'LeaveRegistrationsDetail',
+  LeaveRegistrationEditor = 'LeaveRegistrationEditor',
 }
 
-type ParamList = Record<RouteName | string, any> & {
-  // ...
-  [RouteName.EmployeeDocuments]: {
-    employeeId?: number;
-  };
+// AppStackParamList params:
+LeaveRegistrations: {
+  viewType?: LeaveRegistrationViewType;
+};
+[RouteName.LeaveRegistrationsDetail]: {
+  id?: number;
+  viewType?: LeaveRegistrationViewType;
 };
 ```
 
-```tsx
-// src/modules/user/screens/EmployeeDocuments.tsx
-import React from 'react';
-import { Text } from 'components';
-import { RouteName } from 'configs/navigation';
-import { AppStackScreenProps } from 'navigators/AppNavigator';
-
-type Props = AppStackScreenProps<RouteName.EmployeeDocuments>;
-
-const EmployeeDocuments = ({ route }: Props) => {
-  return <Text>{`Employee: ${route.params?.employeeId ?? 'current'}`}</Text>;
-};
-
-export default EmployeeDocuments;
-```
-
-```ts
-// src/modules/user/screens/index.ts
-export { default as EmployeeDocuments } from './EmployeeDocuments';
-```
+2. Wire the screen in `src/navigators/AppNavigator.tsx`:
 
 ```tsx
-// src/navigators/AppNavigator.tsx
-import { EmployeeDocuments } from 'modules/user/screens';
-
-// inside Stack.Navigator
-<Stack.Screen name={RouteName.EmployeeDocuments} component={EmployeeDocuments} />;
+<Stack.Screen name={RouteName.LeaveRegistrations} component={LeaveRegistrationsPage} />
+<Stack.Screen
+  name={RouteName.LeaveRegistrationsDetail}
+  component={LeaveRegistrationDetailPage}
+/>
 ```
+
+### 5. Navigate list → detail
+
+From list item (pattern in leave-registration list):
 
 ```tsx
-// src/modules/home/screens/Home.tsx
-const menuItems = useMemo(
-  () => [
-    // ...
-    {
-      key: 'employee_documents',
-      label: 'Documents',
-      icon: Images.tai_lieu,
-      onPress: () => {
-        navigate(RouteName.EmployeeDocuments, {
-          employeeId: user?.employee_id,
-        });
-      },
-    },
-  ],
-  [user?.employee_id],
-);
+navigate(RouteName.LeaveRegistrationsDetail, {
+  id: item.id,
+  viewType: provider.viewType,
+});
 ```
 
-Responsibility rules:
+### 6. API / state
 
-- Entry points such as `Home.tsx` coordinate menu actions, approval-mode selection, and navigation.
-- Parent list screens decide which detail/editor screen to open.
-- Hooks/providers handle data fetching, mutation, normalization, loading, and errors.
-- Components render UI and emit events upward.
-- Route params should stay explicit and narrow, such as `id`, `employeeId`, `viewType`, `date`, or callbacks already used by existing flows.
+Typical pattern:
 
-## Deploy Pipeline / CI/CD Flow
+| Layer | Location |
+|-------|----------|
+| UI / filter state | `*State.ts` |
+| Data fetching | `hooks/use*Api.ts` with SWR + `api` from `hooks/api.ts` |
+| Context glue | `provider.tsx` |
+| Screen | `index.tsx` wraps page in Provider |
 
-ALP HRM is a React Native CLI app (not Expo/EAS). GitLab CI runs lint and unit tests, then posts Telegram notifications. Native binaries are built locally (`scripts/build-android.sh`, Xcode for iOS). JS/asset OTA updates go to RevoPush via `scripts/code-push.sh`. Play Store / App Store submission is manual. Commented Firebase App Distribution ship jobs exist in `.gitlab-ci.yml` but are not active.
+HTTP base URL comes from `env.apiUrl` via `src/utils/client.ts`.
 
-### Architecture Overview
+### 7. Shared vs module components
+
+| Place | When |
+|-------|------|
+| `src/components/` / `src/components/base/` | Reusable across features |
+| `src/modules/<feature>/**/components/` | Feature-only UI |
+
+### 8. i18n
+
+- Resources: `src/i18n/en/*.json`, `src/i18n/vi/*.json`
+- Wired in `src/i18n/index.ts`; init in `src/navigators/AppProvider.tsx`
+- Default language: `vi` (`DEFAULT_LANGUAGE` in `src/configs/contansts.tsx`)
+- Note: many Home labels are still hardcoded Vietnamese
+
+### 9. Permissions / feature flags
+
+| Mechanism | Where | Usage |
+|-----------|-------|--------|
+| Approver flags | `useUser()` → `userApprovalInfor` | Home sheets (leave / timesheet / resignation) |
+| Staff transfer | `user.access_staff_transfer` | Discipline / personal-report visibility |
+| Firebase Remote Config | `hooks/useRemoteConfig.ts` key `show_hidden_features` | Login / User hidden UI |
+| `usePermissions` | `hooks/usePermissions.ts` | Exported helpers; not widely used by screens yet |
+
+### 10. Post-change checklist
+
+- [ ] Menu / entry navigates to the correct screen
+- [ ] Route params typed in `AppStackParamList`
+- [ ] List → detail → editor flow works for ME and APPROVE when applicable
+- [ ] API errors and empty states handled
+- [ ] i18n keys added if using `t(...)`
+- [ ] `yarn lint` and `yarn test` pass
+
+### Layering rules
+
+- **Home / entry** only coordinates navigation and sheets.
+- **Parent screen** decides which detail/editor to open and which params to pass.
+- **Hooks / providers** own data and mutations.
+- **Components** render UI and emit events upward.
 
 ```mermaid
 flowchart LR
-  subgraph Actors
-    Dev[Developer]
-    EndUser[End User]
-  end
-
-  subgraph SCM["Server: GitLab"]
-    Repo[Repo]
-    CI["GitLab CI<br/>.gitlab-ci.yml"]
-    Vars["CI Variables<br/>TELEGRAM_* / optional FIREBASE_*"]
-  end
-
-  subgraph Build["Build / Distribute"]
-    LocalAndroid["Local Android APK<br/>yarn build-android-*"]
-    RevoPush["RevoPush OTA<br/>scripts/code-push.sh"]
-  end
-
-  subgraph Store["Store release - manual"]
-    AndroidBin[Build APK / AAB]
-    XcodeBin[Build on Xcode]
-    Stores[Play Store / App Store]
-  end
-
-  Dev -->|Push / MR| Repo
-  Repo --> CI
-  Vars -->|Inject secrets| CI
-  CI -->|lint + test| CI
-  CI -->|Telegram notify| Dev
-
-  Dev -->|yarn build-android-dev/prod| LocalAndroid
-  Dev -->|yarn code-push-dev/prod<br/>or scripts/code-push.sh ios| RevoPush
-  Dev -->|Self build + submit| AndroidBin
-  Dev -->|Archive in Xcode + submit| XcodeBin
-  AndroidBin --> Stores
-  XcodeBin --> Stores
-
-  EndUser -->|Install / update| Stores
-  EndUser -->|JS OTA when compatible| RevoPush
+  Home[Home menuItems] --> List[Feature list screen]
+  List --> Detail[Detail screen]
+  List --> Editor[Editor screen]
+  Detail --> Editor
+  List --> Api[use*Api + SWR]
+  Detail --> Api
+  Editor --> Api
+  Api --> Backend[HOST / API_URL]
 ```
 
-| Actor / system | Role |
-| --- | --- |
-| Developer | Pushes code; runs local Android/iOS builds; releases RevoPush OTA; submits store binaries manually. |
-| End User | Installs from Play Store / App Store, or receives compatible JS updates via RevoPush. |
-| GitLab Repo | Source of truth for the React Native CLI codebase. |
-| GitLab CI | Runs `yarn lint` and `yarn test`; sends Telegram success/failure messages. Does not build or submit store binaries today. |
-| GitLab CI Variables | Injects secrets into CI (`TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID`; ship jobs would also need Firebase/Google Services vars when enabled). |
-| Local Android build | `scripts/build-android.sh` produces a release APK under `android/app/build/outputs/apk/release/`. |
-| RevoPush | OTA channel used by `@revopush/react-native-code-push` and `revopush release-react`. |
-| Xcode / Play Store / App Store | Manual archive and store upload; not wired in CI. |
+## Deploy Pipeline
 
-### End-to-End Pipeline Stages
+### Local / manual Android release
 
-Defined stages in `.gitlab-ci.yml`: `test` → `ship` → `notify`. Only `test` and `notify` jobs are active. `ship` Android Firebase App Distribution jobs are commented out.
+```bash
+yarn build-android-dev   # APP_ENV=development → APK under android/app/build/outputs/
+yarn build-android-prod  # APP_ENV=production
+```
+
+`scripts/build-android.sh` sources env files, cleans `android/app/build`, then runs `yarn react-native build-android --tasks assembleRelease`.
+
+### OTA (EAS Update)
+
+After a store/native binary that embeds the matching `runtimeVersion` (`ANDROID_VERSION_NAME` / `IOS_VERSION_NAME` in `app.config.js`):
+
+```bash
+yarn update-android-dev
+yarn update-android-prod
+yarn update-ios-dev
+yarn update-ios-prod
+```
+
+Runtime OTA check runs in `App.tsx` via `expo-updates` (`checkForUpdateAsync` → `fetchUpdateAsync` → reload).
 
 ```mermaid
 flowchart TD
-  A[Push / merge request / web pipeline] --> B[test-and-lint]
+  A[JS-only fix on release branch] --> B[Ensure runtimeVersion matches binary]
+  B --> C[eas update --branch development or production]
+  C --> D[App launches / resumes]
+  D --> E[Updates.checkForUpdateAsync]
+  E --> F{Update available?}
+  F -- Yes --> G[fetchUpdateAsync + reload]
+  F -- No --> H[Continue]
+```
+
+### GitLab CI (current)
+
+Active pipeline (`.gitlab-ci.yml`):
+
+```mermaid
+flowchart TD
+  A[push / MR / web] --> B[test-and-lint]
   B --> C[yarn install --frozen-lockfile]
   C --> D[yarn lint]
   D --> E[yarn test]
-  E --> F[notify-success]
-  D --> G[notify-failure]
-  E --> G
-
-  H["ship-android-dev / ship-android-prod<br/>(commented out)"] -.-> I["build-android.sh + firebase appdistribution:distribute"]
 ```
 
-### Recommended Triggers
-
-| Event / source | What runs |
-| --- | --- |
-| `push` | `test-and-lint` → Telegram notify |
-| `merge_request_event` | `test-and-lint` → Telegram notify |
-| `web` (manual pipeline) | `test-and-lint` → Telegram notify |
-| Local developer machine | Android APK via `yarn build-android-*`; RevoPush via `yarn code-push-*` / `scripts/code-push.sh`; iOS archive via Xcode |
-| Commented `ship-*` jobs | Would be `when: manual` Firebase App Distribution if uncommented |
-
-### Native Build vs OTA
-
-| Change type | Path |
-| --- | --- |
-| JS/TS, assets, styles compatible with the installed native binary | RevoPush OTA (`yarn code-push-dev` / `yarn code-push-prod`, or `scripts/code-push.sh ios`) |
-| Native modules, permissions, Firebase config, bundle IDs, Gradle/Podfile, signing, app version behavior, native resources | New native binary: Android `yarn build-android-*`, iOS archive in Xcode |
-| First install or store version bump | Manual Play Store / App Store release |
-
-Only use RevoPush for JavaScript/asset changes that remain compatible with the already installed native runtime. Before real ALP HRM OTA releases, fix `scripts/code-push.sh`: it currently targets RevoPush app name `may10-qms`.
-
-### Local Build / Update Commands
-
-| Command | What it does |
-| --- | --- |
-| `yarn build-android-dev` | `scripts/build-android.sh --development` → release APK with `.dev` application id suffix |
-| `yarn build-android-prod` | `scripts/build-android.sh --production` → production release APK |
-| `yarn code-push-dev` | `scripts/code-push.sh android --development` (script reads `APP_ENV` from env files; does not parse the CLI flag) |
-| `yarn code-push-prod` | `scripts/code-push.sh android --production` (same: uses `APP_ENV` from env files) |
-| `scripts/code-push.sh ios` | iOS RevoPush release branch (no package.json alias) |
-| Xcode archive | `ios/ALPHRM.xcworkspace`, scheme/target `ALPHRM`, bundle id `com.vdx.alphrm` |
-
-Android env ↔ application id:
-
-| Environment | Command | Application ID | App name |
-| --- | --- | --- | --- |
-| Debug local | `yarn run-android` | `com.vdx.alphrm.debug` | `ALP HRM Dbg` |
-| Development release | `yarn build-android-dev` | `com.vdx.alphrm.dev` | `ALP HRM Dev` |
-| Production release | `yarn build-android-prod` | `com.vdx.alphrm` | `ALP HRM` |
-
-### GitLab CI Pipeline
-
-Primary file: `.gitlab-ci.yml`. Runner tag: `test-runner`. Active job image: `node:20`.
-
-Active jobs:
-
-| Job | Stage | Behavior |
-| --- | --- | --- |
-| `test-and-lint` | `test` | `yarn install --frozen-lockfile`, `yarn lint`, `yarn test` |
-| `notify-success` | `notify` | Telegram message when pipeline succeeds (`when: on_success`) |
-| `notify-failure` | `notify` | Telegram message when pipeline fails (`when: on_failure`) |
-
-Commented (inactive) ship jobs would use image `reactnativecommunity/react-native-android:latest`, copy `$GOOGLE_SERVICES_JSON` into `android/app/google-services.json`, build with `scripts/build-android.sh`, and distribute the APK via `firebase appdistribution:distribute`.
-
-GitLab CI Variables / Secrets referenced by `.gitlab-ci.yml`:
-
-| Variable | Used by | Status |
-| --- | --- | --- |
-| `TELEGRAM_TOKEN` | `notify-success`, `notify-failure` | Active |
-| `TELEGRAM_CHAT_ID` | `notify-success`, `notify-failure` | Active |
-| `TARGET_ENV` | Optional label in Telegram message (`Push/MR Mode` fallback) | Active if set |
-| `GOOGLE_SERVICES_JSON` | Commented `ship_*` before_script | Inactive until ship jobs are enabled |
-| `FIREBASE_TOKEN` | Commented Firebase App Distribution | Inactive until ship jobs are enabled |
-| `FIREBASE_ANDROID_DEV_APP_ID` | Commented `ship-android-dev` | Inactive until ship jobs are enabled |
-| `FIREBASE_ANDROID_PROD_APP_ID` | Commented `ship-android-prod` | Inactive until ship jobs are enabled |
-
-Secrets come from GitLab CI/CD Variables. There is no Vault, Teleport, or EAS configuration in this repository.
-
-### Store Release (manual)
-
-CI does not submit to Play Store or App Store.
-
-**Android**
-
-1. Configure a production keystore before real store distribution (release currently uses `debug.keystore` in `android/app/build.gradle`).
-2. Run `yarn build-android-prod` (or build an AAB locally if required by Play Console).
-3. Take the artifact from `android/app/build/outputs/apk/release/` (or your AAB output path).
-4. Upload manually in Google Play Console.
-
-**iOS**
-
-1. Open `ios/ALPHRM.xcworkspace` in Xcode.
-2. Select scheme `ALPHRM`, archive a Release build.
-3. Distribute / upload to App Store Connect from Xcode (or Transporter).
-4. Do not use `scripts/build-ios.sh` until it is fixed (see notes below).
-
-### iOS / Android Notes
-
-- `scripts/build-ios.sh` is outdated: it references `PortalApp.xcworkspace`, scheme `PortalApp`, and `PortalApp.xcarchive`. The real project is `ALPHRM`. Fix or avoid this script.
-- `scripts/code-push.sh` releases to RevoPush app `may10-qms` for both Android and iOS. Correct the app name before production OTA.
-- `yarn code-push-dev` / `yarn code-push-prod` pass `--development` / `--production`, but `scripts/code-push.sh` does not parse those flags; set `APP_ENV` via `.env` / `.env.production` (and optional `*.local` overrides).
-- There is no Expo / `eas.json` in this repo. OTA is RevoPush only.
-
-## System Architecture / Runtime Flow
-
-### Push Notification Flow
-
-Stack thực tế trong repo: **Firebase Cloud Messaging** qua `@react-native-firebase/messaging` (+ `@react-native-firebase/app`), hiển thị foreground bằng **Notifee** (`@notifee/react-native`). Không dùng OneSignal, Expo Notifications, hay provider push khác. Repo này chỉ có mobile client; Backend API nằm ngoài repo (`API_URL`).
-
-#### Layer / component
-
-| Layer / component | Path / dependency | Vai trò |
-| --- | --- | --- |
-| RNFirebase Messaging | `@react-native-firebase/messaging` `23.7.0` | Xin quyền, `getToken()` / `deleteToken()`, `onMessage` (foreground). |
-| Notifee | `@notifee/react-native` `^9.1.8` | Tạo Android channel `default_channel_id`, `displayNotification` khi app foreground; `setBadgeCount` từ số pending approvals. |
-| RNFirebase App | `@react-native-firebase/app` `23.7.0` | Core Firebase; iOS gọi `FirebaseApp.configure()` trong `AppDelegate`. |
-| Android Firebase config | `android/app/google-services.json` (gitignored); plugin `com.google.gms.google-services` | Cấu hình FCM project cho Android. |
-| iOS Firebase config | `GoogleService-Info.plist` (gitignored; Xcode resource + RNFB Core build phase) | Cấu hình FCM project cho iOS. |
-| Android channel meta | `AndroidManifest.xml` → `com.google.firebase.messaging.default_notification_channel_id` = `default_channel_id` | Channel mặc định khi FCM hiển thị notification ở background. |
-| iOS background mode | `ios/ALPHRM/Info.plist` → `UIBackgroundModes` gồm `remote-notification` | Cho phép remote push. |
-| Đăng ký token sau login | `src/modules/home/screens/Home.tsx` + `useHomeApi.saveFcmToken` | Lấy FCM token và `POST /api/update-device-token`. |
-| Lưu token local | `AppProvider` / `storage` field `fcmToken` | Cache token đã lưu để tránh gọi API lặp khi token không đổi. |
-| Logout revoke local | `useMe.onLogout`, `User.tsx` `onLogout` | `messaging().deleteToken()` trên device; **không** có API revoke token lên BE trong repo. |
-| In-app notification list | Tab `Notification` → `useNotifications` | API nghiệp vụ `get_all_pending_approvals_mobile` (pending approvals), **không** phải FCM inbox. |
-| Badge count | `HeaderHome` + `useNotificationCountApi` | `get_pending_approvals_count_only` → `notifee.setBadgeCount`. |
-
-#### Overview: đăng ký token + gửi/nhận push
+Commented (not active) ship flow intended for Firebase App Distribution:
 
 ```mermaid
-flowchart LR
-  subgraph App["ALP HRM App"]
-    Home["Home.tsx<br/>permission + getToken + onMessage"]
-    NotifeeUI["Notifee<br/>channel + displayNotification"]
-    Ctx["AppContext.fcmToken"]
-  end
-
-  subgraph BE["Backend API - ngoài repo"]
-    UpdateToken["POST /api/update-device-token"]
-    SendPush["Business logic gửi push"]
-  end
-
-  FCM[Firebase Cloud Messaging]
-
-  Home -->|messaging.getToken| Ctx
-  Home -->|"fcm_token + employee_id"| UpdateToken
-  SendPush --> FCM
-  FCM -->|RemoteMessage| Home
-  Home -->|foreground| NotifeeUI
-  FCM -.->|background/killed<br/>system tray nếu có notification payload| App
+flowchart TD
+  A[Manual ship-android-dev/prod] --> B[yarn install]
+  B --> C[Copy google-services.json]
+  C --> D[scripts/build-android.sh]
+  D --> E[firebase appdistribution:distribute APK]
 ```
 
-#### Sequence: đăng ký token sau login
+Telegram notify jobs are also commented out.
 
-Token được đăng ký khi user đã vào Home (sau login), không đăng ký ngay trong `login` mutation.
+### EAS build profiles (`eas.json`)
 
-```mermaid
-sequenceDiagram
-  participant User
-  participant Home as Home.tsx
-  participant FCM as RNFirebase Messaging
-  participant Ctx as AppContext / storage
-  participant API as Backend API
-
-  User->>Home: Vào Home tab (đã login)
-  Home->>FCM: requestPermission()
-  Home->>Home: PermissionsAndroid.POST_NOTIFICATIONS
-  Home->>FCM: getToken()
-  alt api.getToken() rỗng (đã logout giữa chừng)
-    Home-->>Home: Bỏ qua, không gọi BE
-  else token mới / khác fcmToken đã lưu
-    Home->>Ctx: setFcmToken(token)
-    Home->>API: POST /api/update-device-token<br/>{ fcm_token, employee_id }
-  end
-```
-
-Payload đăng ký token (`src/modules/home/hooks/useHomeApi.ts`):
-
-| Field | Nguồn |
-| --- | --- |
-| `fcm_token` | `messaging().getToken()` |
-| `employee_id` | `user?.employee_id` từ `AppContext` |
-
-Bỏ qua gọi API nếu thiếu `token` hoặc `employeeId`.
-
-#### Sequence: nhận push foreground vs background/killed
-
-```mermaid
-sequenceDiagram
-  participant BE as Backend API
-  participant FCM as Firebase Cloud Messaging
-  participant Sys as OS / FCM SDK
-  participant Home as Home.tsx onMessage
-  participant Notifee as Notifee
-
-  BE->>FCM: Gửi message tới device token
-  alt App foreground
-    FCM->>Home: messaging().onMessage(RemoteMessage)
-    alt message.notification có dữ liệu
-      Home->>Notifee: createChannel(default_channel_id)
-      Home->>Notifee: displayNotification(...)
-    else chỉ data / không có notification
-      Home-->>Home: return sớm, không hiển thị
-    end
-  else App background hoặc killed
-    FCM->>Sys: Hiển thị system notification<br/>(nếu payload có notification; không có JS handler trong repo)
-  end
-```
-
-#### File / API quan trọng và giới hạn thực tế
-
-| Mục | Chi tiết |
-| --- | --- |
-| Đăng ký token | `POST /api/update-device-token` — `src/modules/home/hooks/useHomeApi.ts` |
-| Foreground handler | `messaging().onMessage` trong `src/modules/home/screens/Home.tsx` |
-| Channel id | `DEFAULT_CHANNEL_ID = 'default_channel_id'` — `src/configs/contansts.tsx` |
-| Logout | `messaging().deleteToken()` — `src/modules/user/hooks/useMe.ts`, `src/modules/user/screens/User.tsx` |
-| Firebase secrets | File local `google-services.json` / `GoogleService-Info.plist` (gitignore). CI commented ship jobs dùng `$GOOGLE_SERVICES_JSON` để copy vào Android; **không** có Vault. |
-| iOS native | `ios/ALPHRM/AppDelegate.swift` → `FirebaseApp.configure()`; `Info.plist` `remote-notification` |
-| **Không có** `setBackgroundMessageHandler` | `index.js` chỉ `AppRegistry.registerComponent` — không có background JS handler |
-| **Không có** tap / deep link handler | Không thấy `onNotificationOpenedApp` / `getInitialNotification` / Notifee press listener trong source |
-| **Không có** `onTokenRefresh` | Chỉ so sánh token với `fcmToken` đã lưu khi Home mount/deps đổi |
-| In-app list tách FCM | Tab Thông báo dùng `get_all_pending_approvals_mobile`, không đọc lịch sử FCM |
-| Android `POST_NOTIFICATIONS` | Code gọi `PermissionsAndroid.request`, nhưng `AndroidManifest.xml` hiện **chưa** khai báo permission này |
-| BE gửi push | Logic gửi FCM từ server **không** nằm trong repo mobile này |
+| Profile | Notes |
+|---------|-------|
+| `development` | `developmentClient: true`, channel `development` |
+| `preview` | Internal distribution, channel `preview` |
+| `production` | Channel `production` |
 
 ## Quality Gates
 
-Run these before merging:
+Run before merge:
 
 ```bash
 yarn lint
@@ -749,20 +461,8 @@ yarn format:check
 yarn test
 ```
 
-Recommended extra gates when the change touches typed contracts or native/build behavior:
+CI (`test-and-lint`) runs `yarn lint` and `yarn test` on push, merge request, and web pipelines.
 
-```bash
-npx tsc --noEmit
-yarn build-android-dev
-```
+There is **no** dedicated `typecheck` script in `package.json`. TypeScript is configured via `tsconfig.json`; run `npx tsc --noEmit` locally if you need a type gate (suggested, not a package script).
 
-`npx tsc --noEmit` and the Android build smoke test are recommendations because they are not currently required package scripts or active CI jobs.
-
-## Notes For New Developers
-
-- Keep route names and route params typed in `src/configs/navigation.ts`.
-- `AppProvider` and `useAppContext` drive login state and initial navigation.
-- `src/configs/env.ts` is the env helper used by the API client. `src/config/env.ts` also exists as a smaller secondary helper.
-- The project uses Hermes and has React Native new architecture disabled.
-- Android app version is read by Gradle from `.env`; iOS has a build phase named `Update Version from .env`.
-- Avoid committing local secrets. Use `.env.local` and `.env.production.local` for machine-specific or CI-specific overrides.
+Optional smoke: install and open the debug Android build (`yarn run-android`) or a release APK from `build-android-*` and verify login + Home menu navigation.
