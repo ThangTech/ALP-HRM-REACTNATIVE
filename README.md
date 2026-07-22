@@ -456,8 +456,6 @@ ALP HRM is a React Native CLI app (not Expo/EAS). GitLab CI runs lint and unit t
 
 ### Architecture Overview
 
-Sơ đồ gồm hai phần tách biệt: **CI/CD / Deploy** (build, OTA, store) và **Push runtime** (device token → Backend API → FCM → app). Không gộp nhầm OTA RevoPush với Firebase Cloud Messaging.
-
 ```mermaid
 flowchart LR
   subgraph Actors
@@ -482,12 +480,6 @@ flowchart LR
     Stores[Play Store / App Store]
   end
 
-  subgraph PushRuntime["Push runtime"]
-    AppRN["ALP HRM App<br/>RNFirebase Messaging + Notifee"]
-    BackendAPI["Backend API<br/>API_URL"]
-    FCM["Firebase Cloud Messaging"]
-  end
-
   Dev -->|Push / MR| Repo
   Repo --> CI
   Vars -->|Inject secrets| CI
@@ -503,26 +495,18 @@ flowchart LR
 
   EndUser -->|Install / update| Stores
   EndUser -->|JS OTA when compatible| RevoPush
-
-  AppRN -->|"POST /api/update-device-token<br/>fcm_token + employee_id"| BackendAPI
-  BackendAPI -->|Gửi push qua FCM| FCM
-  FCM -->|RemoteMessage| AppRN
-  EndUser -->|Dùng app / nhận push| AppRN
 ```
 
 | Actor / system | Role |
 | --- | --- |
 | Developer | Pushes code; runs local Android/iOS builds; releases RevoPush OTA; submits store binaries manually. |
-| End User | Installs from Play Store / App Store, or receives compatible JS updates via RevoPush; nhận remote push trên thiết bị. |
+| End User | Installs from Play Store / App Store, or receives compatible JS updates via RevoPush. |
 | GitLab Repo | Source of truth for the React Native CLI codebase. |
 | GitLab CI | Runs `yarn lint` and `yarn test`; sends Telegram success/failure messages. Does not build or submit store binaries today. |
 | GitLab CI Variables | Injects secrets into CI (`TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID`; ship jobs would also need Firebase/Google Services vars when enabled). |
 | Local Android build | `scripts/build-android.sh` produces a release APK under `android/app/build/outputs/apk/release/`. |
-| RevoPush | OTA channel used by `@revopush/react-native-code-push` and `revopush release-react`. Không liên quan push notification. |
+| RevoPush | OTA channel used by `@revopush/react-native-code-push` and `revopush release-react`. |
 | Xcode / Play Store / App Store | Manual archive and store upload; not wired in CI. |
-| ALP HRM App | Xin quyền, lấy FCM token, đăng ký lên BE, hiển thị foreground notification qua Notifee; logout gọi `messaging().deleteToken()`. |
-| Backend API | Nhận `POST /api/update-device-token`; phía server (ngoài repo này) gửi push qua FCM tới device token đã lưu. |
-| Firebase Cloud Messaging | Provider đẩy `RemoteMessage` về app (Android/iOS). |
 
 ### End-to-End Pipeline Stages
 
