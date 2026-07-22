@@ -456,6 +456,8 @@ ALP HRM is a React Native CLI app (not Expo/EAS). GitLab CI runs lint and unit t
 
 ### Architecture Overview
 
+Sơ đồ gồm hai phần tách biệt: **CI/CD / Deploy** (build, OTA, store) và **Push runtime** (device token → Backend API → FCM → app). Không gộp nhầm OTA RevoPush với Firebase Cloud Messaging.
+
 ```mermaid
 flowchart LR
   subgraph Actors
@@ -480,6 +482,12 @@ flowchart LR
     Stores[Play Store / App Store]
   end
 
+  subgraph PushRuntime["Push runtime"]
+    AppRN["ALP HRM App<br/>RNFirebase Messaging + Notifee"]
+    BackendAPI["Backend API<br/>API_URL"]
+    FCM["Firebase Cloud Messaging"]
+  end
+
   Dev -->|Push / MR| Repo
   Repo --> CI
   Vars -->|Inject secrets| CI
@@ -495,18 +503,26 @@ flowchart LR
 
   EndUser -->|Install / update| Stores
   EndUser -->|JS OTA when compatible| RevoPush
+
+  AppRN -->|"POST /api/update-device-token<br/>fcm_token + employee_id"| BackendAPI
+  BackendAPI -->|Gửi push qua FCM| FCM
+  FCM -->|RemoteMessage| AppRN
+  EndUser -->|Dùng app / nhận push| AppRN
 ```
 
 | Actor / system | Role |
 | --- | --- |
 | Developer | Pushes code; runs local Android/iOS builds; releases RevoPush OTA; submits store binaries manually. |
-| End User | Installs from Play Store / App Store, or receives compatible JS updates via RevoPush. |
+| End User | Installs from Play Store / App Store, or receives compatible JS updates via RevoPush; nhận remote push trên thiết bị. |
 | GitLab Repo | Source of truth for the React Native CLI codebase. |
 | GitLab CI | Runs `yarn lint` and `yarn test`; sends Telegram success/failure messages. Does not build or submit store binaries today. |
 | GitLab CI Variables | Injects secrets into CI (`TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID`; ship jobs would also need Firebase/Google Services vars when enabled). |
 | Local Android build | `scripts/build-android.sh` produces a release APK under `android/app/build/outputs/apk/release/`. |
-| RevoPush | OTA channel used by `@revopush/react-native-code-push` and `revopush release-react`. |
+| RevoPush | OTA channel used by `@revopush/react-native-code-push` and `revopush release-react`. Không liên quan push notification. |
 | Xcode / Play Store / App Store | Manual archive and store upload; not wired in CI. |
+| ALP HRM App | Xin quyền, lấy FCM token, đăng ký lên BE, hiển thị foreground notification qua Notifee; logout gọi `messaging().deleteToken()`. |
+| Backend API | Nhận `POST /api/update-device-token`; phía server (ngoài repo này) gửi push qua FCM tới device token đã lưu. |
+| Firebase Cloud Messaging | Provider đẩy `RemoteMessage` về app (Android/iOS). |
 
 ### End-to-End Pipeline Stages
 
@@ -616,6 +632,128 @@ CI does not submit to Play Store or App Store.
 - `scripts/code-push.sh` releases to RevoPush app `may10-qms` for both Android and iOS. Correct the app name before production OTA.
 - `yarn code-push-dev` / `yarn code-push-prod` pass `--development` / `--production`, but `scripts/code-push.sh` does not parse those flags; set `APP_ENV` via `.env` / `.env.production` (and optional `*.local` overrides).
 - There is no Expo / `eas.json` in this repo. OTA is RevoPush only.
+
+## System Architecture / Runtime Flow
+
+### Push Notification Flow
+
+Stack thực tế trong repo: **Firebase Cloud Messaging** qua `@react-native-firebase/messaging` (+ `@react-native-firebase/app`), hiển thị foreground bằng **Notifee** (`@notifee/react-native`). Không dùng OneSignal, Expo Notifications, hay provider push khác. Repo này chỉ có mobile client; Backend API nằm ngoài repo (`API_URL`).
+
+#### Layer / component
+
+| Layer / component | Path / dependency | Vai trò |
+| --- | --- | --- |
+| RNFirebase Messaging | `@react-native-firebase/messaging` `23.7.0` | Xin quyền, `getToken()` / `deleteToken()`, `onMessage` (foreground). |
+| Notifee | `@notifee/react-native` `^9.1.8` | Tạo Android channel `default_channel_id`, `displayNotification` khi app foreground; `setBadgeCount` từ số pending approvals. |
+| RNFirebase App | `@react-native-firebase/app` `23.7.0` | Core Firebase; iOS gọi `FirebaseApp.configure()` trong `AppDelegate`. |
+| Android Firebase config | `android/app/google-services.json` (gitignored); plugin `com.google.gms.google-services` | Cấu hình FCM project cho Android. |
+| iOS Firebase config | `GoogleService-Info.plist` (gitignored; Xcode resource + RNFB Core build phase) | Cấu hình FCM project cho iOS. |
+| Android channel meta | `AndroidManifest.xml` → `com.google.firebase.messaging.default_notification_channel_id` = `default_channel_id` | Channel mặc định khi FCM hiển thị notification ở background. |
+| iOS background mode | `ios/ALPHRM/Info.plist` → `UIBackgroundModes` gồm `remote-notification` | Cho phép remote push. |
+| Đăng ký token sau login | `src/modules/home/screens/Home.tsx` + `useHomeApi.saveFcmToken` | Lấy FCM token và `POST /api/update-device-token`. |
+| Lưu token local | `AppProvider` / `storage` field `fcmToken` | Cache token đã lưu để tránh gọi API lặp khi token không đổi. |
+| Logout revoke local | `useMe.onLogout`, `User.tsx` `onLogout` | `messaging().deleteToken()` trên device; **không** có API revoke token lên BE trong repo. |
+| In-app notification list | Tab `Notification` → `useNotifications` | API nghiệp vụ `get_all_pending_approvals_mobile` (pending approvals), **không** phải FCM inbox. |
+| Badge count | `HeaderHome` + `useNotificationCountApi` | `get_pending_approvals_count_only` → `notifee.setBadgeCount`. |
+
+#### Overview: đăng ký token + gửi/nhận push
+
+```mermaid
+flowchart LR
+  subgraph App["ALP HRM App"]
+    Home["Home.tsx<br/>permission + getToken + onMessage"]
+    NotifeeUI["Notifee<br/>channel + displayNotification"]
+    Ctx["AppContext.fcmToken"]
+  end
+
+  subgraph BE["Backend API - ngoài repo"]
+    UpdateToken["POST /api/update-device-token"]
+    SendPush["Business logic gửi push"]
+  end
+
+  FCM[Firebase Cloud Messaging]
+
+  Home -->|messaging.getToken| Ctx
+  Home -->|"fcm_token + employee_id"| UpdateToken
+  SendPush --> FCM
+  FCM -->|RemoteMessage| Home
+  Home -->|foreground| NotifeeUI
+  FCM -.->|background/killed<br/>system tray nếu có notification payload| App
+```
+
+#### Sequence: đăng ký token sau login
+
+Token được đăng ký khi user đã vào Home (sau login), không đăng ký ngay trong `login` mutation.
+
+```mermaid
+sequenceDiagram
+  participant User
+  participant Home as Home.tsx
+  participant FCM as RNFirebase Messaging
+  participant Ctx as AppContext / storage
+  participant API as Backend API
+
+  User->>Home: Vào Home tab (đã login)
+  Home->>FCM: requestPermission()
+  Home->>Home: PermissionsAndroid.POST_NOTIFICATIONS
+  Home->>FCM: getToken()
+  alt api.getToken() rỗng (đã logout giữa chừng)
+    Home-->>Home: Bỏ qua, không gọi BE
+  else token mới / khác fcmToken đã lưu
+    Home->>Ctx: setFcmToken(token)
+    Home->>API: POST /api/update-device-token<br/>{ fcm_token, employee_id }
+  end
+```
+
+Payload đăng ký token (`src/modules/home/hooks/useHomeApi.ts`):
+
+| Field | Nguồn |
+| --- | --- |
+| `fcm_token` | `messaging().getToken()` |
+| `employee_id` | `user?.employee_id` từ `AppContext` |
+
+Bỏ qua gọi API nếu thiếu `token` hoặc `employeeId`.
+
+#### Sequence: nhận push foreground vs background/killed
+
+```mermaid
+sequenceDiagram
+  participant BE as Backend API
+  participant FCM as Firebase Cloud Messaging
+  participant Sys as OS / FCM SDK
+  participant Home as Home.tsx onMessage
+  participant Notifee as Notifee
+
+  BE->>FCM: Gửi message tới device token
+  alt App foreground
+    FCM->>Home: messaging().onMessage(RemoteMessage)
+    alt message.notification có dữ liệu
+      Home->>Notifee: createChannel(default_channel_id)
+      Home->>Notifee: displayNotification(...)
+    else chỉ data / không có notification
+      Home-->>Home: return sớm, không hiển thị
+    end
+  else App background hoặc killed
+    FCM->>Sys: Hiển thị system notification<br/>(nếu payload có notification; không có JS handler trong repo)
+  end
+```
+
+#### File / API quan trọng và giới hạn thực tế
+
+| Mục | Chi tiết |
+| --- | --- |
+| Đăng ký token | `POST /api/update-device-token` — `src/modules/home/hooks/useHomeApi.ts` |
+| Foreground handler | `messaging().onMessage` trong `src/modules/home/screens/Home.tsx` |
+| Channel id | `DEFAULT_CHANNEL_ID = 'default_channel_id'` — `src/configs/contansts.tsx` |
+| Logout | `messaging().deleteToken()` — `src/modules/user/hooks/useMe.ts`, `src/modules/user/screens/User.tsx` |
+| Firebase secrets | File local `google-services.json` / `GoogleService-Info.plist` (gitignore). CI commented ship jobs dùng `$GOOGLE_SERVICES_JSON` để copy vào Android; **không** có Vault. |
+| iOS native | `ios/ALPHRM/AppDelegate.swift` → `FirebaseApp.configure()`; `Info.plist` `remote-notification` |
+| **Không có** `setBackgroundMessageHandler` | `index.js` chỉ `AppRegistry.registerComponent` — không có background JS handler |
+| **Không có** tap / deep link handler | Không thấy `onNotificationOpenedApp` / `getInitialNotification` / Notifee press listener trong source |
+| **Không có** `onTokenRefresh` | Chỉ so sánh token với `fcmToken` đã lưu khi Home mount/deps đổi |
+| In-app list tách FCM | Tab Thông báo dùng `get_all_pending_approvals_mobile`, không đọc lịch sử FCM |
+| Android `POST_NOTIFICATIONS` | Code gọi `PermissionsAndroid.request`, nhưng `AndroidManifest.xml` hiện **chưa** khai báo permission này |
+| BE gửi push | Logic gửi FCM từ server **không** nằm trong repo mobile này |
 
 ## Quality Gates
 
