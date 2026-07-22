@@ -4,6 +4,127 @@ Mobile HRM app for An Loc Phat, built with **React Native 0.79**, **Expo Modules
 
 Primary use cases: employee self-service (profile, timesheet, leave, payroll, insurance, resignation), approver flows, documents, and digital signature.
 
+## Architecture Overview
+
+The app is a **React Native bare workflow** shell with **Expo Modules** for OTA (`expo-updates`) and assets. Business UI lives almost entirely in TypeScript under `src/`, organized by **feature modules**, with a thin shared layer for navigation, HTTP, UI primitives, and app-wide context.
+
+### High-level stack
+
+| Layer | Technology | Responsibility |
+|-------|------------|----------------|
+| Native shell | Android (`android/`), iOS (`ios/ALPHRM`) | Permissions, Firebase, splash, signing, store binaries |
+| JS runtime | React Native 0.79 + Metro | App UI and business logic |
+| OTA | Expo Updates + EAS channels | Ship JS/asset fixes without a full store rebuild |
+| UI | Tamagui + shared `src/components` | Design tokens, layout, reusable controls |
+| Navigation | React Navigation (native stack + bottom tabs) | Auth gate, tabs, feature screens |
+| Data fetching | SWR + `hooks/api.ts` singleton | Cache, revalidate, authenticated HTTP |
+| Persistence | MMKV (`useStorage`) + Keychain | App context / session token |
+| Push / config | Firebase Messaging, Notifee, Remote Config | FCM, local notifications, feature flags |
+| i18n | i18next (`src/i18n`) | `vi` / `en` resources |
+
+### Runtime bootstrap
+
+```text
+index.js
+  → App.tsx
+       → SWRConfig
+       → AppProvider          # i18n + persisted app context + unauthorized handling
+       → Tamagui / Gesture / BottomSheet / Portal
+       → AppContent
+            → Force update gate (useForceUpdate)
+            → expo-updates OTA check
+            → AppNavigator    # Login vs BottomBarStack
+```
+
+```mermaid
+flowchart TB
+  subgraph Native["Native shell"]
+    Android[android/]
+    iOS[ios/ALPHRM]
+    FB[Firebase / Notifee]
+  end
+
+  subgraph JS["JS application src/"]
+    Nav[navigators]
+    Mods[modules/* features]
+    Shared[components / hooks / utils / configs]
+    I18n[i18n]
+  end
+
+  subgraph Backend["Backend"]
+    API[API_URL / HOST]
+  end
+
+  Native --> JS
+  Nav --> Mods
+  Mods --> Shared
+  Mods --> API
+  Shared --> API
+  FB -.-> Mods
+```
+
+### App composition
+
+1. **Auth gate** — `AppNavigator` reads `user.employee_id` from app context. No user → `Login`; otherwise → `BottomBarStack`.
+2. **Main shell** — Bottom tabs: `Home`, `Notification`, `Setting` (User). Most HR flows are **stack screens** pushed from Home (or profile), not separate tabs.
+3. **Feature modules** — Each domain under `src/modules/<feature>/` owns screens, local providers, SWR hooks, and feature-only components.
+4. **Shared kernel** — Cross-cutting code stays outside modules:
+   - Routes / param types: `src/configs/navigation.ts`
+   - HTTP client + token: `src/hooks/api.ts`, `src/utils/client.ts`
+   - Global state: `useAppContext` (user, company, lang, FCM token, …)
+   - Reusable UI: `src/components`
+
+### Data and state model
+
+| Concern | Pattern in this repo |
+|---------|----------------------|
+| Session / user / company | Persisted in `AppProvider` via `useStorage('global', 'appContext', …)` |
+| Auth token | Keychain, managed by `API` singleton; 401 triggers unauthorized callbacks |
+| Screen lists / details | Feature `provider.tsx` + `*State.ts` + `hooks/use*Api.ts` (SWR keys) |
+| Backend calls | Mostly `api.POST({ path: '/api/models/...', data: { kwargs, context } })` |
+| Forms | `react-hook-form` + Zod where used; Tamagui / shared Form controls |
+
+Feature screens do **not** talk to axios directly; they go through the `API` singleton so token injection and unauthorized handling stay centralized.
+
+### Navigation model
+
+```mermaid
+flowchart TD
+  Root[AppStack native stack]
+  Root --> Login[Login / Register / ForgotPassword]
+  Root --> Tabs[BottomBarStack]
+  Tabs --> Home[Home]
+  Tabs --> Noti[Notification]
+  Tabs --> User[Setting / User]
+  Home -->|menuItems navigate| Features[Feature stack screens]
+  Features --> Leave[Leave / Timesheet / Payroll / …]
+  Features --> Docs[Document / Digital signature / …]
+  User --> Profile[Profile / Employee info screens]
+```
+
+- **Route names and params** are centralized in `RouteName` / `AppStackParamList`.
+- **Imperative navigation** uses `navigate(...)` from `navigators` (usable from hooks and non-screen code).
+- Home is the main **feature hub**: hardcoded `menuItems` + optional approver bottom sheets.
+
+### Cross-cutting concerns
+
+| Concern | Where it lives |
+|---------|----------------|
+| Env / API base URL | `.env*` → `react-native-dotenv` → `configs/env` / `config/env` |
+| Force update | `useForceUpdate` + `ForceUpdateModal` in `App.tsx` |
+| OTA | `Updates.checkForUpdateAsync` in `App.tsx`; channels via EAS / native placeholders |
+| Remote feature flag | Firebase Remote Config `show_hidden_features` |
+| Approver UX | `userApprovalInfor` flags on Home (leave, timesheet explanation, resignation) |
+| Path aliases | Babel `module-resolver` (`home`, `user`, `news`, …) + `src` root imports |
+
+### Design principles (how code is meant to grow)
+
+- **Feature-first folders** — new HR capability → new or extended `src/modules/<feature>`, not a flat `screens/` dump.
+- **Thin entry, thick module** — Home / tabs only route; list/detail/editor own UI and data.
+- **Providers per screen family** — list/detail/editor each typically wrap a Provider that merges local state + SWR.
+- **Shared UI only when reused** — module `components/` first; promote to `src/components` when a second feature needs it.
+- **Native stays thin** — prefer JS changes + EAS Update; touch `android/` / `ios/` for permissions, SDKs, signing, or runtime version bumps.
+
 ## Projects And OS / Apps And Platforms
 
 | Project / App | Platform | Native target | Bundle / Application ID | Notes |
