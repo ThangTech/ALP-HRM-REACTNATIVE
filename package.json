@@ -14,10 +14,10 @@
     "run-android": "./scripts/run-android.sh",
     "build-android-dev": "./scripts/build-android.sh --development",
     "build-android-prod": "./scripts/build-android.sh --production",
-    "update-android-dev": "eas update --branch development --message 'Update' --platform android --clear-cache",
-    "update-android-prod": "eas update --branch production --message 'Update' --platform android --clear-cache",
-    "update-ios-dev": "eas update --branch development --message 'Update' --platform ios --clear-cache",
-    "update-ios-prod": "eas update --branch production --message 'Update' --platform ios --clear-cache"
+    "update-android-dev": "eas update --branch development --message 'Update' --platform android",
+    "update-android-prod": "eas update --branch production --message 'Update' --platform android",
+    "update-ios-dev": "eas update --branch development --message 'Update' --platform ios",
+    "update-ios-prod": "eas update --branch production --message 'Update' --platform ios"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5",
