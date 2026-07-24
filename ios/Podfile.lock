@@ -2972,7 +2972,7 @@ SPEC CHECKSUMS:
   FirebaseRemoteConfigInterop: 3443b8cb8fffd76bb3e03b2a84bfd3db952fcda4
   FirebaseSharedSwift: 79f27fff0addd15c3de19b87fba426f3cc2c964f
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
-  glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
   GoogleAdsOnDeviceConversion: d68c69dd9581a0f5da02617b6f377e5be483970f
   GoogleAppMeasurement: 3bf40aff49a601af5da1c3345702fcb4991d35ee
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
@@ -3074,6 +3074,6 @@ SPEC CHECKSUMS:
   VisionCamera: 7187b3dac1ff3071234ead959ce311875748e14f
   Yoga: 9773f1327b258fa449988c2e42fbb7cbdf655d96
 
-PODFILE CHECKSUM: 99f470fa2318ebcbd08d964cf55ed20b98e5429e
+PODFILE CHECKSUM: fc229d5a60fc44fd7bd52dfd8cc0b8b37395ad86
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.16.1

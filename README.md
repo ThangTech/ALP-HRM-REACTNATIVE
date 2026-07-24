@@ -11,7 +11,9 @@ Primary domains: employee self-service (profile, timesheet, leave, payroll, insu
 | ALP HRM | Android | `android/app` (`com.vdx.alphrm`) | `com.vdx.alphrm` | Production release (`APP_ENV` not `development`). App name `ALP HRM`. Updates channel `production`. |
 | ALP HRM Dev | Android | same | `com.vdx.alphrm.dev` | Release + `APP_ENV=development` (`applicationIdSuffix ".dev"`). App name `ALP HRM Dev`. Channel `development`. |
 | ALP HRM Dbg | Android | same | `com.vdx.alphrm.debug` | Debug build (`applicationIdSuffix ".debug"`). App name `ALP HRM Dbg`. |
-| ALP HRM | iOS | `ios/ALPHRM.xcworkspace`, scheme `ALPHRM` | `com.vdx.alphrm` | CocoaPods + Firebase. No dedicated npm build script yet (see Deploy). |
+| ALP HRM Dbg | iOS | scheme `ALPHRM-Debug` / config `Debug` | `com.vdx.alphrm.debug` | Local Metro. Name `ALP HRM Dbg`. Channel `development`. |
+| ALP HRM Dev | iOS | scheme `ALPHRM-Dev` / config `ReleaseDev` | `com.vdx.alphrm.dev` | Internal release. Name `ALP HRM Dev`. Channel `development`. |
+| ALP HRM | iOS | scheme `ALPHRM` / config `Release` | `com.vdx.alphrm` | Store / production. Name `ALP HRM`. Channel `production`. |
 | Expo Updates | Android/iOS config | `app.config.js`, `eas.json` | EAS project `d26e434c-0b78-4d72-ba7f-ec034c09aa72` | Slug `anlocphat-hrm`. Runtime version from `ANDROID_VERSION_NAME` / `IOS_VERSION_NAME`. Channels: `development`, `preview`, `production`. |
 
 Env / OTA selection:
@@ -194,16 +196,21 @@ Alternatively:
 yarn android
 ```
 
-Run iOS:
+Run iOS (debug / `.debug` bundle id):
 
 ```bash
 yarn ios
+# or
+yarn run-ios
 ```
 
 Open the native workspace when needed:
 
 ```text
-ios/ALPHRM.xcworkspace -> scheme ALPHRM
+ios/ALPHRM.xcworkspace
+  ALPHRM-Debug  → Debug      → com.vdx.alphrm.debug
+  ALPHRM-Dev    → ReleaseDev → com.vdx.alphrm.dev
+  ALPHRM        → Release    → com.vdx.alphrm
 ```
 
 ### Runtime bootstrap (for orientation)
@@ -230,10 +237,13 @@ Commands defined in `package.json`:
 | ------- | ------------ |
 | `yarn start` | Starts Metro (`react-native start`) |
 | `yarn android` | Runs `react-native run-android` |
-| `yarn ios` | Runs `react-native run-ios` |
+| `yarn ios` | Runs `react-native run-ios --scheme ALPHRM-Debug` |
 | `yarn run-android` | Runs `scripts/run-android.sh` (debug + `.debug` suffix) |
+| `yarn run-ios` | Runs `scripts/run-ios.sh` (scheme `ALPHRM-Debug`) |
 | `yarn build-android-dev` | `scripts/build-android.sh --development` → `assembleRelease` |
 | `yarn build-android-prod` | `scripts/build-android.sh --production` → `assembleRelease` |
+| `yarn build-ios-dev` | `scripts/build-ios.sh --development` → archive `ALPHRM-Dev` / `ReleaseDev` |
+| `yarn build-ios-prod` | `scripts/build-ios.sh --production` → archive `ALPHRM` / `Release` |
 | `yarn update-android-dev` | `eas update --branch development --platform android` |
 | `yarn update-android-prod` | `eas update --branch production --platform android` |
 | `yarn update-ios-dev` | `eas update --branch development --platform ios` |
@@ -247,7 +257,7 @@ Notes:
 
 - `scripts/build-android.sh` runs `yarn`, sets `APP_ENV`, loads env files, exports `COMMIT_HASH`, removes `android/app/build`, then runs `yarn react-native build-android --tasks assembleRelease`.
 - Release build type references `signingConfigs.release`, but only the `debug` signing config is defined in `android/app/build.gradle`. Configure a real release keystore before a production store release.
-- `scripts/build-ios.sh` still references `PortalApp.xcworkspace` / scheme `PortalApp`. Current native project is `ALPHRM` — **do not use this script as-is**.
+- `scripts/build-ios.sh` archives `ALPHRM.xcworkspace` with scheme/configuration per `--development` / `--production`. Add `ios/exportOptions.plist` (method, teamID) to also export an IPA.
 - `scripts/code-push.sh` targets legacy RevoPush. Prefer EAS Update scripts above for JS OTA.
 - There is no `typecheck` script in `package.json`. Use `npx tsc --noEmit` manually if needed.
 
@@ -600,17 +610,19 @@ No GitHub Actions workflows are present in this repo. GitLab is the only CI conf
 ### Store / Production Release (manual)
 
 1. **Android:** build with `yarn build-android-prod` (or Gradle `bundleRelease` if you need an AAB), then upload the artifact in Play Console yourself. Ensure release signing is configured first.
-2. **iOS:** open `ios/ALPHRM.xcworkspace`, scheme `ALPHRM`, archive in Xcode, then submit via Organizer / App Store Connect yourself.
+2. **iOS:** `yarn build-ios-prod` (or archive scheme `ALPHRM` / `Release` in Xcode), then submit via Organizer / App Store Connect. Use `yarn build-ios-dev` for internal Dev (`com.vdx.alphrm.dev`).
 
 ### iOS / platform notes
 
-There is no aligned npm build script for iOS. Use Xcode:
+Three side-by-side installs via schemes + xcconfig (`ios/Config/`):
 
-```text
-ios/ALPHRM.xcworkspace -> scheme ALPHRM
-```
+| Scheme | Configuration | Bundle ID | Display name | Channel |
+| ------ | ------------- | --------- | ------------ | ------- |
+| `ALPHRM-Debug` | `Debug` | `com.vdx.alphrm.debug` | ALP HRM Dbg | development |
+| `ALPHRM-Dev` | `ReleaseDev` | `com.vdx.alphrm.dev` | ALP HRM Dev | development |
+| `ALPHRM` | `Release` | `com.vdx.alphrm` | ALP HRM | production |
 
-Fix `scripts/build-ios.sh` (still references `PortalApp`) before relying on it.
+Create App IDs `com.vdx.alphrm.debug` / `com.vdx.alphrm.dev` on Apple Developer if missing, then enable Automatic Signing in Xcode (team `6T6876L2G4`). Optional: add `ios/exportOptions.plist` for IPA export from `build-ios.sh`.
 
 ## Quality Gates
 

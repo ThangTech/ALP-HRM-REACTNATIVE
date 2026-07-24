@@ -1,0 +1,6 @@
+// Production — store / production OTA
+#include? "../Pods/Target Support Files/Pods-ALPHRM/Pods-ALPHRM.release.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = com.vdx.alphrm
+INFOPLIST_KEY_CFBundleDisplayName = ALP HRM
+EXPO_UPDATES_CHANNEL = production

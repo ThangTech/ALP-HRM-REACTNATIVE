@@ -1,0 +1,6 @@
+// Debug — local development (Metro)
+#include? "../Pods/Target Support Files/Pods-ALPHRM/Pods-ALPHRM.debug.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = com.vdx.alphrm.debug
+INFOPLIST_KEY_CFBundleDisplayName = ALP HRM Dbg
+EXPO_UPDATES_CHANNEL = development

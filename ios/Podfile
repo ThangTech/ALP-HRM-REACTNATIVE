@@ -11,6 +11,12 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 
 platform :ios, '15.5'
 
+project 'ALPHRM', {
+  'Debug' => :debug,
+  'ReleaseDev' => :release,
+  'Release' => :release,
+}
+
  pod 'Firebase', :modular_headers => true
  pod 'FirebaseCoreInternal', :modular_headers => true
  pod 'GoogleUtilities', :modular_headers => true
@@ -57,19 +63,39 @@ target 'ALPHRM' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
-    
-      installer.pods_project.targets.each do |target|
-        if target.name == 'fmt' || target.name == 'RCT-Folly'
-          target.build_configurations.each do |config|
-            config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
-            config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
-            config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FMT_USE_CONSTEVAL=0'
-          end
-        end
-        target.build_configurations.each do |config|
-          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
-          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+
+    installer.pods_project.targets.each do |target|
+      if target.name == 'fmt' || target.name == 'RCT-Folly'
+        target.build_configurations.each do |bc|
+          bc.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+          bc.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          bc.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'FMT_USE_CONSTEVAL=0'
         end
       end
+      target.build_configurations.each do |bc|
+        bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+        bc.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      end
     end
+
+    # Keep app env xcconfigs as base after CocoaPods rewrites Pods references
+    require 'xcodeproj'
+    project_path = File.join(__dir__, 'ALPHRM.xcodeproj')
+    project = Xcodeproj::Project.open(project_path)
+    config_map = {
+      'Debug' => 'Debug.xcconfig',
+      'ReleaseDev' => 'ReleaseDev.xcconfig',
+      'Release' => 'Release.xcconfig',
+    }
+    app_target = project.targets.find { |t| t.name == 'ALPHRM' }
+    if app_target
+      app_target.build_configurations.each do |bc|
+        filename = config_map[bc.name]
+        next unless filename
+        ref = project.files.find { |f| f.path == filename }
+        bc.base_configuration_reference = ref if ref
+      end
+      project.save
+    end
+  end
 end

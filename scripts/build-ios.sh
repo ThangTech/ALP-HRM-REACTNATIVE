@@ -1,50 +1,71 @@
 #!/bin/bash
 
-# Exit script if any command fails
 set -e
 
-# Navigate to the iOS directory
-cd ios
+yarn
 
-# Install CocoaPods dependencies
-pod install --repo-update
+PROJECT_DIR=$(dirname $(dirname "$(realpath "$0")"))
 
-# Clean previous build
-rm -rf ./build
+if [ "$1" = "--production" ]; then
+  export APP_ENV=production
+  SCHEME="ALPHRM"
+  CONFIGURATION="Release"
+elif [ "$1" = "--development" ]; then
+  export APP_ENV=development
+  SCHEME="ALPHRM-Dev"
+  CONFIGURATION="ReleaseDev"
+else
+  echo "Usage: $0 [--development|--production]"
+  exit 1
+fi
 
-# Archive the project
-xcodebuild -workspace PortalApp.xcworkspace \
-  -scheme PortalApp \
+set -a
+source "$PROJECT_DIR/.env"
+if test -f "$PROJECT_DIR/.env.local"; then
+  source "$PROJECT_DIR/.env.local"
+fi
+
+echo "Building iOS for environment: $APP_ENV (scheme=$SCHEME, configuration=$CONFIGURATION)"
+
+if [ "$APP_ENV" = "production" ]; then
+  source "$PROJECT_DIR/.env.production"
+  if test -f "$PROJECT_DIR/.env.production.local"; then
+    source "$PROJECT_DIR/.env.production.local"
+  fi
+elif [ "$APP_ENV" = "development" ]; then
+  source "$PROJECT_DIR/.env"
+  if test -f "$PROJECT_DIR/.env.local"; then
+    source "$PROJECT_DIR/.env.local"
+  fi
+fi
+set +a
+
+export COMMIT_HASH=$(git rev-parse --short HEAD)
+
+cd "$PROJECT_DIR/ios"
+pod install
+
+ARCHIVE_PATH="$PROJECT_DIR/ios/build/ALPHRM-${APP_ENV}.xcarchive"
+EXPORT_PATH="$PROJECT_DIR/ios/build/ipa-${APP_ENV}"
+EXPORT_OPTIONS="$PROJECT_DIR/ios/exportOptions.plist"
+
+rm -rf "$PROJECT_DIR/ios/build"
+mkdir -p "$PROJECT_DIR/ios/build"
+
+xcodebuild -workspace ALPHRM.xcworkspace \
+  -scheme "$SCHEME" \
+  -configuration "$CONFIGURATION" \
   -sdk iphoneos \
-  -configuration Release \
-  -archivePath ./build/PortalApp.xcarchive \
+  -archivePath "$ARCHIVE_PATH" \
   archive
 
-# Create exportOptions.plist (if needed)
-cat <<EOF > ./exportOptions.plist
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>method</key>
-    <string>ad-hoc</string>
-    <key>teamID</key>
-    <string>YOUR_TEAM_ID</string>  # Replace with your actual Apple Team ID
-    <key>compileBitcode</key>
-    <false/>
-    <key>signingStyle</key>
-    <string>automatic</string>
-</dict>
-</plist>
-EOF
-
-# Export the IPA file
-xcodebuild -exportArchive \
-  -archivePath ./build/PortalApp.xcarchive \
-  -exportOptionsPlist ./exportOptions.plist \
-  -exportPath ./build/ipa
-
-# Navigate back to the root directory
-cd ..
-
-echo "✅ IPA build completed! Find it here: ios/build/ipa/YourProject.ipa"
+if [ -f "$EXPORT_OPTIONS" ]; then
+  xcodebuild -exportArchive \
+    -archivePath "$ARCHIVE_PATH" \
+    -exportOptionsPlist "$EXPORT_OPTIONS" \
+    -exportPath "$EXPORT_PATH"
+  echo "✅ IPA exported: $EXPORT_PATH"
+else
+  echo "⚠️  Archive done: $ARCHIVE_PATH"
+  echo "   Add ios/exportOptions.plist (method, teamID) to also export an IPA."
+fi
