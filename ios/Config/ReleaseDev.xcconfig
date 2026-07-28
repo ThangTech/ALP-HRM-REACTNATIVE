@@ -1,3 +1,4 @@
+#include? "Version.xcconfig"
 // Dev — internal release (TestFlight / ad-hoc)
 #include? "../Pods/Target Support Files/Pods-ALPHRM/Pods-ALPHRM.releasedev.xcconfig"
 
