@@ -1,4 +1,5 @@
 // Production — store / production OTA
+#include? "Version.xcconfig"
 #include? "../Pods/Target Support Files/Pods-ALPHRM/Pods-ALPHRM.release.xcconfig"
 
 PRODUCT_BUNDLE_IDENTIFIER = com.vdx.alphrm

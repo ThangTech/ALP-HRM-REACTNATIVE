@@ -1,4 +1,5 @@
 // Debug — local development (Metro)
+#include? "Version.xcconfig"
 #include? "../Pods/Target Support Files/Pods-ALPHRM/Pods-ALPHRM.debug.xcconfig"
 
 PRODUCT_BUNDLE_IDENTIFIER = com.vdx.alphrm.debug
