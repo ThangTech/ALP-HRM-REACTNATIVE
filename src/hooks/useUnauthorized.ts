@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { navigate } from '../navigators/navigationUtilities';
+import { navigate, resetRoot } from '../navigators/navigationUtilities';
 import { RouteName } from '../configs/navigation';
 import useAppContext from './useAppContext';
 import { AppStateManager } from './api';
@@ -13,6 +13,9 @@ export function useUnauthorized() {
       setUser({ id: 0, name: '', photo: '' });
       // Navigate to login
       navigate(RouteName.Login);
+      // Dùng resetRoot thay vì navigate để UNMOUNT toàn bộ màn hình authenticated
+      // navigate() chỉ push Login lên stack, các màn hình cũ vẫn còn SWR hooks đang chạy
+      resetRoot({ index: 0, routes: [{ name: RouteName.Login }] });
     };
 
     // Subscribe to unauthorized events

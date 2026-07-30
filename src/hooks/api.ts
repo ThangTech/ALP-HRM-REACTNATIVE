@@ -45,6 +45,8 @@ class API extends Client {
 
   private token = '';
   private tokenChangeCallbacks: Record<symbol, () => void> = {};
+  // Flag ngăn ready() khôi phục token từ Keychain sau khi logout
+  private isLoggedOut = false;
 
   static getInstance() {
     if (!API.instance) {
@@ -58,6 +60,11 @@ class API extends Client {
     super({
       baseURL: '',
       onUnauthorized: () => {
+        // Chỉ xử lý logout khi đang có token (user đang trong phiên đăng nhập)
+        // Nếu token rỗng = user chưa đăng nhập, 401 chỉ là lỗi sai mật khẩu thông thường
+        if (!this.token) return;
+
+        this.isLoggedOut = true; // Chặn ready() ngay lập tức (sync)
         // Clear token
         this.token = '';
         Keychain.resetGenericPassword({ service: KEYCHAIN_QMS_TOKEN }).catch(console.error);
@@ -71,6 +78,9 @@ class API extends Client {
   }
 
   private async ready() {
+    // Nếu đã logout, không đọc lại token từ Keychain (tránh race condition)
+    if (this.isLoggedOut) return true;
+
     try {
       if (this.token) {
         return true;
@@ -112,6 +122,7 @@ class API extends Client {
 
   async setToken(token: string) {
     this.token = token;
+    this.isLoggedOut = false; // Cho phép gọi API trở lại sau khi đăng nhập
     const ok = await Keychain.setGenericPassword('token', token, {
       service: KEYCHAIN_QMS_TOKEN,
       storage: Keychain.STORAGE_TYPE.FB,
