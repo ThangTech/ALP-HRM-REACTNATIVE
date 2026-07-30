@@ -138,7 +138,7 @@ const Login = () => {
               required: 'Vui lòng nhập tài khoản',
             }}
           >
-            <Input placeholder="Email / Mã nhân viên" activeBorderColor="#EF4444" />
+            <Input placeholder="Email / Tên đăng nhập" activeBorderColor="#EF4444" />
           </Form.Item>
 
           <Form.Item
