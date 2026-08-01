@@ -29,4 +29,5 @@ export const Images = {
   tai_lieu: require('./images/tai-lieu.png') as number,
   an_bot: require('./images/an-bot.png') as number,
   alp_logo: require('./images/logo-ALP.png') as number,
+  phe_duyet: require('./images/phe-duyet.png') as number,
 };

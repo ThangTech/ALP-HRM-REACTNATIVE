@@ -293,6 +293,14 @@ const Home = () => {
                 navigate(RouteName.DocumentList);
               },
             },
+            {
+              key: 'phe_duyet',
+              label: 'Phê duyệt',
+              icon: Images.phe_duyet,
+              onPress: () => {
+                navigate(RouteName.ApprovalList);
+              },
+            },
             ...(!user?.access_staff_transfer || (isShowMore && user?.access_staff_transfer)
               ? [
                   {
