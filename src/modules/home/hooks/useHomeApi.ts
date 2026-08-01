@@ -1,5 +1,4 @@
 import { BaseResponse } from 'common/model/base-response';
-import { Company } from 'common/model/company';
 import api from 'hooks/api';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
@@ -22,12 +21,12 @@ export interface RecentActivityResponse {
 }
 
 export const useHomeApi = () => {
-  const _fetchBanners = () => {
-    return api.POST<BaseResponse<Company>>({
-      path: '/api/models/res-company/execute/get_company_banners',
-      data: {},
-    });
-  };
+  // const _fetchBanners = () => {
+  //   return api.POST<BaseResponse<Company>>({
+  //     path: '/api/models/res-company/execute/get_company_banners',
+  //     data: {},
+  //   });
+  // };
 
   const _fetchRecentActivities = () => {
     return api.POST<BaseResponse<RecentActivityResponse>>({
@@ -52,12 +51,12 @@ export const useHomeApi = () => {
       },
     });
   };
-  const { data: banners } = useSWR('/home/banners', _fetchBanners);
+  // const { data: banners } = useSWR('/home/banners', _fetchBanners);
   const { data: recentActivities } = useSWR('/home/recent_activities', _fetchRecentActivities);
   const { trigger: saveFcmToken } = useSWRMutation('/home/save-fcm-token', _saveFcmToken);
 
   return {
-    banners,
+    // banners,
     recentActivities,
     saveFcmToken,
   };
