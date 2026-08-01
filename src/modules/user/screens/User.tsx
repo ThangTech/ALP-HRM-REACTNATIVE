@@ -44,7 +44,11 @@ const User = () => {
 
   // Lần đầu chưa từng chọn công ty → auto chọn default_company từ API
   // (hoặc fallback về công ty đầu tiên trong danh sách).
+  // Guard: chỉ chạy khi user đã đăng nhập (employee_id > 0) để tránh bắn trong lúc logout.
   useEffect(() => {
+    if (!user?.employee_id) {
+      return;
+    }
     if (current_company_id != null) {
       return;
     }
@@ -52,7 +56,13 @@ const User = () => {
     if (fallbackId != null) {
       setCurrentCompanyId(fallbackId);
     }
-  }, [current_company_id, defaultCompany, allowedCompanies, setCurrentCompanyId]);
+  }, [
+    user?.employee_id,
+    current_company_id,
+    defaultCompany,
+    allowedCompanies,
+    setCurrentCompanyId,
+  ]);
 
   const currentCompanyName = useMemo(
     () => allowedCompanies.find((c) => c.id === current_company_id)?.name,
@@ -125,7 +135,6 @@ const User = () => {
       console.log('clear token error', e);
     }
     try {
-      await setCurrentCompanyId(undefined);
       await setUser({
         name: '',
         employee_id: 0,
@@ -170,6 +179,7 @@ const User = () => {
         emergency_phone: '',
         access_staff_transfer: false,
       });
+      await setCurrentCompanyId(undefined);
       resetRoot({ index: 0, routes: [{ name: RouteName.Login }] });
     } catch (e) {
       console.log('logout error', e);

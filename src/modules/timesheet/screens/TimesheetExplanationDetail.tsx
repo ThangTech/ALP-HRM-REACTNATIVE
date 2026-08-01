@@ -1197,7 +1197,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
             value={formatTime(workingTo ? new Date(workingTo) : undefined)}
           />
           <Input
-            label="Tổng thời gian làm việc"
+            label="Tổng thời gian làm việc tiêu chuẩn"
             editable={false}
             isRequired
             value={totalWorkingTime}
@@ -1377,7 +1377,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
             }
             keyboardType="numeric"
           />
-          <Input
+          {/* <Input
             label="Hệ số"
             editable={!isFormLocked}
             value={detail?.coefficient?.toString()}
@@ -1396,7 +1396,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                   }
             }
             keyboardType="numeric"
-          />
+          /> */}
           <Input
             label="Giờ tăng ca"
             editable={false}
