@@ -54,7 +54,7 @@ export interface CreateApprovalPayload {
   reference?: string;
   product?: string;
   quantity?: number;
-  ref_request_name?: string;
+  ref_request_id?: number;
   refund_status?: string;
 }
 
@@ -101,6 +101,7 @@ export interface ApprovalDetail {
   description: string;
   product?: string;
   quantity?: number;
+  ref_request_id?: number;
   ref_request_name?: string;
   refund_status?: string;
   files: ApprovalFile[];
@@ -201,6 +202,41 @@ const useApprovalDetail = (id: number) => {
         showToast('error', err?.message || 'Có lỗi xảy ra khi lấy danh sách người phê duyệt');
       },
     },
+  );
+
+  const { data: refRequests } = useSWR<any[]>(
+    app.current_company_id ? ['approvalRefRequests', app.current_company_id] : null,
+    async () => {
+      const res = await api.POST({
+        path: '/api/models/approval-request/execute/get_approval_requests',
+        data: {
+          kwargs: {
+            offset: 0,
+            limit: 50,
+            request_status: 'approved',
+          },
+          context: {
+            company_id: app.current_company_id,
+            allowed_company_ids: app.current_company_id ? [app.current_company_id] : [],
+          },
+        },
+      });
+      return (res?.data?.records as any[]) || [];
+    },
+    {
+      onError: (err: any) => {
+        showToast('error', err?.message || 'Có lỗi xảy ra khi lấy danh sách tờ trình tham chiếu');
+      },
+    },
+  );
+
+  const refRequestOptions: OptionItem[] = useMemo(
+    () =>
+      (refRequests || []).map((r) => ({
+        key: r?.id ? r.id.toString() : '',
+        value: String(r?.code ? `[${r.code}] ${r.name || ''}` : r?.name || ''),
+      })),
+    [refRequests],
   );
 
   const categoryOptions: OptionItem[] = useMemo(
@@ -318,6 +354,8 @@ const useApprovalDetail = (id: number) => {
       users,
       categoryOptions,
       userOptions,
+      refRequestOptions,
+      refRequests,
       createLoading,
       submitLoading,
       updateLoading,

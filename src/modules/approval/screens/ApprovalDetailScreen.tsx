@@ -70,6 +70,8 @@ const ApprovalDetailScreen = ({ route }: Props) => {
       categoryOptions,
       users,
       userOptions,
+      refRequests,
+      refRequestOptions,
       createLoading,
       submitLoading,
       updateLoading,
@@ -95,7 +97,11 @@ const ApprovalDetailScreen = ({ route }: Props) => {
   const [quantity, setQuantity] = useState('');
   const [reference, setReference] = useState('');
   const [location, setLocation] = useState('');
-  const [referenceRequest, setReferenceRequest] = useState('');
+  const [selectedRefRequest, setSelectedRefRequest] = useState<{
+    id: number;
+    name: string;
+    code?: string;
+  } | null>(null);
   const [refundStatus, setRefundStatus] = useState('');
   const [selectedApprovers, setSelectedApprovers] = useState<
     (ApprovalUser & { required: boolean })[]
@@ -115,12 +121,13 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     quantity: string;
     reference: string;
     location: string;
-    referenceRequest: string;
+    refRequestId?: number;
     refundStatus: string;
     approvers: (ApprovalUser & { required: boolean })[];
   } | null>(null);
 
   const categoryPickerRef = useRef<BottomSheet>(null);
+  const refRequestPickerRef = useRef<BottomSheet>(null);
   const userPickerRef = useRef<BottomSheet>(null);
   const datePickerRef = useRef<BottomSheet>(null);
   const [datePickerConfig, setDatePickerConfig] = useState<{
@@ -169,7 +176,11 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     setPartner(detail.partner_name || '');
     setProduct(detail.product || '');
     setQuantity(detail.quantity ? detail.quantity.toString() : '');
-    setReferenceRequest(detail.ref_request_name || '');
+    if (detail.ref_request_id && detail.ref_request_name) {
+      setSelectedRefRequest({ id: detail.ref_request_id, name: detail.ref_request_name });
+    } else {
+      setSelectedRefRequest(null);
+    }
     setRefundStatus(detail.refund_status || '');
     setReference(detail.reference || '');
     setSelectedApprovers(approvers);
@@ -188,7 +199,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
       quantity: detail.quantity ? detail.quantity.toString() : '',
       reference: detail.reference || '',
       location: detail.location || '',
-      referenceRequest: detail.ref_request_name || '',
+      refRequestId: detail.ref_request_id,
       refundStatus: detail.refund_status || '',
       approvers,
     };
@@ -245,6 +256,8 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     if (isReq(selectedCategory.has_date) && !date) return err('Vui lòng chọn ngày yêu cầu');
     if (isReq(selectedCategory.has_period) && (!periodStart || !periodEnd))
       return err('Vui lòng chọn giai đoạn áp dụng');
+    if (isReq(selectedCategory.has_reference_request) && !selectedRefRequest)
+      return err('Vui lòng chọn tờ trình tham chiếu');
     if (selectedApprovers.length === 0) return err('Vui lòng thêm ít nhất 1 người phê duyệt');
     if (isReq(selectedCategory.requirer_document) && uploadHook.uploadedFiles.length === 0)
       return err('Vui lòng đính kèm tài liệu');
@@ -287,8 +300,8 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     if (isVis(selectedCategory.has_reference) && reference.trim())
       payload.reference = reference.trim();
     if (isVis(selectedCategory.has_location) && location.trim()) payload.location = location.trim();
-    if (isVis(selectedCategory.has_reference_request) && referenceRequest.trim())
-      payload.ref_request_name = referenceRequest.trim();
+    if (isVis(selectedCategory.has_reference_request) && selectedRefRequest)
+      payload.ref_request_id = selectedRefRequest.id;
     if (isVis(selectedCategory.has_refund_status) && refundStatus.trim())
       payload.refund_status = refundStatus.trim();
 
@@ -378,9 +391,9 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     }
     if (
       isVis(selectedCategory?.has_reference_request) &&
-      referenceRequest.trim() !== (orig?.referenceRequest || '')
+      selectedRefRequest?.id !== orig?.refRequestId
     ) {
-      payload.ref_request_name = referenceRequest.trim();
+      payload.ref_request_id = selectedRefRequest?.id;
       hasChange = true;
     }
     if (
@@ -661,11 +674,20 @@ const ApprovalDetailScreen = ({ route }: Props) => {
             {isVis(selectedCategory?.has_reference_request) && (
               <Input
                 label="Tờ trình tham chiếu"
-                placeholder="Nhập tờ trình tham chiếu"
-                value={referenceRequest}
-                onChangeText={setReferenceRequest}
+                placeholder={isCreateMode ? 'Chọn tờ trình tham chiếu' : undefined}
+                value={
+                  String(
+                    selectedRefRequest
+                      ? selectedRefRequest.code
+                        ? `[${selectedRefRequest.code}] ${selectedRefRequest.name || ''}`
+                        : selectedRefRequest.name || ''
+                      : '',
+                  ) || ''
+                }
                 readOnly={!isEditable}
                 isRequired={isEditable && isReq(selectedCategory?.has_reference_request)}
+                onPress={isEditable ? () => refRequestPickerRef.current?.expand() : undefined}
+                iconRight={isEditable ? <IcDropdown size={20} /> : undefined}
               />
             )}
 
@@ -782,37 +804,12 @@ const ApprovalDetailScreen = ({ route }: Props) => {
               />
             )}
 
-            {isVis(selectedCategory?.has_product) && (
-              <Input
-                label="Sản phẩm"
-                placeholder="Nhập sản phẩm"
-                value={product}
-                onChangeText={setProduct}
-                readOnly={!isEditable}
-                isRequired={isEditable && isReq(selectedCategory?.has_product)}
-              />
-            )}
-
-            {isVis(selectedCategory?.has_quantity) && (
-              <Input
-                label="Số lượng"
-                placeholder="Nhập số lượng"
-                value={quantity}
-                onChangeText={setQuantity}
-                keyboardType="numeric"
-                readOnly={!isEditable}
-                isRequired={isEditable && isReq(selectedCategory?.has_quantity)}
-              />
-            )}
-
-            {isVis(selectedCategory?.has_refund_status) && (
+            {!isCreateMode && isVis(selectedCategory?.has_refund_status) && (
               <Input
                 label="Trạng thái hoàn ứng"
                 placeholder="Nhập trạng thái hoàn ứng"
-                value={refundStatus}
-                onChangeText={setRefundStatus}
-                readOnly={!isEditable}
-                isRequired={isEditable && isReq(selectedCategory?.has_refund_status)}
+                value={detail?.refund_status_label || ''}
+                readOnly={true}
               />
             )}
           </View>
@@ -942,9 +939,19 @@ const ApprovalDetailScreen = ({ route }: Props) => {
             setQuantity('');
             setReference('');
             setLocation('');
-            setReferenceRequest('');
+            setSelectedRefRequest(null);
             setRefundStatus('');
           }
+        }}
+      />
+      <OptionPickerModal
+        bottomSheetRef={refRequestPickerRef}
+        data={refRequestOptions}
+        selectedValue={selectedRefRequest?.id ? selectedRefRequest.id.toString() : ''}
+        title="Chọn tờ trình tham chiếu"
+        onSelect={(item) => {
+          const req = (refRequests || []).find((r) => r?.id?.toString() === item.key.toString());
+          setSelectedRefRequest(req || null);
         }}
       />
       <OptionPickerModal
