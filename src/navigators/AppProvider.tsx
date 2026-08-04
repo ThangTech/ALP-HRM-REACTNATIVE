@@ -150,10 +150,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
   };
 
   const setUser = async (user: AppContext['user']) => {
-    if (!state) {
-      return;
-    }
-    await saveAppContext({ ...state, user });
+    await saveAppContext((prev) => ({ ...prev!, user }));
   };
 
   const setPermission = async (permission: AppContext['permission']) => {
@@ -171,10 +168,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
   };
 
   const setCurrentCompanyId = async (current_company_id: AppContext['current_company_id']) => {
-    if (!state) {
-      return;
-    }
-    await saveAppContext({ ...state, current_company_id });
+    await saveAppContext((prev) => ({ ...prev!, current_company_id }));
   };
 
   const ctx: AppContext | undefined = {

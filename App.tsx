@@ -64,6 +64,18 @@ const App = (): React.JSX.Element => {
   const swrConfig: React.ComponentProps<typeof SWRConfig>['value'] = {
     provider: () => new Map(),
     isVisible: () => true,
+    onErrorRetry: (error, _key, config, revalidate, { retryCount }) => {
+      if (error && (error as any).code >= 400 && (error as any).code < 500) {
+        return;
+      }
+
+      const maxRetry = config.errorRetryCount ?? 3;
+      if (retryCount >= maxRetry) {
+        return;
+      }
+
+      setTimeout(() => revalidate({ retryCount }), config.errorRetryInterval || 5000);
+    },
     initFocus(cb) {
       let state = AppState.currentState;
       const sub = AppState.addEventListener('change', (s) => {

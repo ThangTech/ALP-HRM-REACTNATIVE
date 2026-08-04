@@ -133,7 +133,7 @@ function useStorage<T extends Prefix, R extends KeyIdentity<T>>(
 
           return raw;
         },
-        // { revalidate: false },
+        { revalidate: false },
       );
     },
     [conf, mutate, storage],
