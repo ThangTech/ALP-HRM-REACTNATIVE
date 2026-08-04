@@ -14,8 +14,9 @@ import {
 import { IcCalendar, IcCheckbox, IcDropdown, IcTrash, IcUnCheckbox } from 'assets/svgs';
 import { scale, verticalScale, horizontalScale } from 'utils';
 import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from 'react-native';
-import BottomSheet from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
+import useDebounce from 'hooks/useDebounce';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppStackParamList, RouteName } from 'configs/navigation';
 import UploadComponent from 'components/file-upload/UploadComponent';
@@ -29,6 +30,7 @@ import useApprovalDetail, {
   ApprovalCategory,
   ApprovalUser,
 } from '../hooks/useApprovalDetail';
+import OptionPickerModal2 from 'components/base/OptionPickerModal2';
 
 type Props = NativeStackScreenProps<
   AppStackParamList,
@@ -62,6 +64,9 @@ const ApprovalDetailScreen = ({ route }: Props) => {
   const id = (route.params as any)?.id ?? 0;
   const isCreateMode = id === 0;
 
+  const [partnerSearchText, setPartnerSearchText] = useState('');
+  const debouncedPartnerSearch = useDebounce(partnerSearchText, 500);
+
   const [
     {
       detail,
@@ -70,6 +75,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
       categoryOptions,
       users,
       userOptions,
+      partnerOptions,
       refRequests,
       refRequestOptions,
       createLoading,
@@ -79,7 +85,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
       uploadLoading,
     },
     { createApproval, submitApproval, updateApproval, performAction, uploadFiles, refetch },
-  ] = useApprovalDetail(id);
+  ] = useApprovalDetail(id, { partnerSearch: debouncedPartnerSearch });
 
   const uploadHook = useUploadFile();
   const { setUploadedFiles } = uploadHook;
@@ -92,7 +98,9 @@ const ApprovalDetailScreen = ({ route }: Props) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [periodStart, setPeriodStart] = useState<Date | undefined>(undefined);
   const [periodEnd, setPeriodEnd] = useState<Date | undefined>(undefined);
-  const [partner, setPartner] = useState('');
+
+  const [selectedPartner, setSelectedPartner] = useState<{ id: number; name: string } | null>(null);
+
   const [product, setProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [reference, setReference] = useState('');
@@ -116,6 +124,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     date?: Date;
     periodStart?: Date;
     periodEnd?: Date;
+    partnerId?: number;
     partner: string;
     product: string;
     quantity: string;
@@ -129,6 +138,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
   const categoryPickerRef = useRef<BottomSheet>(null);
   const refRequestPickerRef = useRef<BottomSheet>(null);
   const userPickerRef = useRef<BottomSheet>(null);
+  const partnerPickerRef = useRef<BottomSheetModal>(null);
   const datePickerRef = useRef<BottomSheet>(null);
   const [datePickerConfig, setDatePickerConfig] = useState<{
     title: string;
@@ -173,7 +183,13 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     setPeriodStart(parsedStart);
     setPeriodEnd(parsedEnd);
     setLocation(detail.location || '');
-    setPartner(detail.partner_name || '');
+    if (detail.partner_id && detail.partner_name) {
+      setSelectedPartner({ id: detail.partner_id, name: detail.partner_name });
+    } else if (detail.partner_name) {
+      setSelectedPartner({ id: 0, name: detail.partner_name });
+    } else {
+      setSelectedPartner(null);
+    }
     setProduct(detail.product || '');
     setQuantity(detail.quantity ? detail.quantity.toString() : '');
     if (detail.ref_request_id && detail.ref_request_name) {
@@ -194,6 +210,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
       date: parsedDate,
       periodStart: parsedStart,
       periodEnd: parsedEnd,
+      partnerId: detail.partner_id,
       partner: detail.partner_name || '',
       product: detail.product || '',
       quantity: detail.quantity ? detail.quantity.toString() : '',
@@ -292,8 +309,9 @@ const ApprovalDetailScreen = ({ route }: Props) => {
       payload.date_start = dayjs(periodStart).format('YYYY-MM-DD');
     if (isVis(selectedCategory.has_period) && periodEnd)
       payload.date_end = dayjs(periodEnd).format('YYYY-MM-DD');
-    if (isVis(selectedCategory.has_partner) && partner.trim())
-      payload.partner_name = partner.trim();
+    if (isVis(selectedCategory.has_partner) && selectedPartner) {
+      payload.partner_id = selectedPartner.id;
+    }
     if (isVis(selectedCategory.has_product) && product.trim()) payload.product = product.trim();
     if (isVis(selectedCategory.has_quantity) && quantity.trim())
       payload.quantity = parseFloat(quantity) || 0;
@@ -373,8 +391,8 @@ const ApprovalDetailScreen = ({ route }: Props) => {
       payload.location = location.trim();
       hasChange = true;
     }
-    if (isVis(selectedCategory?.has_partner) && partner.trim() !== (orig?.partner || '')) {
-      payload.partner_name = partner.trim();
+    if (isVis(selectedCategory?.has_partner) && selectedPartner?.id !== orig?.partnerId) {
+      payload.partner_id = selectedPartner?.id;
       hasChange = true;
     }
     if (isVis(selectedCategory?.has_product) && product.trim() !== (orig?.product || '')) {
@@ -796,11 +814,16 @@ const ApprovalDetailScreen = ({ route }: Props) => {
             {isVis(selectedCategory?.has_partner) && (
               <Input
                 label="Liên hệ"
-                placeholder="Nhập thông tin liên hệ"
-                value={partner}
-                onChangeText={setPartner}
+                placeholder={isCreateMode ? 'Chọn thông tin liên hệ' : undefined}
+                value={
+                  selectedPartner
+                    ? selectedPartner.name
+                    : (!isEditable ? detail?.partner_name : '') || ''
+                }
                 readOnly={!isEditable}
                 isRequired={isEditable && isReq(selectedCategory?.has_partner)}
+                onPress={isEditable ? () => partnerPickerRef.current?.present() : undefined}
+                iconRight={isEditable ? <IcDropdown size={20} /> : undefined}
               />
             )}
 
@@ -934,7 +957,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
             setDate(undefined);
             setPeriodStart(undefined);
             setPeriodEnd(undefined);
-            setPartner('');
+            setSelectedPartner(null);
             setProduct('');
             setQuantity('');
             setReference('');
@@ -959,6 +982,17 @@ const ApprovalDetailScreen = ({ route }: Props) => {
         data={userOptions}
         title="Chọn người phê duyệt"
         onSelect={handleSelectUser}
+      />
+      <OptionPickerModal2
+        bottomSheetRef={partnerPickerRef}
+        data={partnerOptions}
+        selectedValue={selectedPartner?.id?.toString()}
+        title="Chọn liên hệ"
+        searchable={true}
+        onSearchTextChange={setPartnerSearchText}
+        onSelect={(item) => {
+          setSelectedPartner({ id: Number(item.key), name: item.value });
+        }}
       />
       <DateTimePickerModal
         bottomSheetRef={datePickerRef}

@@ -12,6 +12,7 @@ interface OptionPickerModalProps {
   onSelect: (item: OptionItem) => void;
   title?: string;
   searchable?: boolean;
+  onSearchTextChange?: (text: string) => void;
 }
 
 const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
@@ -21,6 +22,7 @@ const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
   onSelect,
   title = 'Chọn một tùy chọn',
   searchable = false,
+  onSearchTextChange,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const snapPoints = useMemo(() => ['30%'], []);
@@ -43,9 +45,10 @@ const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
       // Reset search khi đóng modal (index = -1)
       if (index === -1 && searchable) {
         setSearchQuery('');
+        onSearchTextChange?.('');
       }
     },
-    [searchable],
+    [searchable, onSearchTextChange],
   );
 
   const handleSelectItem = (item: OptionItem) => {
@@ -55,6 +58,7 @@ const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
     }, 500);
     if (searchable) {
       setSearchQuery(''); // Reset search sau khi chọn
+      onSearchTextChange?.('');
     }
   };
 
@@ -135,12 +139,21 @@ const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
                 placeholder="Tìm kiếm..."
                 placeholderTextColor="#999999"
                 value={searchQuery}
-                onChangeText={setSearchQuery}
+                onChangeText={(text) => {
+                  setSearchQuery(text);
+                  onSearchTextChange?.(text);
+                }}
                 autoCapitalize="none"
                 autoCorrect={false}
               />
               {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSearchQuery('');
+                    onSearchTextChange?.('');
+                  }}
+                  style={styles.clearButton}
+                >
                   <Text fontSize={16} color="$grey">
                     ✕
                   </Text>
@@ -151,7 +164,7 @@ const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
         )}
       </View>
     ),
-    [title, searchable, searchQuery],
+    [title, searchable, searchQuery, onSearchTextChange],
   );
 
   return (

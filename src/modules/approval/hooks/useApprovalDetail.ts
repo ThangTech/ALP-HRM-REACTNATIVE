@@ -46,6 +46,7 @@ export interface CreateApprovalPayload {
     attachment_ids: number[];
   }[];
   partner_name?: string;
+  partner_id?: number;
   date?: string;
   date_start?: string;
   date_end?: string;
@@ -98,12 +99,14 @@ export interface ApprovalDetail {
   date_end: string;
   location: string;
   partner_name: string;
+  partner_id?: number;
   description: string;
   product?: string;
   quantity?: number;
   ref_request_id?: number;
   ref_request_name?: string;
   refund_status?: string;
+  refund_status_label?: string;
   files: ApprovalFile[];
   approver_ids: ApprovalDetailApprover[];
   buttons: string[];
@@ -136,7 +139,7 @@ const ACTION_ENDPOINTS: Record<string, string> = {
   action_draft: '/api/models/approval-request/execute/app_approval_draft',
 };
 
-const useApprovalDetail = (id: number) => {
+const useApprovalDetail = (id: number, options?: { partnerSearch?: string }) => {
   const app = useAppContext();
 
   const {
@@ -230,6 +233,28 @@ const useApprovalDetail = (id: number) => {
     },
   );
 
+  const { data: partners } = useSWR<any[]>(
+    ['approvalPartners', options?.partnerSearch],
+    async () => {
+      const res = await api.POST({
+        path: '/api/models/res-partner/execute/get_list_contact_info',
+        data: {
+          kwargs: {
+            offset: 0,
+            limit: 50,
+            search: options?.partnerSearch || '',
+          },
+        },
+      });
+      return res?.data || [];
+    },
+    {
+      onError: (err: any) => {
+        showToast('error', err?.message || 'Có lỗi xảy ra khi lấy danh sách liên hệ');
+      },
+    },
+  );
+
   const refRequestOptions: OptionItem[] = useMemo(
     () =>
       (refRequests || []).map((r) => ({
@@ -247,6 +272,11 @@ const useApprovalDetail = (id: number) => {
   const userOptions: OptionItem[] = useMemo(
     () => (users || []).map((u) => ({ key: u.id.toString(), value: u.name })),
     [users],
+  );
+
+  const partnerOptions: OptionItem[] = useMemo(
+    () => (partners || []).map((p) => ({ key: p.id.toString(), value: p.name })),
+    [partners],
   );
 
   const { trigger: createApproval, isMutating: createLoading } = useSWRMutation(
@@ -354,6 +384,7 @@ const useApprovalDetail = (id: number) => {
       users,
       categoryOptions,
       userOptions,
+      partnerOptions,
       refRequestOptions,
       refRequests,
       createLoading,
