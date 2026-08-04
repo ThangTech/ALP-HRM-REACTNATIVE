@@ -109,6 +109,8 @@ interface TimesheetExplanationDetail {
   overtime_first_end: string;
   overtime_second_start: string;
   overtime_second_end: string;
+  overtime_three_start: string;
+  overtime_three_end: string;
   hours_of_break: number | string;
   number_minutes: number;
   coefficient: number | string;
@@ -136,6 +138,7 @@ interface TimesheetExplanationDetail {
   move_time_in_salary?: number;
   work_time_from?: number;
   work_time_to?: number;
+  max_daily_work_hours?: number;
 }
 
 interface fileType {
@@ -202,6 +205,8 @@ interface CalculateInformation {
   overtime_first_end: string;
   overtime_second_start: string;
   overtime_second_end: string;
+  overtime_three_start: string;
+  overtime_three_end: string;
   hours_of_break?: number | string;
   number_minutes: number;
   coefficient?: number | string;
@@ -215,4 +220,5 @@ interface CalculateInformation {
   move_time_in_salary?: number;
   state?: string;
   state_label: string;
+  max_daily_work_hours?: number;
 }

@@ -166,25 +166,14 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   const workingFrom = state.timeSheetDetail?.working_from;
   const workingTo = state.timeSheetDetail?.working_to;
 
-  let totalWorkingTime = '00:00';
-  if (workingFrom && workingTo) {
-    const from = dayjs(workingFrom);
-    const to = dayjs(workingTo);
-    let diffMinutes = to.diff(from, 'minute');
-    if (diffMinutes < 0) {
-      diffMinutes += 24 * 60;
-    }
-    const hours = Math.floor(diffMinutes / 60);
-    const minutes = diffMinutes % 60;
-    totalWorkingTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  }
-
   const explainedCheckIn = state.timeSheetDetail?.explained_check_in;
   const explainedCheckOut = state.timeSheetDetail?.explained_check_out;
   const overtime1From = state.timeSheetDetail?.overtime_first_start;
   const overtime1To = state.timeSheetDetail?.overtime_first_end;
   const overtime2From = state.timeSheetDetail?.overtime_second_start;
   const overtime2To = state.timeSheetDetail?.overtime_second_end;
+  const overtime3From = state.timeSheetDetail?.overtime_three_start;
+  const overtime3To = state.timeSheetDetail?.overtime_three_end;
   const hours_of_break = state.timeSheetDetail?.hours_of_break;
 
   const [
@@ -505,6 +494,8 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
         overtime_first_end: formatDateTimeForOdoo2(detail?.overtime_first_end),
         overtime_second_start: formatDateTimeForOdoo2(detail?.overtime_second_start),
         overtime_second_end: formatDateTimeForOdoo2(detail?.overtime_second_end),
+        overtime_three_start: formatDateTimeForOdoo2(detail?.overtime_three_start),
+        overtime_three_end: formatDateTimeForOdoo2(detail?.overtime_three_end),
       });
     },
     [
@@ -528,6 +519,8 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       detail?.overtime_first_end,
       detail?.overtime_second_start,
       detail?.overtime_second_end,
+      detail?.overtime_three_start,
+      detail?.overtime_three_end,
     ],
     500,
   );
@@ -612,6 +605,12 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
             ),
             overtime_second_end: formatDateTimeForOdoo2(
               mTimesheetExplanationDetail?.overtime_second_end,
+            ),
+            overtime_three_start: formatDateTimeForOdoo2(
+              mTimesheetExplanationDetail?.overtime_three_start,
+            ),
+            overtime_three_end: formatDateTimeForOdoo2(
+              mTimesheetExplanationDetail?.overtime_three_end,
             ),
             hours_of_break: +cleanNumberString(hours_of_break?.toString() || '0'),
           });
@@ -1200,7 +1199,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
             label="Tổng thời gian làm việc tiêu chuẩn"
             editable={false}
             isRequired
-            value={totalWorkingTime}
+            value={state.timeSheetDetail?.max_daily_work_hours?.toString() || '0'}
           />
 
           <Input
@@ -1349,6 +1348,46 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                             ...prev.timeSheetDetail,
                             overtime_second_start: mFromDate,
                             overtime_second_end: mToDate,
+                          },
+                        }));
+                      },
+                    });
+                    timeRangePickerRef.current?.expand();
+                  }
+            }
+          />
+          <Input
+            label="Tăng ca lần 3"
+            placeholder="Chọn thời gian tăng ca"
+            editable={!isFormLocked}
+            value={formatTimeRange(
+              overtime3From ? new Date(overtime3From) : undefined,
+              overtime3To ? new Date(overtime3To) : undefined,
+            )}
+            iconRight={<IcCalendar size={18} />}
+            onPress={
+              isFormLocked
+                ? undefined
+                : () => {
+                    setTimeRangeConfig({
+                      initialFromValue: overtime3From ? new Date(overtime3From) : undefined,
+                      initialToValue: overtime3To ? new Date(overtime3To) : undefined,
+                      title: 'Chọn thời gian tăng ca lần 3',
+                      onConfirm: (fromDate, toDate) => {
+                        const mFromDate = dayjs(selectedDate)
+                          .set('hour', fromDate.getHours())
+                          .set('minute', fromDate.getMinutes())
+                          .format('YYYY-MM-DD HH:mm:ss');
+                        const mToDate = dayjs(selectedDate)
+                          .set('hour', toDate.getHours())
+                          .set('minute', toDate.getMinutes())
+                          .format('YYYY-MM-DD HH:mm:ss');
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            overtime_three_start: mFromDate,
+                            overtime_three_end: mToDate,
                           },
                         }));
                       },
