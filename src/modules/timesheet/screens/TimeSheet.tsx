@@ -10,11 +10,12 @@ import { navigate } from 'navigators';
 import { AppStackParamList, RouteName } from 'configs/navigation';
 import { TimeSheetViewType } from 'common/enum/time-sheet-view-type';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import CardContainer from 'components/CardContainer';
 import TimeSheetFilter from './components/TimeSheetFilter';
 import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import { TimesheetState } from 'common/enum/timesheet-state';
-import { IcInformation } from 'assets/svgs';
+import { IcInformation, IcCheck, IcClose } from 'assets/svgs';
 
 // Config locale tiếng Việt cho Calendar
 LocaleConfig.locales.vi = {
@@ -181,11 +182,18 @@ const Timesheet = (props: TimeSheetProps) => {
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const { hasPermission } = useAttendanceViolationPermission();
   const [selectedEmployee, setSelectedEmployee] = useState<OptionItem | undefined>(undefined);
-  const [{ attendanceList, isLoadingAttendanceList, attendanceSummary }] = useTimeSheet({
-    date,
-    viewType,
-    employeeId: selectedEmployee?.key ? Number(selectedEmployee.key) : undefined,
-  });
+  const [{ attendanceList, isLoadingAttendanceList, attendanceSummary }, { mutateAttendanceList }] =
+    useTimeSheet({
+      date,
+      viewType,
+      employeeId: selectedEmployee?.key ? Number(selectedEmployee.key) : undefined,
+    });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (mutateAttendanceList) mutateAttendanceList();
+    }, [mutateAttendanceList]),
+  );
 
   // Memoize marked dates để tránh re-calculate không cần thiết
   const markedDates = useMemo(() => {
@@ -304,6 +312,32 @@ const Timesheet = (props: TimeSheetProps) => {
           </Text>
         </View>
 
+        {/* Explanation Info */}
+        {!!(dayData.exp_reason_label || dayData.exp_state_label) && (
+          <View gap={verticalScale(12)} mb={verticalScale(16)}>
+            {!!dayData.exp_reason_label && (
+              <View bg="$white" br={scale(12)} p={scale(12)} borderWidth={1} borderColor="$border">
+                <Text fontSize={scale(12)} color="$grey" mb={verticalScale(12)}>
+                  Loại giải trình
+                </Text>
+                <Text fontSize={scale(14)} fontW="600" color="$black">
+                  {dayData.exp_reason_label}
+                </Text>
+              </View>
+            )}
+            {!!dayData.exp_state_label && (
+              <View bg="$white" br={scale(12)} p={scale(12)} borderWidth={1} borderColor="$border">
+                <Text fontSize={scale(12)} color="$grey" mb={verticalScale(12)}>
+                  Trạng thái phiếu
+                </Text>
+                <Text fontSize={scale(14)} fontW="600" color="$black">
+                  {dayData.exp_state_label}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Main Info Grid */}
         <View gap={verticalScale(12)}>
           {/* Shift Info */}
@@ -354,7 +388,9 @@ const Timesheet = (props: TimeSheetProps) => {
               textColor="$d_red"
             />
           </View>
+
           {dayData?.state === TimesheetState.HAS_REPORT &&
+            !dayData?.exp_id &&
             viewType === TimeSheetViewType.MY_TIME_SHEET && (
               <Text
                 mt={scale(-6)}
@@ -381,15 +417,24 @@ const Timesheet = (props: TimeSheetProps) => {
               </View>
               <View f={1}>
                 <Button
-                  disabled={dayData?.state === TimesheetState.HAS_REPORT}
-                  onPress={() =>
-                    navigate(RouteName.TimesheetExplanationDetail, {
-                      type: 'create',
-                      date: selected,
-                    })
-                  }
+                  disabled={!dayData?.exp_id && dayData?.state === TimesheetState.HAS_REPORT}
+                  onPress={() => {
+                    if (dayData?.exp_id) {
+                      navigate(RouteName.TimesheetExplanationDetail, {
+                        id: dayData.exp_id,
+                        type: 'edit',
+                      });
+                    } else {
+                      navigate(RouteName.TimesheetExplanationDetail, {
+                        type: 'create',
+                        date: selected,
+                      });
+                    }
+                  }}
                 >
-                  <Button.Text>Tạo phiếu giải trình</Button.Text>
+                  <Button.Text>
+                    {dayData?.exp_id ? 'Xem giải trình' : 'Tạo phiếu giải trình'}
+                  </Button.Text>
                 </Button>
               </View>
             </View>
@@ -464,6 +509,49 @@ const Timesheet = (props: TimeSheetProps) => {
               onDayPress={handleDayPress}
               markingType="custom"
               markedDates={markedDates}
+              dayComponent={({ date, state }: any) => {
+                const marking = markedDates[date.dateString];
+                const expState = attendanceList?.[date.dateString]?.exp_state;
+                const isCheck = expState === 'draft' || expState === 'waiting';
+                const isClose = expState === 'refused' || expState === 'cancel';
+
+                return (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => handleDayPress(date)}
+                    style={[
+                      { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
+                      marking?.customStyles?.container,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        { fontSize: 14, color: state === 'disabled' ? '#d9e1e8' : '#2d4150' },
+                        marking?.customStyles?.text,
+                      ]}
+                    >
+                      {date.day}
+                    </Text>
+                    {(isCheck || isClose) && (
+                      <View
+                        style={{
+                          position: 'absolute',
+                          top: -4,
+                          right: -4,
+                          backgroundColor: 'white',
+                          borderRadius: 10,
+                        }}
+                      >
+                        {isCheck ? (
+                          <IcCheck size={scale(12)} tintColor="#10B981" />
+                        ) : (
+                          <IcClose size={scale(12)} tintColor="#EF4444" />
+                        )}
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
             />
           </CardContainer>
           {renderTimesheetDetails}

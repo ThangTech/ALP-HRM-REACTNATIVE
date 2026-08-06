@@ -25,6 +25,7 @@ const useTimeSheet = ({ date, viewType, employeeId }: Props) => {
     data: attendanceList,
     isLoading: isLoadingAttendanceList,
     error: errorAttendanceList,
+    mutate: mutateAttendanceList,
   } = useSWR<AttendanceList>(['attendanceList', date, viewType, employeeId], async () => {
     let apiPath = '/api/models/hr-attendance/execute/get_attendance_in_month';
     if (viewType === TimeSheetViewType.MANAGE_TIME_SHEET) {
@@ -92,7 +93,9 @@ const useTimeSheet = ({ date, viewType, employeeId }: Props) => {
         return isLoadingAttendanceSummary;
       },
     },
-    {},
+    {
+      mutateAttendanceList,
+    },
   ] as const;
 };
 

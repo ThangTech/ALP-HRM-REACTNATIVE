@@ -20,6 +20,11 @@ interface AttendanceRecord {
   actual_resource_calendar_id: number | string;
   actual_resource_calendar_name: string;
   actual_resource_calendar_display_name: string;
+  exp_id?: number;
+  exp_state?: string;
+  exp_state_label?: string;
+  exp_reason?: string;
+  exp_reason_label?: string;
 }
 
 interface AttendanceList {
