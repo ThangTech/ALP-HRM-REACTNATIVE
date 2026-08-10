@@ -12,6 +12,8 @@ interface OptionPickerModalProps {
   onSelect: (item: OptionItem) => void;
   title?: string;
   searchable?: boolean;
+  onSearchTextChange?: (text: string) => void;
+  snapPoint?: string;
 }
 
 const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
@@ -21,9 +23,11 @@ const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
   onSelect,
   title = 'Chọn một tùy chọn',
   searchable = false,
+  // onSearchTextChange,
+  snapPoint = '45%',
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const snapPoints = useMemo(() => ['30%'], []);
+  const snapPoints = useMemo(() => [snapPoint], [snapPoint]);
 
   // Filter data based on search query
   const filteredData = useMemo(() => {
@@ -176,6 +180,9 @@ const OptionPickerModal2: React.FC<OptionPickerModalProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
         keyboardShouldPersistTaps="handled"
+        initialNumToRender={12}
+        maxToRenderPerBatch={5}
+        windowSize={5}
       />
     </BottomSheetModal>
   );
