@@ -300,7 +300,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
     if (!calculateInformation) {
       return;
     }
-    const clone = { ...calculateInformation };
+    const clone: any = { ...calculateInformation };
     delete clone.allocated_buffer_hours;
     delete clone.salary_hours;
     delete clone.employee_name;
@@ -319,9 +319,13 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
       }
       if (!prev.timeSheetDetail?.autoFillExplainedDate) {
         delete clone.explained_check_in;
-      }
-      if (!prev.timeSheetDetail?.autoFillExplainedDate) {
         delete clone.explained_check_out;
+        delete clone.overtime_first_start;
+        delete clone.overtime_first_end;
+        delete clone.overtime_second_start;
+        delete clone.overtime_second_end;
+        delete clone.overtime_three_start;
+        delete clone.overtime_three_end;
       }
       if (!prev.timeSheetDetail?.autoFillCoefficient) {
         delete clone.coefficient;
@@ -416,6 +420,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
     initialValue?: Date;
     title: string;
     onConfirm: (date: Date) => void;
+    onCancel?: () => void;
   }>({
     mode: 'date',
     initialValue: undefined,
@@ -1225,6 +1230,21 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                           },
                         }));
                       },
+                      ...(explainedCheckIn
+                        ? {
+                            onCancel: () => {
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  explained_check_in: formatDateTimeForOdoo2(
+                                    timesheetExplanationDetail?.explained_check_in,
+                                  ),
+                                },
+                              }));
+                            },
+                          }
+                        : {}),
                     });
                     dateTimePickerRef.current?.expand();
                   }
@@ -1254,6 +1274,21 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                           },
                         }));
                       },
+                      ...(explainedCheckOut
+                        ? {
+                            onCancel: () => {
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  explained_check_out: formatDateTimeForOdoo2(
+                                    timesheetExplanationDetail?.explained_check_out,
+                                  ),
+                                },
+                              }));
+                            },
+                          }
+                        : {}),
                     });
                     dateTimePickerRef.current?.expand();
                   }
@@ -1311,6 +1346,24 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                           },
                         }));
                       },
+                      ...(overtime1From || overtime1To
+                        ? {
+                            onDelete: () => {
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  overtime_first_start: formatDateTimeForOdoo2(
+                                    timesheetExplanationDetail?.overtime_first_start,
+                                  ),
+                                  overtime_first_end: formatDateTimeForOdoo2(
+                                    timesheetExplanationDetail?.overtime_first_end,
+                                  ),
+                                },
+                              }));
+                            },
+                          }
+                        : {}),
                     });
                     timeRangePickerRef.current?.expand();
                   }
@@ -1351,6 +1404,24 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                           },
                         }));
                       },
+                      ...(overtime2From || overtime2To
+                        ? {
+                            onDelete: () => {
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  overtime_second_start: formatDateTimeForOdoo2(
+                                    timesheetExplanationDetail?.overtime_second_start,
+                                  ),
+                                  overtime_second_end: formatDateTimeForOdoo2(
+                                    timesheetExplanationDetail?.overtime_second_end,
+                                  ),
+                                },
+                              }));
+                            },
+                          }
+                        : {}),
                     });
                     timeRangePickerRef.current?.expand();
                   }
@@ -1391,6 +1462,24 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                           },
                         }));
                       },
+                      ...(overtime3From || overtime3To
+                        ? {
+                            onDelete: () => {
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  overtime_three_start: formatDateTimeForOdoo2(
+                                    timesheetExplanationDetail?.overtime_three_start,
+                                  ),
+                                  overtime_three_end: formatDateTimeForOdoo2(
+                                    timesheetExplanationDetail?.overtime_three_end,
+                                  ),
+                                },
+                              }));
+                            },
+                          }
+                        : {}),
                     });
                     timeRangePickerRef.current?.expand();
                   }
@@ -1571,6 +1660,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
         initialValue={dateTimeConfig.initialValue}
         title={dateTimeConfig.title}
         onConfirm={dateTimeConfig.onConfirm}
+        onCancel={dateTimeConfig.onCancel}
       />
       {/* Modal dùng chung cho TimeRangePicker */}
       <TimeRangePickerModal
