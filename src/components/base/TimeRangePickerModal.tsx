@@ -65,6 +65,7 @@ const TimeRangePickerModal: React.FC<TimeRangePickerModalProps> = ({
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
+      enableDynamicSizing
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.bottomSheetBackground}
