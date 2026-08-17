@@ -144,6 +144,9 @@ interface TimesheetExplanationDetail {
   work_time_from?: number;
   work_time_to?: number;
   max_daily_work_hours?: number;
+  cremation_check_in?: string;
+  cremation_check_out?: string;
+  cremation_hours_of_break?: string | number;
 }
 
 interface fileType {

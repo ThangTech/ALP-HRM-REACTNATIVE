@@ -9,4 +9,5 @@ export { default as Form } from './Form';
 export { default as DateTimePickerModal, type DateTimePickerMode } from './DateTimePickerModal';
 export { default as OptionPickerModal, type OptionItem } from './OptionPickerModal';
 export { default as TimeRangePickerModal } from './TimeRangePickerModal';
+export { default as TimeRangePickerModal2 } from './TimeRangePickerModal2';
 export { default as SmartBackdrop } from './SmartBackdrop';
