@@ -1,18 +1,13 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { View, getTokens } from 'tamagui';
-import {
-  Header,
-  Pressable,
-  Text,
-  DateTimePickerModal,
-  OptionPickerModal,
-  OptionItem,
-} from 'components';
+import { Header, Pressable, Text, OptionItem } from 'components';
+import DateTimePickerModal2 from 'components/base/DateTimePickerModal2';
+import OptionPickerModal2 from 'components/base/OptionPickerModal2';
 import { IcPlus, IcCalendar, IcExplanation, IcDropdown } from 'assets/svgs';
 import { horizontalScale, scale, verticalScale } from 'utils';
 import { StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import dayjs from 'dayjs';
-import BottomSheet from '@gorhom/bottom-sheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { navigate } from 'navigators';
 import { AppStackParamList, RouteName } from 'configs/navigation';
 import { useTimesheetExplanation } from 'timesheet/hooks';
@@ -99,8 +94,8 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
   ] = useTimesheetExplanation(params);
 
   // Refs
-  const dateTimePickerRef = useRef<BottomSheet>(null);
-  const optionPickerRef = useRef<BottomSheet>(null);
+  const dateTimePickerRef = useRef<BottomSheetModal>(null);
+  const optionPickerRef = useRef<BottomSheetModal>(null);
 
   // Config động cho DateTimePickerModal
   const [dateTimeConfig, setDateTimeConfig] = useState<{
@@ -155,7 +150,7 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
               title: label,
               onConfirm: onConfirm,
             });
-            dateTimePickerRef.current?.expand();
+            dateTimePickerRef.current?.present();
           }}
         >
           <View
@@ -188,7 +183,7 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => {
-            optionPickerRef.current?.expand();
+            optionPickerRef.current?.present();
           }}
         >
           <View
@@ -349,7 +344,7 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
       </View>
 
       {/* Modal dùng chung cho DateTimePicker */}
-      <DateTimePickerModal
+      <DateTimePickerModal2
         bottomSheetRef={dateTimePickerRef}
         mode={dateTimeConfig.mode}
         initialValue={dateTimeConfig.initialValue}
@@ -357,7 +352,7 @@ const TimesheetExplanation = ({ route }: TimesheetExplanationProps) => {
         onConfirm={dateTimeConfig.onConfirm}
       />
       {/* Modal dùng chung cho OptionPicker */}
-      <OptionPickerModal
+      <OptionPickerModal2
         bottomSheetRef={optionPickerRef}
         data={
           activeTab === 'approval'
