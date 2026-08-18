@@ -1,20 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getTokens, ScrollView, View } from 'tamagui';
-import {
-  Button,
-  DateTimePickerModal,
-  Header,
-  Input,
-  OptionItem,
-  OptionPickerModal,
-  Screen,
-  showToast,
-  Text,
-} from 'components';
+import { Button, Header, Input, OptionItem, Screen, showToast, Text } from 'components';
+import DateTimePickerModal2 from 'components/base/DateTimePickerModal2';
 import { IcCalendar, IcCheckbox, IcDropdown, IcTrash, IcUnCheckbox } from 'assets/svgs';
 import { scale, verticalScale, horizontalScale } from 'utils';
 import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from 'react-native';
-import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
 import useDebounce from 'hooks/useDebounce';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -135,11 +126,11 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     approvers: (ApprovalUser & { required: boolean })[];
   } | null>(null);
 
-  const categoryPickerRef = useRef<BottomSheet>(null);
-  const refRequestPickerRef = useRef<BottomSheet>(null);
-  const userPickerRef = useRef<BottomSheet>(null);
+  const categoryPickerRef = useRef<BottomSheetModal>(null);
+  const refRequestPickerRef = useRef<BottomSheetModal>(null);
+  const userPickerRef = useRef<BottomSheetModal>(null);
   const partnerPickerRef = useRef<BottomSheetModal>(null);
-  const datePickerRef = useRef<BottomSheet>(null);
+  const datePickerRef = useRef<BottomSheetModal>(null);
   const [datePickerConfig, setDatePickerConfig] = useState<{
     title: string;
     initialValue?: Date;
@@ -224,7 +215,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
 
   const openDatePicker = (title: string, initialValue?: Date, onConfirm?: (d: Date) => void) => {
     setDatePickerConfig({ title, initialValue, onConfirm: onConfirm || (() => {}) });
-    datePickerRef.current?.expand();
+    datePickerRef.current?.present();
   };
 
   const handleSelectUser = (item: OptionItem) => {
@@ -568,7 +559,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
         <TouchableOpacity
           style={styles.addApproverBtn}
           activeOpacity={0.7}
-          onPress={() => userPickerRef.current?.expand()}
+          onPress={() => userPickerRef.current?.present()}
         >
           <Text fontSize={scale(14)} color="$blue" fontWeight="500">
             Thêm người phê duyệt
@@ -664,7 +655,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
               readOnly={!isEditable}
               isRequired={isEditable}
               placeholder={isCreateMode ? 'Chọn danh mục' : undefined}
-              onPress={isEditable ? () => categoryPickerRef.current?.expand() : undefined}
+              onPress={isEditable ? () => categoryPickerRef.current?.present() : undefined}
               iconRight={isEditable ? <IcDropdown size={20} /> : undefined}
             />
 
@@ -704,7 +695,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
                 }
                 readOnly={!isEditable}
                 isRequired={isEditable && isReq(selectedCategory?.has_reference_request)}
-                onPress={isEditable ? () => refRequestPickerRef.current?.expand() : undefined}
+                onPress={isEditable ? () => refRequestPickerRef.current?.present() : undefined}
                 iconRight={isEditable ? <IcDropdown size={20} /> : undefined}
               />
             )}
@@ -944,7 +935,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
         </>
       )}
 
-      <OptionPickerModal
+      <OptionPickerModal2
         bottomSheetRef={categoryPickerRef}
         data={categoryOptions}
         selectedValue={selectedCategory?.id.toString()}
@@ -967,7 +958,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
           }
         }}
       />
-      <OptionPickerModal
+      <OptionPickerModal2
         bottomSheetRef={refRequestPickerRef}
         data={refRequestOptions}
         selectedValue={selectedRefRequest?.id ? selectedRefRequest.id.toString() : ''}
@@ -977,7 +968,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
           setSelectedRefRequest(req || null);
         }}
       />
-      <OptionPickerModal
+      <OptionPickerModal2
         bottomSheetRef={userPickerRef}
         data={userOptions}
         title="Chọn người phê duyệt"
@@ -994,7 +985,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
           setSelectedPartner({ id: Number(item.key), name: item.value });
         }}
       />
-      <DateTimePickerModal
+      <DateTimePickerModal2
         bottomSheetRef={datePickerRef}
         mode="date"
         initialValue={datePickerConfig.initialValue}

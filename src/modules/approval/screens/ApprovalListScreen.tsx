@@ -1,17 +1,12 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { View, getTokens } from 'tamagui';
-import {
-  Header,
-  Pressable,
-  Text,
-  OptionPickerModal,
-  OptionItem,
-  DateTimePickerModal,
-} from 'components';
+import { Header, Pressable, Text, OptionItem } from 'components';
+import DateTimePickerModal2 from 'components/base/DateTimePickerModal2';
+import OptionPickerModal2 from 'components/base/OptionPickerModal2';
 import { IcPlus, IcDropdown, IcExplanation, IcCalendar } from 'assets/svgs';
 import { scale, verticalScale, horizontalScale } from 'utils';
 import { StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
-import BottomSheet from '@gorhom/bottom-sheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
 import { useIsFocused } from '@react-navigation/native';
 import { navigate } from 'navigators';
@@ -61,8 +56,8 @@ const ApprovalListScreen = () => {
   const [selectedStatus, setSelectedStatus] = useState<OptionItem>(STATUS_OPTIONS[0]!);
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
-  const optionPickerRef = useRef<BottomSheet>(null);
-  const dateTimePickerRef = useRef<BottomSheet>(null);
+  const dateTimePickerRef = useRef<BottomSheetModal>(null);
+  const optionPickerRef = useRef<BottomSheetModal>(null);
   const isFocused = useIsFocused();
   const isFirstMount = useRef(true);
 
@@ -139,7 +134,7 @@ const ApprovalListScreen = () => {
               title: label,
               onConfirm: onConfirm,
             });
-            dateTimePickerRef.current?.expand();
+            dateTimePickerRef.current?.present();
           }}
         >
           <View
@@ -168,7 +163,7 @@ const ApprovalListScreen = () => {
       <Text fontSize={scale(14)} fontWeight="500" mb={verticalScale(8)} color="$black">
         Trạng thái
       </Text>
-      <TouchableOpacity activeOpacity={0.7} onPress={() => optionPickerRef.current?.expand()}>
+      <TouchableOpacity activeOpacity={0.7} onPress={() => optionPickerRef.current?.present()}>
         <View
           fd="row"
           ai="center"
@@ -282,14 +277,14 @@ const ApprovalListScreen = () => {
         />
       </View>
 
-      <DateTimePickerModal
+      <DateTimePickerModal2
         bottomSheetRef={dateTimePickerRef}
         mode={dateTimeConfig.mode}
         initialValue={dateTimeConfig.initialValue}
         title={dateTimeConfig.title}
         onConfirm={dateTimeConfig.onConfirm}
       />
-      <OptionPickerModal
+      <OptionPickerModal2
         bottomSheetRef={optionPickerRef}
         data={STATUS_OPTIONS}
         selectedValue={selectedStatus.key}
