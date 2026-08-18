@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Button, Text } from 'components';
-import { ButtonText, View } from 'tamagui';
+import { View } from 'tamagui';
 import { StyleSheet } from 'react-native';
 import { verticalScale, scale } from 'utils';
 import DatePicker from 'react-native-date-picker';
@@ -49,22 +49,20 @@ const TimeRangePickerModal: React.FC<TimeRangePickerModalProps> = ({
     bottomSheetRef.current?.close();
   };
 
-  const handleCancel = () => {
-    if (onCancel) {
+  const handleCancel = async () => {
+    if (onDelete) {
+      await onDelete();
+    } else if (onCancel) {
       onCancel();
     }
     bottomSheetRef.current?.close();
   };
 
-  async function handleDelete(): Promise<void> {
-    onDelete && (await onDelete());
-    bottomSheetRef.current?.close();
-  }
-
   return (
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
+      enableDynamicSizing
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.bottomSheetBackground}
@@ -123,11 +121,11 @@ const TimeRangePickerModal: React.FC<TimeRangePickerModalProps> = ({
               </Button>
             </View>
           </View>
-          {onDelete && (
+          {/* {onDelete && (
             <ButtonText style={styles.btnDelete} onPress={handleDelete}>
               Xoá bỏ
             </ButtonText>
-          )}
+          )} */}
         </View>
       </BottomSheetView>
     </BottomSheet>
@@ -150,7 +148,6 @@ const styles = StyleSheet.create({
   timePicker: {
     height: 120,
   },
-  btnDelete: { textAlign: 'center', fontSize: 18, color: 'red' },
 });
 
 export default TimeRangePickerModal;

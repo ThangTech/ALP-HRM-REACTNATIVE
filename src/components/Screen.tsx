@@ -26,6 +26,7 @@ const BaseScreen: React.FC<BaseScreenProps> = ({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      enabled={Platform.OS === 'ios'}
       style={styles.container}
       keyboardVerticalOffset={keyboardVerticalOffset}
     >

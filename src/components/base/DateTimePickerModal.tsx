@@ -74,6 +74,7 @@ const DateTimePickerModal: React.FC<DateTimePickerModalProps> = ({
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
+      enableDynamicSizing
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.bottomSheetBackground}

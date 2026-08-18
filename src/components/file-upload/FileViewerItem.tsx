@@ -50,17 +50,14 @@ const FileViewerItem = (props: FileViewerItemType) => {
           )}
         </View>
       </View>
-      <TouchableOpacity
-        disabled={props.disabledDelete}
-        onPress={() => props.handleDeleteFile?.(file)}
-        // eslint-disable-next-line react-native/no-inline-styles
-        style={{
-          ...styles.deleteButton,
-          opacity: props.disabledDelete ? 0.2 : 1,
-        }}
-      >
-        <IcTrash size={20} />
-      </TouchableOpacity>
+      {!(props.disabledDelete ?? props.disabled) && (
+        <TouchableOpacity
+          onPress={() => props.handleDeleteFile?.(file)}
+          style={styles.deleteButton}
+        >
+          <IcTrash size={20} />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 };

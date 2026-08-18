@@ -431,6 +431,7 @@ const Home = () => {
           { value: 'Danh sách nhân viên', key: 2 },
         ]}
         onSelect={onProfileOptionSelected}
+        snapPoint="30%"
       />
       <OptionPickerModal2
         bottomSheetRef={sheetLeaveRef}
@@ -440,6 +441,7 @@ const Home = () => {
           // { value: 'Nghỉ phép / Nghỉ bù', key: 3 },
         ]}
         onSelect={onOptionSelected}
+        snapPoint="30%"
       />
       <OptionPickerModal2
         bottomSheetRef={terminationOptionRef}
@@ -449,6 +451,7 @@ const Home = () => {
           // { value: 'Nghỉ phép / Nghỉ bù', key: 3 },
         ]}
         onSelect={onTerminationOptionSelected}
+        snapPoint="30%"
       />
       <OptionPickerModal2
         bottomSheetRef={personalReportOptionRef}
@@ -458,6 +461,7 @@ const Home = () => {
           // { value: 'Nghỉ phép / Nghỉ bù', key: 3 },
         ]}
         onSelect={onOptionPersonalReportSelected}
+        snapPoint="30%"
       />
       <OptionPickerModal2
         bottomSheetRef={overTimesOptionRef}
@@ -467,6 +471,7 @@ const Home = () => {
           // { value: 'Nghỉ phép / Nghỉ bù', key: 3 },
         ]}
         onSelect={onOptionOverTimesSelected}
+        snapPoint="30%"
       />
       <OptionPickerModal2
         bottomSheetRef={timesheetExplanationOptionRef}
@@ -475,6 +480,7 @@ const Home = () => {
           { value: 'Danh sách phê duyệt', key: 2 },
         ]}
         onSelect={onTimesheetExplanationOptionSelected}
+        snapPoint="30%"
       />
       <OptionPickerModal2
         bottomSheetRef={timesheetOptionRef}
@@ -483,6 +489,7 @@ const Home = () => {
           { value: 'Bảng công nhân viên', key: 2 },
         ]}
         onSelect={onTimesheetOptionSelected}
+        snapPoint="30%"
       />
       <OptionPickerModal2
         bottomSheetRef={kysoOptionRef}
@@ -495,6 +502,7 @@ const Home = () => {
           const filterType = item.key === 1 ? 'my' : 'all';
           navigate(RouteName.SignRequestList, { filterType });
         }}
+        snapPoint="30%"
       />
     </View>
   );
