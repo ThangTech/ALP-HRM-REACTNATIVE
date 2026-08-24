@@ -884,8 +884,8 @@ const ApprovalDetailScreen = ({ route }: Props) => {
         pb={scale(24)}
         bg="white"
         borderTopWidth={1}
-        borderTopColor="#F1F3F5"
-        shadowColor="#000"
+        borderTopColor="$silver"
+        shadowColor="$black"
         shadowOffset={{ width: 0, height: -2 }}
         shadowOpacity={0.05}
         shadowRadius={4}
@@ -1023,17 +1023,17 @@ const styles = StyleSheet.create({
   uploadArea: {
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: '#D1D5DB',
+    borderColor: getTokens().color.border.val,
     borderRadius: scale(12),
     paddingVertical: verticalScale(40),
     paddingHorizontal: horizontalScale(20),
-    backgroundColor: '#F9FAFB',
+    backgroundColor: getTokens().color.silver.val,
   },
   uploadIconContainer: {
     width: scale(64),
     height: scale(64),
     borderRadius: scale(32),
-    backgroundColor: '#EFF6FF',
+    backgroundColor: getTokens().color.blue50.val,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1054,7 +1054,7 @@ const styles = StyleSheet.create({
     padding: scale(8),
   },
   approverItem: {
-    shadowColor: '#000',
+    shadowColor: getTokens().color.black.val,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 3,
