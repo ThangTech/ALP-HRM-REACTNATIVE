@@ -427,8 +427,17 @@ const ApprovalDetailScreen = ({ route }: Props) => {
 
     const uploadedIds = await uploadNewFiles();
     if (uploadedIds === null) return; // upload failed
-    if (uploadedIds && uploadedIds.length > 0) {
-      payload.documents = [{ name: 'Tài liệu đính kèm', attachment_ids: uploadedIds }];
+
+    const allIds = [
+      ...uploadHook.uploadedFiles.filter((f) => f.isFromAPI).map((f) => Number(f.id)),
+      ...(uploadedIds ?? []),
+    ];
+    const originalIds = (detail?.files || []).map((f) => f.attachment_id);
+
+    const filesChanged =
+      allIds.length !== originalIds.length || allIds.some((id) => !originalIds.includes(id));
+    if (filesChanged) {
+      payload.documents = [{ name: 'Tài liệu đính kèm', attachment_ids: allIds }];
       hasChange = true;
     }
 
@@ -582,7 +591,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
           </Text>
           <View gap={scale(12)}>
             {uploadHook.uploadedFiles.map((file) => (
-              <FileViewerItem key={file.id} file={file} disabled={true} />
+              <FileViewerItem key={file.id} file={file} disabledDelete={true} />
             ))}
           </View>
         </View>
@@ -597,7 +606,13 @@ const ApprovalDetailScreen = ({ route }: Props) => {
             {isReq(selectedCategory?.requirer_document) && <Text color="$m_red"> *</Text>}
           </Text>
         </View>
-        <UploadComponent hook={uploadHook} disabled={false} />
+        <UploadComponent
+          hook={uploadHook}
+          disabled={false}
+          handleDeleteFile={async (file) => {
+            uploadHook.setUploadedFiles((prev) => prev.filter((f) => f.id !== file.id));
+          }}
+        />
       </View>
     );
   };
