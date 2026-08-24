@@ -2,7 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { getTokens, ScrollView, View } from 'tamagui';
 import { Button, Header, Input, OptionItem, Screen, showToast, Text } from 'components';
 import DateTimePickerModal2 from 'components/base/DateTimePickerModal2';
-import { IcCalendar, IcCheckbox, IcDropdown, IcTrash, IcUnCheckbox } from 'assets/svgs';
+import {
+  IcCalendar,
+  IcCheckbox,
+  IcDropdown,
+  IcTrash,
+  IcUnCheckbox,
+  IcCheck,
+  IcClose,
+  IcPencil,
+} from 'assets/svgs';
 import { scale, verticalScale, horizontalScale } from 'utils';
 import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -475,7 +484,6 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     actionLoading ||
     uploadLoading ||
     uploadHook.isUploading;
-  const statusColor = STATUS_COLORS[detail?.request_status ?? ''] ?? DEFAULT_STATUS_COLOR;
   const isValid = isCreateMode ? validate() : true;
 
   const renderApproversSection = () => (
@@ -617,24 +625,60 @@ const ApprovalDetailScreen = ({ route }: Props) => {
     );
   };
 
+  const renderStatusBadge = () => {
+    const state = detail?.request_status || 'new';
+    const statusConfig = STATUS_COLORS[state] || DEFAULT_STATUS_COLOR;
+    const size = scale(28);
+
+    const renderIcon = () => {
+      switch (state) {
+        case 'approved':
+          return (
+            <View w={size} h={size} br={size / 2} bg={statusConfig.text} ai="center" jc="center">
+              <IcCheck tintColor="white" width={scale(14)} height={scale(14)} />
+            </View>
+          );
+        case 'pending':
+          return (
+            <View w={size} h={size} br={size / 2} bg={statusConfig.text} ai="center" jc="center">
+              <Text color="white" fontSize={scale(16)} fontWeight="bold" mt={-2}>
+                !
+              </Text>
+            </View>
+          );
+        case 'refused':
+        case 'cancel':
+          return (
+            <View w={size} h={size} br={size / 2} bg={statusConfig.text} ai="center" jc="center">
+              <IcClose tintColor="white" width={scale(12)} height={scale(12)} />
+            </View>
+          );
+        default:
+          return (
+            <View w={size} h={size} br={size / 2} bg={statusConfig.bg} ai="center" jc="center">
+              <IcPencil tintColor={statusConfig.text} width={scale(14)} height={scale(14)} />
+            </View>
+          );
+      }
+    };
+
+    return (
+      <View fd="row" ai="center" jc="flex-start" gap={scale(10)} mb={verticalScale(16)}>
+        {renderIcon()}
+        <Text fontSize={scale(18)} fontWeight="700" color="$black">
+          {detail?.request_status_label || ''}
+        </Text>
+      </View>
+    );
+  };
+
   const renderBody = () => (
     <ScrollView f={1} showsVerticalScrollIndicator={false}>
       <TouchableOpacity activeOpacity={1}>
         <View ph={horizontalScale(16)} pt={verticalScale(16)} pb={verticalScale(32)}>
           {!isCreateMode && (
             <View mb={scale(18)}>
-              <View fd="row" ai="center" jc="space-between" mb={verticalScale(16)}>
-                <View
-                  bg={statusColor.bg}
-                  br={scale(20)}
-                  ph={horizontalScale(14)}
-                  pv={verticalScale(6)}
-                >
-                  <Text fontSize={scale(13)} fontWeight="600" color={statusColor.text}>
-                    {detail?.request_status_label || ''}
-                  </Text>
-                </View>
-              </View>
+              {renderStatusBadge()}
 
               <Text
                 fontSize={scale(18)}
