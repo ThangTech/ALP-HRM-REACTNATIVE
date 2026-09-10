@@ -1,3 +1,7 @@
+const path = require('path');
+if (process.env.APP_ENV === 'production') {
+  require('dotenv').config({ path: path.resolve(__dirname, '.env.production') });
+}
 require('dotenv').config();
 
 module.exports = {

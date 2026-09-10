@@ -2,6 +2,6 @@
 // Dev — internal release (TestFlight / ad-hoc)
 #include? "../Pods/Target Support Files/Pods-ALPHRM/Pods-ALPHRM.releasedev.xcconfig"
 
-PRODUCT_BUNDLE_IDENTIFIER = com.vdx.alphrm.dev
+PRODUCT_BUNDLE_IDENTIFIER = com.vdx.alphrm
 INFOPLIST_KEY_CFBundleDisplayName = ALP HRM Dev
 EXPO_UPDATES_CHANNEL = development
