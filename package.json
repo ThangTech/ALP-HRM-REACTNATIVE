@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
-    "ios": "react-native run-ios --scheme ALPHRM-Debug",
+    "ios": "react-native run-ios --scheme ALPHRM-Debug --simulator 'iPhone 17 Pro Max'",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx,.json",
     "format": "eslint --fix --ext .ts,.tsx . && prettier --write 'src/**/*.{ts,tsx}'",
     "format:check": "prettier --check .",
@@ -17,10 +17,10 @@
     "build-android-prod": "./scripts/build-android.sh --production",
     "build-ios-dev": "./scripts/build-ios.sh --development",
     "build-ios-prod": "./scripts/build-ios.sh --production",
-    "update-android-dev": "eas update --branch development --message 'Update' --platform android",
-    "update-android-prod": "eas update --branch production --message 'Update' --platform android",
-    "update-ios-dev": "eas update --branch development --message 'Update' --platform ios",
-    "update-ios-prod": "eas update --branch production --message 'Update' --platform ios"
+    "update-android-dev": "APP_ENV=development eas update --branch development --platform android --clear-cache",
+    "update-android-prod": "APP_ENV=production eas update --branch production --platform android --clear-cache",
+    "update-ios-dev": "APP_ENV=development eas update --branch development --platform ios --clear-cache",
+    "update-ios-prod": "APP_ENV=production eas update --branch production --platform ios --clear-cache"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5",
