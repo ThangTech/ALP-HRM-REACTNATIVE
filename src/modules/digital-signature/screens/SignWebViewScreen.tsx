@@ -7,8 +7,10 @@ import Header from 'components/Header';
 import { useRoute } from '@react-navigation/native';
 import { goBack } from 'navigators';
 import { scale } from 'utils';
+import { useSafeArea } from 'hooks';
 
 const SignWebViewScreen = () => {
+  const safeArea = useSafeArea();
   const route = useRoute();
   const { sign_url, title } = (route.params as { sign_url?: string; title?: string }) || {};
 
@@ -32,7 +34,7 @@ const SignWebViewScreen = () => {
   }, [handleBackPress]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pb={safeArea.bottom}>
       <Header title={title} onPressLeft={handleBackPress} />
 
       {hasValidUrl ? (
