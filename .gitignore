@@ -34,6 +34,7 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+.kotlin/
 .safedk/
 
 # node.js
@@ -89,3 +90,7 @@ android/.safedk
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+# Expo
+.expo
+dist/
+web-build/ios/assets/
