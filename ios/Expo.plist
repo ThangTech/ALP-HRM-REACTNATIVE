@@ -14,7 +14,7 @@
 		<string>$(EXPO_UPDATES_CHANNEL)</string>
 	</dict>
 	<key>EXUpdatesRuntimeVersion</key>
-	<string>1.4</string>
+	<string>2.3</string>
 	<key>EXUpdatesURL</key>
 	<string>https://u.expo.dev/d26e434c-0b78-4d72-ba7f-ec034c09aa72</string>
 </dict>
