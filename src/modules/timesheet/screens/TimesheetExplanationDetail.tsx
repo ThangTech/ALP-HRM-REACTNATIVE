@@ -38,7 +38,6 @@ import {
   cleanNumberString,
   formatDateTime,
   formatDateTimeForOdoo2,
-  formatTime,
   formatTimeRange,
   horizontalScale,
   openMediaFile,
@@ -87,38 +86,46 @@ const STATUS_COLORS = {
 
 export const SectionHeading = ({
   title,
+  initialExpanded = true,
   children,
 }: {
   title: string;
   initialExpanded?: boolean;
   children?: ReactNode;
 }) => {
+  const [isExpanded, setIsExpanded] = useState(initialExpanded);
+
   return (
     <>
-      <View
-        mt={verticalScale(16)}
-        mb={verticalScale(10)}
-        flexDirection="row"
-        alignItems="center"
-        bg="#F9FBFF"
-        borderRadius={scale(12)}
-        ph={horizontalScale(14)}
-        pv={verticalScale(10)}
-        borderWidth={1}
-        borderColor="#E0E8F5"
-      >
+      <TouchableOpacity activeOpacity={0.7} onPress={() => setIsExpanded(!isExpanded)}>
         <View
-          width={4}
-          height={verticalScale(30)}
-          borderRadius={scale(10)}
-          bg="#D6E6FF"
-          mr={horizontalScale(12)}
-        />
-        <Text fontSize={scale(16)} fontWeight="600" color="$blue" flex={1}>
-          {title}
-        </Text>
-      </View>
-      {children}
+          mt={verticalScale(16)}
+          mb={verticalScale(10)}
+          flexDirection="row"
+          alignItems="center"
+          bg="#F9FBFF"
+          borderRadius={scale(12)}
+          ph={horizontalScale(14)}
+          pv={verticalScale(10)}
+          borderWidth={1}
+          borderColor="#E0E8F5"
+        >
+          {/* <View
+            width={4}
+            height={verticalScale(30)}
+            borderRadius={scale(10)}
+            bg="#D6E6FF"
+            mr={horizontalScale(12)}
+          /> */}
+          <Text fontSize={scale(16)} fontWeight="600" color="$blue" flex={1}>
+            {title}
+          </Text>
+          <View style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}>
+            <IcDropdown size={20} />
+          </View>
+        </View>
+      </TouchableOpacity>
+      {isExpanded && children}
     </>
   );
 };
@@ -154,8 +161,8 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
   const selectedDate = state.timeSheetDetail?.explanation_date;
   const selectedReason = state.timeSheetDetail?.explanation_reason;
   const selectedShift = state.timeSheetDetail?.explained_resource_calendar_id;
-  const workingFrom = state.timeSheetDetail?.working_from;
-  const workingTo = state.timeSheetDetail?.working_to;
+  // const workingFrom = state.timeSheetDetail?.working_from;
+  // const workingTo = state.timeSheetDetail?.working_to;
   const isCremation = selectedReason === 'cremation';
 
   const explainedCheckIn = state.timeSheetDetail?.explained_check_in;
@@ -1129,39 +1136,40 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
             }
             iconRight={<IcCalendar size={18} />}
           />
-          {/* Đã map từ API */}
           <Input
             label="Loại ngày"
             editable={false}
             isRequired
             value={detail?.day_type_label || state.timeSheetDetail?.day_type_label || 'Ngày thường'}
           />
-          {!isCremation && (
-            <>
+          <SectionHeading title="Thông tin chấm công thực tế">
+            {!isCremation && (
               <Input
                 label="Ca làm việc thực tế"
                 editable={false}
                 isRequired
                 value={actualShift || ''}
               />
-              <Input
-                label="Check-in thực tế"
-                editable={false}
-                isRequired
-                value={
-                  formatDateTime(calculateInformation?.actual_check_in) ||
-                  formatDateTime(timesheetExplanationDetail?.actual_check_in)
-                }
-              />
-              <Input
-                label="Check-out thực tế"
-                editable={false}
-                isRequired
-                value={
-                  formatDateTime(calculateInformation?.actual_check_out) ||
-                  formatDateTime(timesheetExplanationDetail?.actual_check_out)
-                }
-              />
+            )}
+            <Input
+              label="Check-in thực tế"
+              editable={false}
+              isRequired
+              value={
+                formatDateTime(calculateInformation?.actual_check_in) ||
+                formatDateTime(timesheetExplanationDetail?.actual_check_in)
+              }
+            />
+            <Input
+              label="Check-out thực tế"
+              editable={false}
+              isRequired
+              value={
+                formatDateTime(calculateInformation?.actual_check_out) ||
+                formatDateTime(timesheetExplanationDetail?.actual_check_out)
+              }
+            />
+            {!isCremation && (
               <Input
                 label="Công thực tế"
                 editable={false}
@@ -1172,39 +1180,46 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                   ''
                 }
               />
-            </>
-          )}
-          <Input
-            label="Ca làm việc ( giải trình )"
-            placeholder={'Chọn ca làm việc'}
-            editable={!isFormLocked}
-            onPress={
-              isFormLocked
-                ? undefined
-                : () => {
-                    setPickerConfig({
-                      data: workShiftList,
-                      selectedValue: state.timeSheetDetail?.explained_resource_calendar_id,
-                      title: 'Chọn ca làm việc',
-                      onSelect: (item) => {
-                        setState((prev) => ({
-                          ...prev,
-                          timeSheetDetail: {
-                            ...prev.timeSheetDetail,
-                            explained_resource_calendar_id: Number(item.key),
-                            explained_resource_calendar_name: item.value,
-                          },
-                        }));
-                      },
-                    });
-                    optionPickerRef.current?.present();
-                  }
+            )}
+          </SectionHeading>
+          <SectionHeading
+            title={
+              isCremation
+                ? 'Thông tin chấm công giải trình hoả táng'
+                : 'Thông tin chấm công giải trình'
             }
-            value={state.timeSheetDetail?.explained_resource_calendar_name}
-            isRequired
-            iconRight={<IcDropdown size={20} />}
-          />
-          {!isCremation && (
+          >
+            <Input
+              label="Ca làm việc ( giải trình )"
+              placeholder={'Chọn ca làm việc'}
+              editable={!isFormLocked}
+              onPress={
+                isFormLocked
+                  ? undefined
+                  : () => {
+                      setPickerConfig({
+                        data: workShiftList,
+                        selectedValue: state.timeSheetDetail?.explained_resource_calendar_id,
+                        title: 'Chọn ca làm việc',
+                        onSelect: (item) => {
+                          setState((prev) => ({
+                            ...prev,
+                            timeSheetDetail: {
+                              ...prev.timeSheetDetail,
+                              explained_resource_calendar_id: Number(item.key),
+                              explained_resource_calendar_name: item.value,
+                            },
+                          }));
+                        },
+                      });
+                      optionPickerRef.current?.present();
+                    }
+              }
+              value={state.timeSheetDetail?.explained_resource_calendar_name}
+              isRequired
+              iconRight={<IcDropdown size={20} />}
+            />
+            {/* {!isCremation && (
             <>
               <Input
                 label="Làm việc từ"
@@ -1219,432 +1234,438 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
                 value={formatTime(workingTo ? new Date(workingTo) : undefined)}
               />
             </>
-          )}
-          <Input
-            label="Tổng thời gian làm việc tiêu chuẩn"
-            editable={false}
-            isRequired
-            value={state.timeSheetDetail?.max_daily_work_hours?.toString() || '0'}
-          />
-
-          {isCremation ? (
-            <>
-              <Input
-                label="Check-in hoả táng"
-                placeholder="Chọn thời gian check-in hoả táng"
-                editable={!isFormLocked}
-                value={formatDateTime(cremationCheckIn)}
-                onPress={
-                  isFormLocked
-                    ? undefined
-                    : () => {
-                        setDateTimeConfig({
-                          mode: 'datetime',
-                          initialValue: cremationCheckIn ? new Date(cremationCheckIn) : undefined,
-                          title: 'Chọn thời gian check-in hoả táng',
-                          onConfirm: (date) => {
-                            setState((prev) => ({
-                              ...prev,
-                              timeSheetDetail: {
-                                ...prev.timeSheetDetail,
-                                cremation_check_in: dayjs(date).format('YYYY-MM-DD HH:mm:ss'),
-                              },
-                            }));
-                          },
-                          ...(cremationCheckIn
-                            ? {
-                                onCancel: () => {
-                                  setState((prev) => ({
-                                    ...prev,
-                                    timeSheetDetail: {
-                                      ...prev.timeSheetDetail,
-                                      cremation_check_in: formatDateTimeForOdoo2(
-                                        timesheetExplanationDetail?.cremation_check_in,
-                                      ),
-                                    },
-                                  }));
-                                },
-                              }
-                            : {}),
-                        });
-                        dateTimePickerRef.current?.present();
-                      }
-                }
-                iconRight={<IcCalendar size={18} />}
-              />
-              <Input
-                label="Check-out hoả táng"
-                placeholder="Chọn thời gian check-out hoả táng"
-                editable={!isFormLocked}
-                value={formatDateTime(cremationCheckOut)}
-                onPress={
-                  isFormLocked
-                    ? undefined
-                    : () => {
-                        setDateTimeConfig({
-                          mode: 'datetime',
-                          initialValue: cremationCheckOut ? new Date(cremationCheckOut) : undefined,
-                          title: 'Chọn thời gian check-out hoả táng',
-                          onConfirm: (date) => {
-                            setState((prev) => ({
-                              ...prev,
-                              timeSheetDetail: {
-                                ...prev.timeSheetDetail,
-                                cremation_check_out: dayjs(date).format('YYYY-MM-DD HH:mm:ss'),
-                              },
-                            }));
-                          },
-                          ...(cremationCheckOut
-                            ? {
-                                onCancel: () => {
-                                  setState((prev) => ({
-                                    ...prev,
-                                    timeSheetDetail: {
-                                      ...prev.timeSheetDetail,
-                                      cremation_check_out: formatDateTimeForOdoo2(
-                                        timesheetExplanationDetail?.cremation_check_out,
-                                      ),
-                                    },
-                                  }));
-                                },
-                              }
-                            : {}),
-                        });
-                        dateTimePickerRef.current?.present();
-                      }
-                }
-                iconRight={<IcCalendar size={18} />}
-              />
-            </>
-          ) : (
-            <>
-              <Input
-                label="Check-in ( giải trình )"
-                placeholder="Chọn thời gian check-in"
-                editable={!isFormLocked}
-                value={formatDateTime(explainedCheckIn)}
-                onPress={
-                  isFormLocked
-                    ? undefined
-                    : () => {
-                        setDateTimeConfig({
-                          mode: 'datetime',
-                          initialValue: explainedCheckIn ? new Date(explainedCheckIn) : undefined,
-                          title: 'Chọn thời gian check-in',
-                          onConfirm: (date) => {
-                            const confirmDate = dayjs(date).format('YYYY-MM-DD HH:mm:ss');
-                            setState((prev) => ({
-                              ...prev,
-                              timeSheetDetail: {
-                                ...prev.timeSheetDetail,
-                                explained_check_in: confirmDate,
-                              },
-                            }));
-                          },
-                          ...(explainedCheckIn
-                            ? {
-                                onCancel: () => {
-                                  setState((prev) => ({
-                                    ...prev,
-                                    timeSheetDetail: {
-                                      ...prev.timeSheetDetail,
-                                      explained_check_in: formatDateTimeForOdoo2(
-                                        timesheetExplanationDetail?.explained_check_in,
-                                      ),
-                                    },
-                                  }));
-                                },
-                              }
-                            : {}),
-                        });
-                        dateTimePickerRef.current?.present();
-                      }
-                }
-                iconRight={<IcCalendar size={18} />}
-              />
-              <Input
-                label="Check-out ( giải trình )"
-                placeholder="Chọn thời gian check-out"
-                editable={!isFormLocked}
-                value={formatDateTime(explainedCheckOut)}
-                onPress={
-                  isFormLocked
-                    ? undefined
-                    : () => {
-                        setDateTimeConfig({
-                          mode: 'datetime',
-                          initialValue: explainedCheckOut ? new Date(explainedCheckOut) : undefined,
-                          title: 'Chọn thời gian check-out',
-                          onConfirm: (date) => {
-                            const confirmDate = dayjs(date).format('YYYY-MM-DD HH:mm:ss');
-                            setState((prev) => ({
-                              ...prev,
-                              timeSheetDetail: {
-                                ...prev.timeSheetDetail,
-                                explained_check_out: confirmDate,
-                              },
-                            }));
-                          },
-                          ...(explainedCheckOut
-                            ? {
-                                onCancel: () => {
-                                  setState((prev) => ({
-                                    ...prev,
-                                    timeSheetDetail: {
-                                      ...prev.timeSheetDetail,
-                                      explained_check_out: formatDateTimeForOdoo2(
-                                        timesheetExplanationDetail?.explained_check_out,
-                                      ),
-                                    },
-                                  }));
-                                },
-                              }
-                            : {}),
-                        });
-                        dateTimePickerRef.current?.present();
-                      }
-                }
-                iconRight={<IcCalendar size={18} />}
-              />
-            </>
-          )}
-
-          <Input
-            label="Công giải trình"
-            editable={false}
-            value={detail?.explanation_work?.toFixed(2) || '0'}
-          />
-          {!isCremation && (
-            <>
-              <Input
-                label="Số phút đi muộn"
-                editable={false}
-                value={detail?.late_minutes?.toFixed(2) || '0'}
-              />
-              <Input
-                label="Số phút về sớm"
-                editable={false}
-                value={detail?.early_leave_minutes?.toFixed(2) || '0'}
-              />
-            </>
-          )}
-          <Input
-            label="Tăng ca lần 1"
-            placeholder="Chọn thời gian tăng ca"
-            editable={!isFormLocked}
-            value={formatTimeRange(
-              overtime1From ? new Date(overtime1From) : undefined,
-              overtime1To ? new Date(overtime1To) : undefined,
-            )}
-            iconRight={<IcCalendar size={18} />}
-            onPress={
-              isFormLocked
-                ? undefined
-                : () => {
-                    setTimeRangeConfig({
-                      initialFromValue: overtime1From ? new Date(overtime1From) : undefined,
-                      initialToValue: overtime1To ? new Date(overtime1To) : undefined,
-                      title: 'Chọn thời gian tăng ca lần 1',
-                      onConfirm: (fromDate, toDate) => {
-                        const mFromDate = dayjs(selectedDate)
-                          .set('hour', fromDate.getHours())
-                          .set('minute', fromDate.getMinutes())
-                          .format('YYYY-MM-DD HH:mm:ss');
-                        const mToDate = dayjs(selectedDate)
-                          .set('hour', toDate.getHours())
-                          .set('minute', toDate.getMinutes())
-                          .format('YYYY-MM-DD HH:mm:ss');
-                        setState((prev) => ({
-                          ...prev,
-                          timeSheetDetail: {
-                            ...prev.timeSheetDetail,
-                            overtime_first_start: mFromDate,
-                            overtime_first_end: mToDate,
-                          },
-                        }));
-                      },
-                      ...(overtime1From || overtime1To
-                        ? {
-                            onDelete: () => {
-                              setState((prev) => ({
-                                ...prev,
-                                timeSheetDetail: {
-                                  ...prev.timeSheetDetail,
-                                  overtime_first_start: formatDateTimeForOdoo2(
-                                    timesheetExplanationDetail?.overtime_first_start,
-                                  ),
-                                  overtime_first_end: formatDateTimeForOdoo2(
-                                    timesheetExplanationDetail?.overtime_first_end,
-                                  ),
-                                },
-                              }));
-                            },
-                          }
-                        : {}),
-                    });
-                    timeRangePickerRef.current?.present();
-                  }
-            }
-          />
-          <Input
-            label="Tăng ca lần 2"
-            placeholder="Chọn thời gian tăng ca"
-            editable={!isFormLocked}
-            value={formatTimeRange(
-              overtime2From ? new Date(overtime2From) : undefined,
-              overtime2To ? new Date(overtime2To) : undefined,
-            )}
-            iconRight={<IcCalendar size={18} />}
-            onPress={
-              isFormLocked
-                ? undefined
-                : () => {
-                    setTimeRangeConfig({
-                      initialFromValue: overtime2From ? new Date(overtime2From) : undefined,
-                      initialToValue: overtime2To ? new Date(overtime2To) : undefined,
-                      title: 'Chọn thời gian tăng ca lần 2',
-                      onConfirm: (fromDate, toDate) => {
-                        const mFromDate = dayjs(selectedDate)
-                          .set('hour', fromDate.getHours())
-                          .set('minute', fromDate.getMinutes())
-                          .format('YYYY-MM-DD HH:mm:ss');
-                        const mToDate = dayjs(selectedDate)
-                          .set('hour', toDate.getHours())
-                          .set('minute', toDate.getMinutes())
-                          .format('YYYY-MM-DD HH:mm:ss');
-                        setState((prev) => ({
-                          ...prev,
-                          timeSheetDetail: {
-                            ...prev.timeSheetDetail,
-                            overtime_second_start: mFromDate,
-                            overtime_second_end: mToDate,
-                          },
-                        }));
-                      },
-                      ...(overtime2From || overtime2To
-                        ? {
-                            onDelete: () => {
-                              setState((prev) => ({
-                                ...prev,
-                                timeSheetDetail: {
-                                  ...prev.timeSheetDetail,
-                                  overtime_second_start: formatDateTimeForOdoo2(
-                                    timesheetExplanationDetail?.overtime_second_start,
-                                  ),
-                                  overtime_second_end: formatDateTimeForOdoo2(
-                                    timesheetExplanationDetail?.overtime_second_end,
-                                  ),
-                                },
-                              }));
-                            },
-                          }
-                        : {}),
-                    });
-                    timeRangePickerRef.current?.present();
-                  }
-            }
-          />
-          <Input
-            label="Tăng ca lần 3"
-            placeholder="Chọn thời gian tăng ca"
-            editable={!isFormLocked}
-            value={formatTimeRange(
-              overtime3From ? new Date(overtime3From) : undefined,
-              overtime3To ? new Date(overtime3To) : undefined,
-            )}
-            iconRight={<IcCalendar size={18} />}
-            onPress={
-              isFormLocked
-                ? undefined
-                : () => {
-                    setTimeRangeConfig({
-                      initialFromValue: overtime3From ? new Date(overtime3From) : undefined,
-                      initialToValue: overtime3To ? new Date(overtime3To) : undefined,
-                      title: 'Chọn thời gian tăng ca lần 3',
-                      onConfirm: (fromDate, toDate) => {
-                        const mFromDate = dayjs(selectedDate)
-                          .set('hour', fromDate.getHours())
-                          .set('minute', fromDate.getMinutes())
-                          .format('YYYY-MM-DD HH:mm:ss');
-                        const mToDate = dayjs(selectedDate)
-                          .set('hour', toDate.getHours())
-                          .set('minute', toDate.getMinutes())
-                          .format('YYYY-MM-DD HH:mm:ss');
-                        setState((prev) => ({
-                          ...prev,
-                          timeSheetDetail: {
-                            ...prev.timeSheetDetail,
-                            overtime_three_start: mFromDate,
-                            overtime_three_end: mToDate,
-                          },
-                        }));
-                      },
-                      ...(overtime3From || overtime3To
-                        ? {
-                            onDelete: () => {
-                              setState((prev) => ({
-                                ...prev,
-                                timeSheetDetail: {
-                                  ...prev.timeSheetDetail,
-                                  overtime_three_start: formatDateTimeForOdoo2(
-                                    timesheetExplanationDetail?.overtime_three_start,
-                                  ),
-                                  overtime_three_end: formatDateTimeForOdoo2(
-                                    timesheetExplanationDetail?.overtime_three_end,
-                                  ),
-                                },
-                              }));
-                            },
-                          }
-                        : {}),
-                    });
-                    timeRangePickerRef.current?.present();
-                  }
-            }
-          />
-          {isCremation ? (
+          )} */}
             <Input
-              label="Số giờ nghỉ giữa ca hoả táng"
+              label="Tổng thời gian làm việc tiêu chuẩn"
+              editable={false}
+              isRequired
+              value={state.timeSheetDetail?.max_daily_work_hours?.toString() || '0'}
+            />
+
+            {isCremation ? (
+              <>
+                <Input
+                  label="Check-in hoả táng"
+                  placeholder="Chọn thời gian check-in hoả táng"
+                  editable={!isFormLocked}
+                  value={formatDateTime(cremationCheckIn)}
+                  onPress={
+                    isFormLocked
+                      ? undefined
+                      : () => {
+                          setDateTimeConfig({
+                            mode: 'datetime',
+                            initialValue: cremationCheckIn ? new Date(cremationCheckIn) : undefined,
+                            title: 'Chọn thời gian check-in hoả táng',
+                            onConfirm: (date) => {
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  cremation_check_in: dayjs(date).format('YYYY-MM-DD HH:mm:ss'),
+                                },
+                              }));
+                            },
+                            ...(cremationCheckIn
+                              ? {
+                                  onCancel: () => {
+                                    setState((prev) => ({
+                                      ...prev,
+                                      timeSheetDetail: {
+                                        ...prev.timeSheetDetail,
+                                        cremation_check_in: formatDateTimeForOdoo2(
+                                          timesheetExplanationDetail?.cremation_check_in,
+                                        ),
+                                      },
+                                    }));
+                                  },
+                                }
+                              : {}),
+                          });
+                          dateTimePickerRef.current?.present();
+                        }
+                  }
+                  iconRight={<IcCalendar size={18} />}
+                />
+                <Input
+                  label="Check-out hoả táng"
+                  placeholder="Chọn thời gian check-out hoả táng"
+                  editable={!isFormLocked}
+                  value={formatDateTime(cremationCheckOut)}
+                  onPress={
+                    isFormLocked
+                      ? undefined
+                      : () => {
+                          setDateTimeConfig({
+                            mode: 'datetime',
+                            initialValue: cremationCheckOut
+                              ? new Date(cremationCheckOut)
+                              : undefined,
+                            title: 'Chọn thời gian check-out hoả táng',
+                            onConfirm: (date) => {
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  cremation_check_out: dayjs(date).format('YYYY-MM-DD HH:mm:ss'),
+                                },
+                              }));
+                            },
+                            ...(cremationCheckOut
+                              ? {
+                                  onCancel: () => {
+                                    setState((prev) => ({
+                                      ...prev,
+                                      timeSheetDetail: {
+                                        ...prev.timeSheetDetail,
+                                        cremation_check_out: formatDateTimeForOdoo2(
+                                          timesheetExplanationDetail?.cremation_check_out,
+                                        ),
+                                      },
+                                    }));
+                                  },
+                                }
+                              : {}),
+                          });
+                          dateTimePickerRef.current?.present();
+                        }
+                  }
+                  iconRight={<IcCalendar size={18} />}
+                />
+              </>
+            ) : (
+              <>
+                <Input
+                  label="Check-in ( giải trình )"
+                  placeholder="Chọn thời gian check-in"
+                  editable={!isFormLocked}
+                  value={formatDateTime(explainedCheckIn)}
+                  onPress={
+                    isFormLocked
+                      ? undefined
+                      : () => {
+                          setDateTimeConfig({
+                            mode: 'datetime',
+                            initialValue: explainedCheckIn ? new Date(explainedCheckIn) : undefined,
+                            title: 'Chọn thời gian check-in',
+                            onConfirm: (date) => {
+                              const confirmDate = dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  explained_check_in: confirmDate,
+                                },
+                              }));
+                            },
+                            ...(explainedCheckIn
+                              ? {
+                                  onCancel: () => {
+                                    setState((prev) => ({
+                                      ...prev,
+                                      timeSheetDetail: {
+                                        ...prev.timeSheetDetail,
+                                        explained_check_in: formatDateTimeForOdoo2(
+                                          timesheetExplanationDetail?.explained_check_in,
+                                        ),
+                                      },
+                                    }));
+                                  },
+                                }
+                              : {}),
+                          });
+                          dateTimePickerRef.current?.present();
+                        }
+                  }
+                  iconRight={<IcCalendar size={18} />}
+                />
+                <Input
+                  label="Check-out ( giải trình )"
+                  placeholder="Chọn thời gian check-out"
+                  editable={!isFormLocked}
+                  value={formatDateTime(explainedCheckOut)}
+                  onPress={
+                    isFormLocked
+                      ? undefined
+                      : () => {
+                          setDateTimeConfig({
+                            mode: 'datetime',
+                            initialValue: explainedCheckOut
+                              ? new Date(explainedCheckOut)
+                              : undefined,
+                            title: 'Chọn thời gian check-out',
+                            onConfirm: (date) => {
+                              const confirmDate = dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+                              setState((prev) => ({
+                                ...prev,
+                                timeSheetDetail: {
+                                  ...prev.timeSheetDetail,
+                                  explained_check_out: confirmDate,
+                                },
+                              }));
+                            },
+                            ...(explainedCheckOut
+                              ? {
+                                  onCancel: () => {
+                                    setState((prev) => ({
+                                      ...prev,
+                                      timeSheetDetail: {
+                                        ...prev.timeSheetDetail,
+                                        explained_check_out: formatDateTimeForOdoo2(
+                                          timesheetExplanationDetail?.explained_check_out,
+                                        ),
+                                      },
+                                    }));
+                                  },
+                                }
+                              : {}),
+                          });
+                          dateTimePickerRef.current?.present();
+                        }
+                  }
+                  iconRight={<IcCalendar size={18} />}
+                />
+              </>
+            )}
+
+            <Input
+              label="Công giải trình"
+              editable={false}
+              value={detail?.explanation_work?.toFixed(2) || '0'}
+            />
+            {!isCremation && (
+              <>
+                <Input
+                  label="Số phút đi muộn"
+                  editable={false}
+                  value={detail?.late_minutes?.toFixed(2) || '0'}
+                />
+                <Input
+                  label="Số phút về sớm"
+                  editable={false}
+                  value={detail?.early_leave_minutes?.toFixed(2) || '0'}
+                />
+              </>
+            )}
+          </SectionHeading>
+          <SectionHeading title="Thông tin tăng ca">
+            <Input
+              label="Tăng ca lần 1"
+              placeholder="Chọn thời gian tăng ca"
               editable={!isFormLocked}
-              value={cremationHoursOfBreak?.toString()}
-              onChangeText={
+              value={formatTimeRange(
+                overtime1From ? new Date(overtime1From) : undefined,
+                overtime1To ? new Date(overtime1To) : undefined,
+              )}
+              iconRight={<IcCalendar size={18} />}
+              onPress={
                 isFormLocked
                   ? undefined
-                  : (text) => {
-                      setState((prev) => ({
-                        ...prev,
-                        timeSheetDetail: {
-                          ...prev.timeSheetDetail,
-                          cremation_hours_of_break: cleanNumberString(text),
+                  : () => {
+                      setTimeRangeConfig({
+                        initialFromValue: overtime1From ? new Date(overtime1From) : undefined,
+                        initialToValue: overtime1To ? new Date(overtime1To) : undefined,
+                        title: 'Chọn thời gian tăng ca lần 1',
+                        onConfirm: (fromDate, toDate) => {
+                          const mFromDate = dayjs(selectedDate)
+                            .set('hour', fromDate.getHours())
+                            .set('minute', fromDate.getMinutes())
+                            .format('YYYY-MM-DD HH:mm:ss');
+                          const mToDate = dayjs(selectedDate)
+                            .set('hour', toDate.getHours())
+                            .set('minute', toDate.getMinutes())
+                            .format('YYYY-MM-DD HH:mm:ss');
+                          setState((prev) => ({
+                            ...prev,
+                            timeSheetDetail: {
+                              ...prev.timeSheetDetail,
+                              overtime_first_start: mFromDate,
+                              overtime_first_end: mToDate,
+                            },
+                          }));
                         },
-                      }));
+                        ...(overtime1From || overtime1To
+                          ? {
+                              onDelete: () => {
+                                setState((prev) => ({
+                                  ...prev,
+                                  timeSheetDetail: {
+                                    ...prev.timeSheetDetail,
+                                    overtime_first_start: formatDateTimeForOdoo2(
+                                      timesheetExplanationDetail?.overtime_first_start,
+                                    ),
+                                    overtime_first_end: formatDateTimeForOdoo2(
+                                      timesheetExplanationDetail?.overtime_first_end,
+                                    ),
+                                  },
+                                }));
+                              },
+                            }
+                          : {}),
+                      });
+                      timeRangePickerRef.current?.present();
                     }
               }
-              keyboardType="numeric"
             />
-          ) : (
             <Input
-              label="Số giờ nghỉ giữa ca"
+              label="Tăng ca lần 2"
+              placeholder="Chọn thời gian tăng ca"
               editable={!isFormLocked}
-              value={hours_of_break?.toString()}
-              onChangeText={
+              value={formatTimeRange(
+                overtime2From ? new Date(overtime2From) : undefined,
+                overtime2To ? new Date(overtime2To) : undefined,
+              )}
+              iconRight={<IcCalendar size={18} />}
+              onPress={
                 isFormLocked
                   ? undefined
-                  : (text) => {
-                      setState((prev) => ({
-                        ...prev,
-                        timeSheetDetail: {
-                          ...prev.timeSheetDetail,
-                          autoFillHoursOfBreak: false,
-                          hours_of_break: cleanNumberString(text),
+                  : () => {
+                      setTimeRangeConfig({
+                        initialFromValue: overtime2From ? new Date(overtime2From) : undefined,
+                        initialToValue: overtime2To ? new Date(overtime2To) : undefined,
+                        title: 'Chọn thời gian tăng ca lần 2',
+                        onConfirm: (fromDate, toDate) => {
+                          const mFromDate = dayjs(selectedDate)
+                            .set('hour', fromDate.getHours())
+                            .set('minute', fromDate.getMinutes())
+                            .format('YYYY-MM-DD HH:mm:ss');
+                          const mToDate = dayjs(selectedDate)
+                            .set('hour', toDate.getHours())
+                            .set('minute', toDate.getMinutes())
+                            .format('YYYY-MM-DD HH:mm:ss');
+                          setState((prev) => ({
+                            ...prev,
+                            timeSheetDetail: {
+                              ...prev.timeSheetDetail,
+                              overtime_second_start: mFromDate,
+                              overtime_second_end: mToDate,
+                            },
+                          }));
                         },
-                      }));
+                        ...(overtime2From || overtime2To
+                          ? {
+                              onDelete: () => {
+                                setState((prev) => ({
+                                  ...prev,
+                                  timeSheetDetail: {
+                                    ...prev.timeSheetDetail,
+                                    overtime_second_start: formatDateTimeForOdoo2(
+                                      timesheetExplanationDetail?.overtime_second_start,
+                                    ),
+                                    overtime_second_end: formatDateTimeForOdoo2(
+                                      timesheetExplanationDetail?.overtime_second_end,
+                                    ),
+                                  },
+                                }));
+                              },
+                            }
+                          : {}),
+                      });
+                      timeRangePickerRef.current?.present();
                     }
               }
-              keyboardType="numeric"
             />
-          )}
-          {/* <Input
+            <Input
+              label="Tăng ca lần 3"
+              placeholder="Chọn thời gian tăng ca"
+              editable={!isFormLocked}
+              value={formatTimeRange(
+                overtime3From ? new Date(overtime3From) : undefined,
+                overtime3To ? new Date(overtime3To) : undefined,
+              )}
+              iconRight={<IcCalendar size={18} />}
+              onPress={
+                isFormLocked
+                  ? undefined
+                  : () => {
+                      setTimeRangeConfig({
+                        initialFromValue: overtime3From ? new Date(overtime3From) : undefined,
+                        initialToValue: overtime3To ? new Date(overtime3To) : undefined,
+                        title: 'Chọn thời gian tăng ca lần 3',
+                        onConfirm: (fromDate, toDate) => {
+                          const mFromDate = dayjs(selectedDate)
+                            .set('hour', fromDate.getHours())
+                            .set('minute', fromDate.getMinutes())
+                            .format('YYYY-MM-DD HH:mm:ss');
+                          const mToDate = dayjs(selectedDate)
+                            .set('hour', toDate.getHours())
+                            .set('minute', toDate.getMinutes())
+                            .format('YYYY-MM-DD HH:mm:ss');
+                          setState((prev) => ({
+                            ...prev,
+                            timeSheetDetail: {
+                              ...prev.timeSheetDetail,
+                              overtime_three_start: mFromDate,
+                              overtime_three_end: mToDate,
+                            },
+                          }));
+                        },
+                        ...(overtime3From || overtime3To
+                          ? {
+                              onDelete: () => {
+                                setState((prev) => ({
+                                  ...prev,
+                                  timeSheetDetail: {
+                                    ...prev.timeSheetDetail,
+                                    overtime_three_start: formatDateTimeForOdoo2(
+                                      timesheetExplanationDetail?.overtime_three_start,
+                                    ),
+                                    overtime_three_end: formatDateTimeForOdoo2(
+                                      timesheetExplanationDetail?.overtime_three_end,
+                                    ),
+                                  },
+                                }));
+                              },
+                            }
+                          : {}),
+                      });
+                      timeRangePickerRef.current?.present();
+                    }
+              }
+            />
+            {isCremation ? (
+              <Input
+                label="Số giờ nghỉ giữa ca hoả táng"
+                editable={!isFormLocked}
+                value={cremationHoursOfBreak?.toString()}
+                onChangeText={
+                  isFormLocked
+                    ? undefined
+                    : (text) => {
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            cremation_hours_of_break: cleanNumberString(text),
+                          },
+                        }));
+                      }
+                }
+                keyboardType="numeric"
+              />
+            ) : (
+              <Input
+                label="Số giờ nghỉ giữa ca"
+                editable={!isFormLocked}
+                value={hours_of_break?.toString()}
+                onChangeText={
+                  isFormLocked
+                    ? undefined
+                    : (text) => {
+                        setState((prev) => ({
+                          ...prev,
+                          timeSheetDetail: {
+                            ...prev.timeSheetDetail,
+                            autoFillHoursOfBreak: false,
+                            hours_of_break: cleanNumberString(text),
+                          },
+                        }));
+                      }
+                }
+                keyboardType="numeric"
+              />
+            )}
+            {/* <Input
             label="Hệ số"
             editable={!isFormLocked}
             value={detail?.coefficient?.toString()}
@@ -1664,31 +1685,32 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
             }
             keyboardType="numeric"
           /> */}
-          <Input
-            label="Giờ tăng ca"
-            editable={false}
-            value={detail?.overtime_hours?.toFixed(2) || '0'}
-          />
-          <Input
-            label="Giờ tăng ca quy đổi"
-            editable={false}
-            value={detail?.overtime_hours_convert?.toFixed(2) || '0'}
-          />
-          {/* <Input
+            <Input
+              label="Giờ tăng ca"
+              editable={false}
+              value={detail?.overtime_hours?.toFixed(2) || '0'}
+            />
+            <Input
+              label="Giờ tăng ca quy đổi"
+              editable={false}
+              value={detail?.overtime_hours_convert?.toFixed(2) || '0'}
+            />
+            {/* <Input
               label="Số giờ nghỉ bù"
               editable={false}
               value={detail?.timeoff_hours?.toFixed(2) || '0'}
             /> */}
-          <Input
-            label="Công ngày thường"
-            editable={false}
-            value={detail?.allocated_buffer_hours?.toFixed(2) || '0'}
-          />
-          <Input
-            label="Số phút tăng ca tối thiểu"
-            editable={false}
-            value={detail?.salary_hours?.toFixed(2) || '0'}
-          />
+            <Input
+              label="Công ngày thường"
+              editable={false}
+              value={detail?.allocated_buffer_hours?.toFixed(2) || '0'}
+            />
+            <Input
+              label="Số phút tăng ca tối thiểu"
+              editable={false}
+              value={detail?.salary_hours?.toFixed(2) || '0'}
+            />
+          </SectionHeading>
           {detail?.id && (
             <Input label="Lý do huỷ" editable={false} value={detail?.reject_reason || '--'} />
           )}

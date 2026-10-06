@@ -15,6 +15,8 @@
 		67903938D0BEAC86D81DA5C7 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08F72A61F75E7467D0A25A6B /* ExpoModulesProvider.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		896DC3615EF0A70B82320CFE /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FDB9B42EF3D3208DA9C89A /* ExpoModulesProvider.swift */; };
+		E53939CC307486DC00EF438B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E53939CB307486DC00EF438B /* SceneDelegate.swift */; };
+		E53939CD307486DC00EF438B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E53939CB307486DC00EF438B /* SceneDelegate.swift */; };
 		E546FF102FD7C2D3006B23AC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E546FF0F2FD7C2D3006B23AC /* GoogleService-Info.plist */; };
 		E57EE5D93006356B006748E2 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = E57EE5D83006356A006748E2 /* Expo.plist */; };
 		FAFA0EA565A22A6F28F6AD08 /* libPods-ALPHRM-ALPHRMTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BD2A2DDDD9CB6044FB5DCBE /* libPods-ALPHRM-ALPHRMTests.a */; };
@@ -53,6 +55,7 @@
 		CFGDBG01ALPHRMCONFIG000001 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		CFGDEV01ALPHRMCONFIG000002 /* ReleaseDev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ReleaseDev.xcconfig; sourceTree = "<group>"; };
 		CFGREL01ALPHRMCONFIG000003 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		E53939CB307486DC00EF438B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		E546FF0F2FD7C2D3006B23AC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		E57EE5D83006356A006748E2 /* Expo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -99,6 +102,7 @@
 		13B07FAE1A68108700A75B9A /* ALPHRM */ = {
 			isa = PBXGroup;
 			children = (
+				E53939CB307486DC00EF438B /* SceneDelegate.swift */,
 				E57EE5D83006356A006748E2 /* Expo.plist */,
 				728E009E2F3AFF81003AE2F5 /* ALPHRM.entitlements */,
 				13B07FB01A68108700A75B9A /* AppDelegate.swift */,
@@ -534,6 +538,7 @@
 			files = (
 				00E356F31AD99517003FC87E /* ALPHRMTests.m in Sources */,
 				896DC3615EF0A70B82320CFE /* ExpoModulesProvider.swift in Sources */,
+				E53939CC307486DC00EF438B /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -543,6 +548,7 @@
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.swift in Sources */,
 				67903938D0BEAC86D81DA5C7 /* ExpoModulesProvider.swift in Sources */,
+				E53939CD307486DC00EF438B /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -621,7 +627,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALPHRM/ALPHRM.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 38;
 				DEVELOPMENT_TEAM = 6T6876L2G4;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = ALPHRM/Info.plist;
@@ -629,7 +635,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = "$(IOS_VERSION_NAME)";
+				MARKETING_VERSION = 2.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -654,14 +660,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ALPHRM/ALPHRM.entitlements;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 38;
 				DEVELOPMENT_TEAM = 6T6876L2G4;
 				INFOPLIST_FILE = ALPHRM/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = "$(IOS_VERSION_NAME)";
+				MARKETING_VERSION = 2.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -840,14 +846,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ALPHRM/ALPHRM.entitlements;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 38;
 				DEVELOPMENT_TEAM = 6T6876L2G4;
 				INFOPLIST_FILE = ALPHRM/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = "$(IOS_VERSION_NAME)";
+				MARKETING_VERSION = 2.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

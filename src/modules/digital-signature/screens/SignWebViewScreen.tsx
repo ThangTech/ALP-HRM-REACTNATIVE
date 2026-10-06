@@ -7,8 +7,10 @@ import Header from 'components/Header';
 import { useRoute } from '@react-navigation/native';
 import { goBack } from 'navigators';
 import { scale } from 'utils';
+import { useSafeArea } from 'hooks';
 
 const SignWebViewScreen = () => {
+  const safeArea = useSafeArea();
   const route = useRoute();
   const { sign_url, title } = (route.params as { sign_url?: string; title?: string }) || {};
 
@@ -17,7 +19,9 @@ const SignWebViewScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  const hasValidUrl = !!sign_url && sign_url.trim() !== '';
+  // Normalize http → https để tránh 301 redirect gây onError trong WebView
+  const normalizedUrl = sign_url?.replace(/^http:\/\//i, 'https://') ?? '';
+  const hasValidUrl = !!normalizedUrl.trim();
 
   const handleBackPress = useCallback(() => {
     canGoBack && webViewRef.current ? webViewRef.current.goBack() : goBack();
@@ -30,14 +34,14 @@ const SignWebViewScreen = () => {
   }, [handleBackPress]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pb={safeArea.bottom}>
       <Header title={title} onPressLeft={handleBackPress} />
 
       {hasValidUrl ? (
         <View style={styles.webViewContainer}>
           <WebView
             ref={webViewRef}
-            source={{ uri: sign_url }}
+            source={{ uri: normalizedUrl }}
             style={styles.webView}
             onNavigationStateChange={(navState) => setCanGoBack(navState.canGoBack)}
             onLoadStart={() => {
