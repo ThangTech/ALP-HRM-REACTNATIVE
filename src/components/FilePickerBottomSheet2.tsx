@@ -7,7 +7,7 @@ import { View } from 'tamagui';
 import { verticalScale } from 'utils';
 
 interface FilePickerBottomSheet2Props {
-  bottomSheetRef: RefObject<BottomSheetModal>;
+  bottomSheetRef: RefObject<BottomSheetModal | null>;
   onSelectImage: () => void;
   onSelectDocument: () => void;
   onSelectVideo?: () => void;

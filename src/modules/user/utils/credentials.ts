@@ -5,7 +5,7 @@ const KEYCHAIN_LOGIN_CREDENTIALS = 'login.credentials';
 export async function saveCredentials(username: string, password: string) {
   return Keychain.setGenericPassword(username, password, {
     service: KEYCHAIN_LOGIN_CREDENTIALS,
-    storage: Keychain.STORAGE_TYPE.FB,
+    storage: Keychain.STORAGE_TYPE.AES_GCM, // .FB not exists in new versions 
   }).catch((e) => {
     console.error('KC: save credentials', e);
   });

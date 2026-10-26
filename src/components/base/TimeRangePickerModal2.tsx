@@ -8,7 +8,7 @@ import DatePicker from 'react-native-date-picker';
 import SmartBackdrop from './SmartBackdrop';
 
 interface TimeRangePickerModal2Props {
-  bottomSheetRef: RefObject<BottomSheetModal>;
+  bottomSheetRef: RefObject<BottomSheetModal | null>;
   initialFromValue?: Date;
   initialToValue?: Date;
   onConfirm: (fromDate: Date, toDate: Date) => void;
