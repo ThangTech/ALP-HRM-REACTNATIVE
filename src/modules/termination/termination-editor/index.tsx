@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { TerminationEditorProvider, useTerminationEditorProvider } from './provider';
 import { ScrollView, View, getTokens } from 'tamagui';
 import { Button, Header, Input, OptionItem, Text } from 'components';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import { scale } from 'utils';
 import DatePicker from 'modules/leave-registration/list/components/DatePicker';
 import OptionPicker from 'modules/leave-registration/list/components/OptionPicker';
@@ -51,7 +51,7 @@ function ViewPage() {
                 {block.key}
               </Text>
               <View f={2} fd={'row'} justifyContent="flex-end">
-                <Text fontW={500} style={{ flexShrink: 1 }}>
+                <Text fontW={500} style={styles.textFlexShink}>
                   {block.value}
                 </Text>
               </View>
@@ -150,3 +150,9 @@ function ViewPage() {
 }
 
 export default TerminationEditorPage;
+
+const styles = StyleSheet.create({
+  textFlexShink: {
+    flexShrink: 1,
+  },
+});

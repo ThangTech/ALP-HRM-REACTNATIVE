@@ -8,6 +8,7 @@ import Divider from '../components/divider';
 import DatePicker from 'modules/leave-registration/list/components/DatePicker';
 import IcRightArrow from 'assets/svgs/IcRightArrow';
 import ReportBlock from '../components/report-block';
+import { StyleSheet } from 'react-native';
 
 function LeaveReportDetailPage() {
   return (
@@ -54,7 +55,7 @@ function ViewPage() {
           >
             <View fd={'row'}>
               <Text f={1}>Ngày phép năm</Text>
-              <View style={{ rotate: '-90deg', height: scale(24) }}>
+              <View style={styles.arrowContainer}>
                 <IcRightArrow size={scale(10)} />
               </View>
             </View>
@@ -78,3 +79,10 @@ function ViewPage() {
 }
 
 export default LeaveReportDetailPage;
+
+const styles = StyleSheet.create({
+  arrowContainer: {
+    transform: [{ rotate: '-90deg' }],
+    height: scale(24),
+  },
+});

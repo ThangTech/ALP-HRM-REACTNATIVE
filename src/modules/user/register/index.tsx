@@ -53,7 +53,7 @@ function ViewPage() {
             fontWeight="600"
             textAlign="center"
             lineHeight={scale(45)}
-            style={{ fontFamily: 'Lexend' }}
+            style={styles.fontLexend}
           >
             An Lộc Phát
           </Text>
@@ -102,7 +102,7 @@ function ViewPage() {
           fontWeight="600"
           color={'$red500'}
           lineHeight={scale(45)}
-          style={{ fontFamily: 'Lexend' }}
+          style={styles.fontLexend}
         >
           Đăng ký
         </Text>
@@ -196,6 +196,9 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: getTokens().color.$white.val,
+  },
+  fontLexend: {
+    fontFamily: 'Lexend',
   },
 });
 

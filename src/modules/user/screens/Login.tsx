@@ -26,12 +26,7 @@ const SubmitButton = ({ loading, onPress }: { loading: boolean; onPress: () => v
   const isValid = !!(username && password && password.length >= 6);
 
   return (
-    <Button
-      onPress={onPress}
-      loading={loading}
-      disabled={!isValid}
-      style={[styles.btn, { backgroundColor: '#EF4444' }]}
-    >
+    <Button onPress={onPress} loading={loading} disabled={!isValid} style={styles.btn}>
       <Button.Text>Đăng nhập</Button.Text>
     </Button>
   );
@@ -94,7 +89,7 @@ const Login = () => {
           fontWeight="600"
           textAlign="center"
           lineHeight={scale(45)}
-          style={{ fontFamily: 'Lexend' }}
+          style={styles.fontLexend}
         >
           An Lộc Phát
         </Text>
@@ -117,7 +112,7 @@ const Login = () => {
           fontWeight="600"
           color={'#EF4444'}
           lineHeight={scale(45)}
-          style={{ fontFamily: 'Lexend' }}
+          style={styles.fontLexend}
         >
           Đăng nhập
         </Text>
@@ -169,10 +164,7 @@ const Login = () => {
             mt={scale(4)}
             paddingLeft={scale(4)}
           >
-            <Pressable
-              onPress={() => setRememberMe(!rememberMe)}
-              style={{ flexDirection: 'row', alignItems: 'center' }}
-            >
+            <Pressable onPress={() => setRememberMe(!rememberMe)} style={styles.rowCenter}>
               {rememberMe ? (
                 <IcCheckbox width={scale(14)} height={scale(14)} tintColor="#EF4444" />
               ) : (
@@ -208,6 +200,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(16),
     height: verticalScale(48),
     borderWidth: 0,
+    backgroundColor: '#EF4444',
   },
   btnRegister: {
     backgroundColor: 'transparent',
@@ -216,6 +209,13 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: 'white',
+  },
+  fontLexend: {
+    fontFamily: 'Lexend',
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 export default Login;

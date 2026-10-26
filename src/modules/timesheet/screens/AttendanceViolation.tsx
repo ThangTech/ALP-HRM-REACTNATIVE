@@ -83,21 +83,21 @@ const EmployeeViolationItem = ({
         </Text>
         <View style={styles.violationBadgeRow}>
           {item.total_late > 0 && (
-            <View style={[styles.violationBadge, { backgroundColor: '#FFECEC' }]}>
+            <View style={styles.violationBadge} bg="#FFECEC">
               <Text fontSize={scale(12)} color="#92400E">
                 Đi muộn: {item.total_late}
               </Text>
             </View>
           )}
           {item.total_early > 0 && (
-            <View style={[styles.violationBadge, { backgroundColor: '#FFF4DB' }]}>
+            <View style={styles.violationBadge} bg="#FFF4DB">
               <Text fontSize={scale(12)} color="#816116ff">
                 Về sớm: {item.total_early}
               </Text>
             </View>
           )}
           {item.total_missing > 0 && (
-            <View style={[styles.violationBadge, { backgroundColor: '#D1E3FF' }]}>
+            <View style={styles.violationBadge} bg="#D1E3FF">
               <Text fontSize={scale(12)} color="#5B21B6">
                 Quên chấm: {item.total_missing}
               </Text>
@@ -342,19 +342,7 @@ const AttendanceViolation = () => {
 
   const renderListHeader = () => {
     return (
-      <TouchableOpacity
-        activeOpacity={1}
-        style={{
-          gap: scale(12),
-          paddingBottom:
-            (selectedIds.length > 0 || activeTab === 'manager') &&
-            !isLoadingViolationList &&
-            !violationListAccessError &&
-            filteredEmployees.length > 0
-              ? 0
-              : 0,
-        }}
-      >
+      <TouchableOpacity activeOpacity={1} style={styles.headerContainer}>
         {renderMonthPicker()}
         {renderTabsAndDropdown()}
 
@@ -405,18 +393,7 @@ const AttendanceViolation = () => {
               (selectedIds.length > 0 || activeTab === 'manager') &&
               !violationListAccessError &&
               filteredEmployees.length > 0 && (
-                <View
-                  style={[
-                    {
-                      backgroundColor: '#FFFFFF',
-                      padding: scale(16),
-                      paddingBottom: 0,
-                      borderTopLeftRadius: scale(16),
-                      borderTopRightRadius: scale(16),
-                      marginTop: scale(12),
-                    },
-                  ]}
-                >
+                <View style={styles.violationListHeader}>
                   <Text fontSize={scale(14)} fontW="700" color="$black">
                     Danh sách vi phạm ({filteredEmployees.length})
                   </Text>
@@ -432,17 +409,7 @@ const AttendanceViolation = () => {
     ({ item, index }) => {
       const isLast = index === filteredEmployees.length - 1;
       return (
-        <View
-          style={[
-            { backgroundColor: '#FFFFFF', paddingHorizontal: scale(16) },
-            isLast && {
-              paddingBottom: scale(16),
-              borderBottomLeftRadius: scale(16),
-              borderBottomRightRadius: scale(16),
-              marginBottom: scale(4),
-            },
-          ]}
-        >
+        <View style={[styles.itemContainer, isLast && styles.lastItemContainer]}>
           <EmployeeViolationItem item={item} onPress={() => handleNavigateDetail(item)} />
         </View>
       );
@@ -474,7 +441,7 @@ const AttendanceViolation = () => {
   };
 
   return (
-    <Screen scrollEnabled={false} style={{ flex: 1 }}>
+    <Screen scrollEnabled={false} style={styles.flex1}>
       {renderHeader()}
 
       {renderBody()}
@@ -629,6 +596,31 @@ const styles = StyleSheet.create({
   },
   emptyHint: {
     paddingVertical: scale(24),
+  },
+  itemContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: scale(16),
+  },
+  lastItemContainer: {
+    paddingBottom: scale(16),
+    borderBottomLeftRadius: scale(16),
+    borderBottomRightRadius: scale(16),
+    marginBottom: scale(4),
+  },
+  headerContainer: {
+    gap: scale(12),
+    paddingBottom: 0,
+  },
+  violationListHeader: {
+    backgroundColor: '#FFFFFF',
+    padding: scale(16),
+    paddingBottom: 0,
+    borderTopLeftRadius: scale(16),
+    borderTopRightRadius: scale(16),
+    marginTop: scale(12),
+  },
+  flex1: {
+    flex: 1,
   },
 });
 

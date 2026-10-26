@@ -107,7 +107,9 @@ const TranslatedButtonText = ({
   return (
     <ButtonText
       variant={variant}
-      style={[{ fontSize: scale(fontSize), fontWeight }, disabled && { color: '#A3A3A3' }]}
+      fontSize={scale(fontSize)}
+      fontWeight={fontWeight}
+      color={disabled ? '#A3A3A3' : undefined}
     >
       {t(children)}
     </ButtonText>

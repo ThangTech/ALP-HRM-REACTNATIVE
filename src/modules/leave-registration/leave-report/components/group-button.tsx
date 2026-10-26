@@ -16,7 +16,7 @@ const GroupButton = (props: GroupButtonType) => {
   return (
     <View br={scale(16)} overflow="hidden" bw={1} bc={'$secondary'}>
       {props.buttons.map((button, index) => {
-        const isActivated = props.value == button.key;
+        const isActivated = props.value === button.key;
         return (
           <Button
             variant="secondary"

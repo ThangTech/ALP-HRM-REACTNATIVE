@@ -129,7 +129,7 @@ const SignRequestListScreen = () => {
                 <IcFilter size={scale(28)} />
               </TouchableOpacity>
               <Input
-                containerStyle={{ flex: 1, marginLeft: horizontalScale(12) }}
+                containerStyle={styles.containerInput}
                 placeholder="Tìm kiếm..."
                 value={searchText}
                 onChangeText={setSearchText}
@@ -208,5 +208,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: getTokens().color.white.val,
+  },
+  containerInput: {
+    flex: 1,
+    marginLeft: horizontalScale(12),
   },
 });

@@ -1,7 +1,7 @@
 import { View } from 'tamagui';
 import { MenuItemType } from '../FullMenu';
 import { globalStyle } from 'common/styles/base';
-import { Image, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { scale } from 'utils';
 import React from 'react';
 import { Text } from 'components';
@@ -27,11 +27,7 @@ const MenuItem = (props: MenuItemPropsType) => {
         bc={'$divider'}
       >
         <View w={scale(32)} h={scale(32)}>
-          <Image
-            source={props.item.icon}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="contain"
-          />
+          <Image source={props.item.icon} style={styles.fillMaxSize} resizeMode="contain" />
         </View>
         <Text f={1}>{props.item.label}</Text>
         <IcArrowRight />
@@ -41,3 +37,10 @@ const MenuItem = (props: MenuItemPropsType) => {
 };
 
 export default MenuItem;
+
+const styles = StyleSheet.create({
+  fillMaxSize: {
+    width: '100%',
+    height: '100%',
+  },
+});

@@ -1796,7 +1796,7 @@ const TimesheetExplanationDetail = ({ route }: TimesheetExplanationDetailProps) 
         shadowOffset={{ width: 0, height: -2 }}
         shadowOpacity={0.05}
         shadowRadius={4}
-        style={{ elevation: 5 }}
+        elevationAndroid={5}
       >
         {renderApprovalButtons()}
         {renderBtn()}

@@ -14,7 +14,7 @@ import {
   useFormContext,
   useWatch,
 } from 'react-hook-form';
-import { StyleProp, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { View } from 'tamagui';
 
 import { Button, Text } from 'components';
@@ -42,7 +42,7 @@ const Form = <T extends FieldValues>(
 
   return (
     <FormProvider {...form}>
-      <View style={{ flex: 1 }} {...rest}>
+      <View f={1} {...rest}>
         {children}
       </View>
     </FormProvider>
@@ -128,7 +128,7 @@ const FormItem = <T extends FieldValues, K extends FieldPath<T>>({
       ) : (
         !floatingLabel && !!label && <FormLabel deps={rest.rules?.deps}>{label}</FormLabel>
       )}
-      <View style={[{ marginTop: floatingLabel ? 0 : verticalScale(8) }, contentStyle]}>
+      <View style={[!floatingLabel && styles.marginTop8, contentStyle]}>
         <Controller name={name} control={control} {...rest} render={render} />
       </View>
       {!noErrorMessage && !!errors[name] && (
@@ -180,3 +180,9 @@ type ForwardedForm = <T extends FieldValues>(
 ) => React.ReactElement;
 
 export default Object.assign(forwardRef(Form) as ForwardedForm, FormStatic);
+
+const styles = StyleSheet.create({
+  marginTop8: {
+    marginTop: verticalScale(8),
+  },
+});
