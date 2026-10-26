@@ -13,9 +13,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import CardContainer from 'components/CardContainer';
 import TimeSheetFilter from './components/TimeSheetFilter';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import { TimesheetState } from 'common/enum/timesheet-state';
 import { IcInformation, IcCheck, IcClose } from 'assets/svgs';
+import { ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 
 // Config locale tiếng Việt cho Calendar
 LocaleConfig.locales.vi = {
@@ -291,29 +291,19 @@ const Timesheet = (props: TimeSheetProps) => {
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => handleDayPress(date)}
-          style={[
-            { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
-            marking?.customStyles?.container,
-          ]}
+          style={[styles.dayContainer, marking?.customStyles?.container]}
         >
           <Text
             style={[
-              { fontSize: 14, color: state === 'disabled' ? '#d9e1e8' : '#2d4150' },
+              styles.dayText,
+              state === 'disabled' && styles.dayTextDisabled,
               marking?.customStyles?.text,
             ]}
           >
             {date.day}
           </Text>
           {(isCheck || isClose) && (
-            <View
-              style={{
-                position: 'absolute',
-                top: -4,
-                right: -4,
-                backgroundColor: 'white',
-                borderRadius: 10,
-              }}
-            >
+            <View style={styles.badgeIcon}>
               {isCheck ? (
                 <IcCheck size={scale(12)} tintColor="#10B981" />
               ) : (
@@ -568,3 +558,25 @@ const Timesheet = (props: TimeSheetProps) => {
 };
 
 export default Timesheet;
+const styles = StyleSheet.create({
+  dayContainer: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dayText: {
+    fontSize: 14,
+    color: '#2d4150',
+  },
+  dayTextDisabled: {
+    color: '#d9e1e8',
+  },
+  badgeIcon: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: 'white',
+    borderRadius: 10,
+  },
+});

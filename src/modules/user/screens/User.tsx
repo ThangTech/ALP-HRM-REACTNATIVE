@@ -376,7 +376,7 @@ const User = () => {
             </Button>
             <Button
               variant="primary"
-              style={{ flex: 1 }}
+              style={styles.flex1}
               onPress={handleDeleteAccount}
               disabled={!pwd.length || loading}
             >
@@ -445,6 +445,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 24,
     backgroundColor: 'transparent',
+    flex: 1,
+  },
+  flex1: {
     flex: 1,
   },
 });

@@ -1,9 +1,10 @@
 import React, { useRef } from 'react';
 import { View } from 'tamagui';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 
 import { Form, Input, Button } from 'components';
 import { FormRef } from './Form';
+import { verticalScale } from 'utils';
 
 // Định nghĩa type cho form data
 interface LoginFormData {
@@ -92,7 +93,7 @@ const FormExample = () => {
         <Form.Submit label="Login" />
 
         {/* Reset Button */}
-        <Button variant="secondary" onPress={handleReset} style={{ marginTop: 10 }}>
+        <Button variant="secondary" onPress={handleReset} style={styles.marginTop10}>
           <Button.Text>Reset Form</Button.Text>
         </Button>
       </Form>
@@ -101,3 +102,9 @@ const FormExample = () => {
 };
 
 export default FormExample;
+
+const styles = StyleSheet.create({
+  marginTop10: {
+    marginTop: verticalScale(10),
+  },
+});

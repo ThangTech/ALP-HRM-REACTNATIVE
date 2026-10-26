@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View } from 'react-native';
+import { View } from 'tamagui';
 import { BottomSheetBackdrop, BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 
@@ -20,7 +20,7 @@ const SmartBackdrop: React.FC<BottomSheetBackdropProps> = ({ animatedIndex, styl
   );
 
   return (
-    <View style={[style, { flex: 1 }]} pointerEvents={touchable ? 'auto' : 'none'}>
+    <View style={style} f={1} pointerEvents={touchable ? 'auto' : 'none'}>
       <BottomSheetBackdrop {...props} animatedIndex={animatedIndex} />
     </View>
   );

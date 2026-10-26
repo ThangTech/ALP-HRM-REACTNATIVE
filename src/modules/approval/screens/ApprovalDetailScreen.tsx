@@ -910,7 +910,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
           shadowOffset={{ width: 0, height: -2 }}
           shadowOpacity={0.05}
           shadowRadius={4}
-          style={{ elevation: 5 }}
+          elevationAndroid={5}
         >
           <Button
             variant="detractive"
@@ -948,7 +948,7 @@ const ApprovalDetailScreen = ({ route }: Props) => {
         shadowOffset={{ width: 0, height: -2 }}
         shadowOpacity={0.05}
         shadowRadius={4}
-        style={{ elevation: 5 }}
+        elevationAndroid={5}
       >
         <View fd="row" gap={scale(12)}>
           {isEditable && (

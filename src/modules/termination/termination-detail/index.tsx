@@ -20,6 +20,7 @@ import ItemHistory from 'modules/leave-registration/detail/components/ItemHistor
 // import { useDeleteTicket } from 'hooks/useDeleteTicket';
 import { TerminationState } from 'common/enum/termination-state';
 import UploadComponent from 'components/file-upload/UploadComponent';
+import { StyleSheet } from 'react-native';
 
 type LeaveRegistrationDetailProps = NativeStackScreenProps<
   AppStackParamList,
@@ -100,7 +101,7 @@ function ViewPage(props: LeaveRegistrationDetailProps) {
                 {block.key}
               </Text>
               <View f={2} fd={'row'} justifyContent="flex-end">
-                <Text fontW={500} style={{ flexShrink: 1 }}>
+                <Text fontW={500} style={styles.textFlexShink}>
                   {block.value}
                 </Text>
               </View>
@@ -160,3 +161,8 @@ function ViewPage(props: LeaveRegistrationDetailProps) {
 }
 
 export default TerminationDetailPage;
+const styles = StyleSheet.create({
+  textFlexShink: {
+    flexShrink: 1,
+  },
+});

@@ -144,7 +144,7 @@ const Home = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         f={1}
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={styles.contentFlexGrow}
       >
         <View f={1} jc={'flex-start'} bg={'$white'} pt={verticalScale(10)}>
           {renderMenu()}
@@ -523,6 +523,9 @@ const styles = StyleSheet.create({
   menuIcon: {
     width: scale(54),
     height: scale(54),
+  },
+  contentFlexGrow: {
+    flexGrow: 1,
   },
 });
 

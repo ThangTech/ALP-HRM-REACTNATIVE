@@ -79,7 +79,7 @@ const Table = <T extends Record<string, any>>({
     <View style={[styles.container, style]}>
       <View style={styles.headerRow}>
         {columns.map((col) => (
-          <View key={col.key} style={[styles.headerCell, { flex: col.key === 'state' ? 1.5 : 1 }]}>
+          <View key={col.key} style={styles.headerCell} f={col.key === 'state' ? 1.5 : 1}>
             <Text style={styles.headerText}>{col.label}</Text>
           </View>
         ))}
@@ -117,7 +117,7 @@ const TableRow = <T extends Record<string, any>>({
   return (
     <Pressable style={[styles.row]} onPress={() => onRowPress?.(item)}>
       {columns.map((col: ColumnDefinition<T>) => (
-        <View key={col.key} style={[styles.cellContainer, { flex: col.key === 'state' ? 1.5 : 1 }]}>
+        <View key={col.key} style={styles.cellContainer} f={col.key === 'state' ? 1.5 : 1}>
           {col.render ? (
             col.render(item[col.key], item, (newValue: string) =>
               onUpdateValue?.(item, col.key, newValue),

@@ -106,7 +106,7 @@ export const AddLinkModal = ({ isVisible, onClose, onSubmit, isLoading }: AddLin
           <View h={1} bg="#f0f0f0" w="100%" />
           <View fd="row" h={verticalScale(52)} ai="center">
             <TouchableOpacity
-              style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}
+              style={styles.touchableStyle}
               onPress={handleClose}
               disabled={isLoading}
             >
@@ -118,7 +118,7 @@ export const AddLinkModal = ({ isVisible, onClose, onSubmit, isLoading }: AddLin
             <View w={1} h="100%" bg="#f0f0f0" />
 
             <TouchableOpacity
-              style={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}
+              style={styles.touchableStyle}
               onPress={handleSave}
               disabled={isLoading}
             >
@@ -144,5 +144,11 @@ const styles = StyleSheet.create({
   },
   btn: {
     minWidth: scale(80),
+  },
+  touchableStyle: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
   },
 });

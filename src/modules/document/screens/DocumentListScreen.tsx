@@ -93,7 +93,7 @@ const DocumentHeader = ({
           </View>
         ) : (
           <Input
-            containerStyle={{ flex: 1, marginLeft: horizontalScale(12) }}
+            containerStyle={styles.containerInput}
             placeholder="Tìm kiếm..."
             value={searchText}
             onChangeText={onChangeSearch}
@@ -108,7 +108,7 @@ const DocumentHeader = ({
           ref={scrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ alignItems: 'center' }}
+          contentContainerStyle={styles.contentContainerCenter}
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
           {breadcrumbs.map((crumb, index) => (
@@ -482,5 +482,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: getTokens().color.white.val,
+  },
+  containerInput: {
+    flex: 1,
+    marginLeft: horizontalScale(12),
+  },
+  contentContainerCenter: {
+    alignItems: 'center',
   },
 });
