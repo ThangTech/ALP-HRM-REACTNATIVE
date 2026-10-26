@@ -65,6 +65,8 @@ import {
   AttachedDocsScreen,
   SignWebViewScreen,
 } from 'modules/digital-signature';
+import ApprovalListScreen from 'modules/approval/screens/ApprovalListScreen';
+import ApprovalDetailScreen from 'modules/approval/screens/ApprovalDetailScreen';
 
 export type AppStackScreenProps<T extends RouteName> = NativeStackScreenProps<AppStackParamList, T>;
 type BottomTabBarType = ComponentProps<any>['tabs'];
@@ -190,6 +192,9 @@ const AppStack = () => {
       <Stack.Screen name={RouteName.SignRequestList} component={SignRequestListScreen} />
       <Stack.Screen name={RouteName.SignAttachedDocs} component={AttachedDocsScreen} />
       <Stack.Screen name={RouteName.SignWebView} component={SignWebViewScreen} />
+      <Stack.Screen name={RouteName.ApprovalList} component={ApprovalListScreen} />
+      <Stack.Screen name={RouteName.ApprovalCreate} component={ApprovalDetailScreen} />
+      <Stack.Screen name={RouteName.ApprovalDetail} component={ApprovalDetailScreen} />
     </Stack.Navigator>
   );
 };

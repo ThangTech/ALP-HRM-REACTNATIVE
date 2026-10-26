@@ -60,6 +60,9 @@ export enum RouteName {
   SignRequestList = 'SignRequestList',
   SignAttachedDocs = 'SignAttachedDocs',
   SignWebView = 'SignWebView',
+  ApprovalList = 'ApprovalList',
+  ApprovalCreate = 'ApprovalCreate',
+  ApprovalDetail = 'ApprovalDetail',
 }
 
 type ParamList = Record<RouteName | string, any> & {
@@ -184,6 +187,9 @@ type ParamList = Record<RouteName | string, any> & {
     sign_url?: string;
     title?: string;
   };
+  [RouteName.ApprovalList]: undefined;
+  [RouteName.ApprovalCreate]: undefined;
+  [RouteName.ApprovalDetail]: { id: number };
 };
 
 export type AppStackParamList = Partial<ParamList>;
