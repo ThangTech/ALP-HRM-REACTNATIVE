@@ -106,7 +106,7 @@ const FormItem = <T extends FieldValues, K extends FieldPath<T>>({
           field: { onChange: onChangeValue, ref, ...props },
           fieldState,
         }: UseControllerReturn<T, K>) =>
-          cloneElement(rest.children, {
+          cloneElement<any>(rest.children, {
             ...props,
             ref: noRef ? undefined : ref,
             onChangeValue,
@@ -151,7 +151,7 @@ const FormSubmit = ({ label, children, style, variant }: FormSubmitProps) => {
   const { formState, ...ctx } = useFormContext();
   const submit = (ctx as any).submit;
   if (children) {
-    return cloneElement(children, { onPress: submit, disabled: !formState.isValid });
+    return cloneElement<any>(children, { onPress: submit, disabled: !formState.isValid });
   }
 
   const buttonStyle = style

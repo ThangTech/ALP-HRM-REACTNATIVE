@@ -7,7 +7,7 @@ import { verticalScale } from 'utils';
 import { IcDocs, IcImage, IcVideo } from 'assets/svgs';
 
 interface FilePickerBottomSheetProps {
-  bottomSheetRef: React.RefObject<BottomSheet>;
+  bottomSheetRef: React.RefObject<BottomSheet | null>;
   onSelectImage: () => void;
   onSelectDocument: () => void;
   onSelectVideo?: () => void;

@@ -15,8 +15,8 @@ export interface UploadedFile {
 }
 
 export interface UseUploadFileReturn {
-  filePickerRef: React.RefObject<BottomSheet>;
-  filePickerModalRef: React.RefObject<BottomSheetModal>;
+  filePickerRef: React.RefObject<BottomSheet | null>;
+  filePickerModalRef: React.RefObject<BottomSheetModal | null>;
   uploadedFiles: UploadedFile[];
   setUploadedFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>;
   handleSelectImage: () => Promise<void>;

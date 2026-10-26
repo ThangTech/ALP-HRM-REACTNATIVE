@@ -14,7 +14,7 @@ const OverTimeButtons = () => {
   const isViewMe = provider.state.viewType === LeaveRegistrationViewType.ME;
   const isViewApprove = provider.state.viewType === LeaveRegistrationViewType.APPROVE;
 
-  const hasButton = (buttonType: TerminationButtonType): boolean => {
+  const hasButton = (buttonType: any): boolean => {
     return !!provider.state.detail?.buttons?.includes(buttonType);
   };
 

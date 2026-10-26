@@ -26,7 +26,7 @@ const FormExample = () => {
   };
 
   return (
-    <View flex padding={20}>
+    <View flex={1} padding={20}>
       <Form<LoginFormData>
         ref={formRef}
         defaultValues={{

@@ -125,7 +125,7 @@ class API extends Client {
     this.isLoggedOut = false; // Cho phép gọi API trở lại sau khi đăng nhập
     const ok = await Keychain.setGenericPassword('token', token, {
       service: KEYCHAIN_QMS_TOKEN,
-      storage: Keychain.STORAGE_TYPE.FB,
+      storage: Keychain.STORAGE_TYPE.AES_GCM, // .FB not exists
     }).catch((e) => {
       console.error('KC: save token', e);
       Keychain.resetGenericPassword({ service: KEYCHAIN_QMS_TOKEN }).catch(console.error);

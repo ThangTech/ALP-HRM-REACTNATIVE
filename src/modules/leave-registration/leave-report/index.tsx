@@ -132,7 +132,7 @@ function ViewPage() {
         </View>
       </ScrollView>
       <Modal ref={dialogRef}>
-        <LeaveReportDetail onClose={dialogRef.current?.close} />
+        <LeaveReportDetail/>
       </Modal>
     </View>
   );

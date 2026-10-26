@@ -88,7 +88,7 @@ export const useCommentEditor = () => {
 
   const onSubmit = async (data: CommentEditorFormData) => {
     console.log(data);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(() => resolve(null), 2000));
   };
 
   return {

@@ -12,7 +12,7 @@ export interface UploadedFile {
 }
 
 export interface UseUploadFileReturn {
-  filePickerRef: React.RefObject<BottomSheet>;
+  filePickerRef: React.RefObject<BottomSheet | null>;
   uploadedFiles: UploadedFile[];
   setUploadedFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>;
   handleSelectImage: () => Promise<void>;
