@@ -279,6 +279,54 @@ const Timesheet = (props: TimeSheetProps) => {
     setSelected(day.dateString);
   }, []);
 
+  // render dayComponent
+  const renderDay = useCallback(
+    ({ date, state }: any) => {
+      const marking = markedDates[date.dateString];
+      const expState = attendanceList?.[date.dateString]?.exp_state;
+      const isCheck = expState === 'draft' || expState === 'waiting';
+      const isClose = expState === 'refused' || expState === 'cancel';
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => handleDayPress(date)}
+          style={[
+            { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
+            marking?.customStyles?.container,
+          ]}
+        >
+          <Text
+            style={[
+              { fontSize: 14, color: state === 'disabled' ? '#d9e1e8' : '#2d4150' },
+              marking?.customStyles?.text,
+            ]}
+          >
+            {date.day}
+          </Text>
+          {(isCheck || isClose) && (
+            <View
+              style={{
+                position: 'absolute',
+                top: -4,
+                right: -4,
+                backgroundColor: 'white',
+                borderRadius: 10,
+              }}
+            >
+              {isCheck ? (
+                <IcCheck size={scale(12)} tintColor="#10B981" />
+              ) : (
+                <IcClose size={scale(12)} tintColor="#EF4444" />
+              )}
+            </View>
+          )}
+        </TouchableOpacity>
+      );
+    },
+    [markedDates, attendanceList, handleDayPress],
+  );
+
   // Render timesheet details
   const renderTimesheetDetails = useMemo(() => {
     if (!selected || !dayData) {
@@ -509,49 +557,7 @@ const Timesheet = (props: TimeSheetProps) => {
               onDayPress={handleDayPress}
               markingType="custom"
               markedDates={markedDates}
-              dayComponent={({ date, state }: any) => {
-                const marking = markedDates[date.dateString];
-                const expState = attendanceList?.[date.dateString]?.exp_state;
-                const isCheck = expState === 'draft' || expState === 'waiting';
-                const isClose = expState === 'refused' || expState === 'cancel';
-
-                return (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => handleDayPress(date)}
-                    style={[
-                      { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
-                      marking?.customStyles?.container,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        { fontSize: 14, color: state === 'disabled' ? '#d9e1e8' : '#2d4150' },
-                        marking?.customStyles?.text,
-                      ]}
-                    >
-                      {date.day}
-                    </Text>
-                    {(isCheck || isClose) && (
-                      <View
-                        style={{
-                          position: 'absolute',
-                          top: -4,
-                          right: -4,
-                          backgroundColor: 'white',
-                          borderRadius: 10,
-                        }}
-                      >
-                        {isCheck ? (
-                          <IcCheck size={scale(12)} tintColor="#10B981" />
-                        ) : (
-                          <IcClose size={scale(12)} tintColor="#EF4444" />
-                        )}
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              }}
+              dayComponent={renderDay}
             />
           </CardContainer>
           {renderTimesheetDetails}
