@@ -10,7 +10,7 @@ export function useUnauthorized() {
   useEffect(() => {
     const handleUnauthorized = () => {
       // Clear user context
-      setUser({ id: 0, name: '', photo: '' });
+      setUser({} as User);
       // Navigate to login
       navigate(RouteName.Login);
       // Dùng resetRoot thay vì navigate để UNMOUNT toàn bộ màn hình authenticated
