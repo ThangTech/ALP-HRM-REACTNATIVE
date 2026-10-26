@@ -107,7 +107,8 @@ const getDisplayStatus = (state: string) => {
     '3': 2,
     '4': 3,
   };
-  return stateMap[state] !== undefined ? STATUS_CONFIG[stateMap[state]] : null;
+  const index = stateMap[state];
+  return index !== undefined ? STATUS_CONFIG[index] : null;
 };
 
 const formatTime = (datetime: string) => {

@@ -136,7 +136,7 @@ const CommentEditor = () => {
       />
       <OptionPickerModal
         bottomSheetRef={provider.optionPickerRef}
-        data={provider.departmentOptions}
+        data={provider.departmentOptions ?? []}
         selectedValue={provider.selectedDepartment?.key}
         title={'Phòng ban'}
         onSelect={(item) => provider.form.setValue('departmentId', String(item.key))}
@@ -144,7 +144,7 @@ const CommentEditor = () => {
       />
       <OptionPickerModal
         bottomSheetRef={provider.groupPickerRef}
-        data={provider.groupOptions}
+        data={provider.groupOptions ?? []}
         selectedValue={provider.selectedGroup?.key}
         title={'Nhóm/Chi nhánh'}
         onSelect={(item) => provider.form.setValue('groupId', String(item.key))}

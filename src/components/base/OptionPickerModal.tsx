@@ -14,7 +14,7 @@ export interface OptionItem {
 }
 
 interface OptionPickerModalProps {
-  bottomSheetRef: React.RefObject<BottomSheet>;
+  bottomSheetRef: React.RefObject<BottomSheet | null>;
   data: OptionItem[];
   selectedValue?: string | number;
   onSelect: (item: OptionItem) => void;

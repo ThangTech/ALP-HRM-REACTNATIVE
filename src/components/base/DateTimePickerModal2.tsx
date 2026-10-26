@@ -9,7 +9,7 @@ import DatePicker from 'react-native-date-picker';
 export type DateTimePickerMode = 'date' | 'time' | 'datetime' | 'yearAndMonth';
 
 interface DateTimePickerModalProps {
-  bottomSheetRef: React.RefObject<BottomSheetModal>;
+  bottomSheetRef: React.RefObject<BottomSheetModal | null>;
   mode?: DateTimePickerMode;
   initialValue?: Date;
   onConfirm: (date: Date) => void;

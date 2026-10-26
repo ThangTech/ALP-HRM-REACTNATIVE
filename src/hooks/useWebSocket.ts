@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 interface UseWebSocketProps {
   uri: string;
   title?: string;
-  onMessage: (event: MessageEvent) => void;
+  onMessage: (event: WebSocketMessageEvent) => void;
   onOpen?: () => void;
   onError?: (error: any) => void;
   onClose?: (event: any) => void;

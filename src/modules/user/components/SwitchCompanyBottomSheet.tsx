@@ -7,7 +7,7 @@ import { horizontalScale, scale, verticalScale } from 'utils';
 import { AllowedCompany } from 'user/hooks/useAllowedCompaniesApi';
 
 interface SwitchCompanyBottomSheetProps {
-  bottomSheetRef: React.RefObject<BottomSheet>;
+  bottomSheetRef: React.RefObject<BottomSheet | null>;
   companies: AllowedCompany[];
   currentCompanyId?: number;
   loading?: boolean;

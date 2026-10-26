@@ -59,6 +59,9 @@ type ChildrenInfo = {
 };
 
 type User = {
+  id?: number;
+  company?: any;
+  companyList?: any[];
   name: string;
   employee_id: number;
   employee_code: string;

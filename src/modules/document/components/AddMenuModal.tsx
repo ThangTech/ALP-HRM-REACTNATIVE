@@ -7,7 +7,7 @@ import { SmartBackdrop } from 'components';
 import { scale, verticalScale } from 'utils';
 
 interface AddMenuModalProps {
-  bottomSheetRef: React.RefObject<BottomSheetModal>;
+  bottomSheetRef: React.RefObject<BottomSheetModal | null>;
   onSelectUpload: () => void;
   onSelectAddLink: () => void;
 }

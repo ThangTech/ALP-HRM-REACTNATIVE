@@ -6,7 +6,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { verticalScale, scale } from 'utils';
 
 interface OptionPickerModalProps {
-  bottomSheetRef: React.RefObject<BottomSheetModal>;
+  bottomSheetRef: React.RefObject<BottomSheetModal | null>;
   data: OptionItem[];
   selectedValue?: string | number;
   onSelect: (item: OptionItem) => void;
